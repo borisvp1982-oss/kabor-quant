@@ -1,0 +1,362 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0 · Copyright 2026 Borislav Vladimirov Petrakiev -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1430">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>KaBor Quant · Iniciar sesión</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icono-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<style>html.i18n-espera body{visibility:hidden}</style>
+<script src="/i18n.js"></script>
+<style>
+:root{
+  --abismo:#0A1430;--marino:#13204A;--faceta:#2C4A8A;--acero:#8FA8DC;--niebla:#B9C7E4;
+  --oro:#E8B84A;--oro-claro:#F6D98A;--oro-hondo:#9C7621;--tinta:#E7ECF6;--error:#FF8E7E;--ok:#6FD3A0;
+  --R:clamp(74px,12.5vw,116px);--D:calc(var(--R)*.26);
+  --font:"Avenir Next","Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;
+  color-scheme:dark;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+body{margin:0;font:16px/1.5 var(--font);color:var(--tinta);background:var(--abismo);
+  background-image:
+    radial-gradient(60vmax 45vmax at 30% 38%,rgba(44,74,138,.42),transparent 70%),
+    radial-gradient(40vmax 30vmax at 78% 80%,rgba(232,184,74,.07),transparent 70%),
+    repeating-linear-gradient(0deg,rgba(143,168,220,.045) 0 1px,transparent 1px 48px),
+    repeating-linear-gradient(90deg,rgba(143,168,220,.045) 0 1px,transparent 1px 48px);
+  -webkit-font-smoothing:antialiased}
+main{min-height:100%;display:grid;grid-template-columns:1fr;align-content:center;justify-items:center;
+  gap:clamp(20px,4vh,40px);padding:28px 20px 36px}
+@media (min-width:880px){
+  main{grid-template-columns:minmax(380px,1.1fr) minmax(340px,420px);gap:clamp(40px,7vw,110px);
+    padding:40px clamp(32px,6vw,96px);justify-content:center}
+}
+
+/* ---------- escena 3D ---------- */
+.marca{display:flex;flex-direction:column;align-items:center;gap:clamp(18px,3.4vh,34px)}
+.escena{position:relative;perspective:1100px;width:calc(var(--R)*2.6);height:calc(var(--R)*2.55);
+  display:grid;place-items:center}
+.halo{position:absolute;inset:8%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(232,184,74,.16),rgba(61,95,166,.14) 55%,transparent);
+  transition:opacity .6s,transform .9s}
+.halo.ok{opacity:1;transform:scale(1.25);background:radial-gradient(closest-side,rgba(246,217,138,.36),rgba(61,95,166,.16) 60%,transparent)}
+.flota{animation:flota 4.6s ease-in-out infinite alternate;transform-style:preserve-3d}
+.gema{position:relative;width:calc(var(--R)*1.7320508);height:calc(var(--R)*2);transform-style:preserve-3d;
+  animation:vaiven 8s ease-in-out infinite alternate}
+.gema.ok{animation:giro 1.15s cubic-bezier(.65,0,.2,1) forwards}
+.cara{position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  backface-visibility:hidden}
+.frente{transform:translateZ(calc(var(--D)/2))}
+.frente svg{display:block;width:100%;height:100%}
+.frente::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.16) 47%,rgba(246,217,138,.10) 52%,transparent 61%);
+  background-size:260% 100%;animation:brillo 8s ease-in-out infinite alternate}
+.dorso{transform:rotateY(180deg) translateZ(calc(var(--D)/2));
+  background:radial-gradient(circle at 40% 35%,#24407e,#0d1b40 70%);box-shadow:inset 0 0 0 3px var(--oro-hondo)}
+.lado{position:absolute;left:50%;top:50%;width:var(--D);height:var(--R);
+  margin-left:calc(var(--D)/-2);margin-top:calc(var(--R)/-2);backface-visibility:hidden;
+  background:linear-gradient(90deg,#5e4612,#c99a34 30%,#f6d98a 52%,#b8892a 74%,#6b5016);
+  transform:rotateZ(var(--a)) translateX(calc(var(--R)*.8660254 - .5px)) rotateY(90deg)}
+.lado:nth-child(3){--a:0deg;filter:brightness(.78)}
+.lado:nth-child(4){--a:60deg;filter:brightness(.56)}
+.lado:nth-child(5){--a:120deg;filter:brightness(.5)}
+.lado:nth-child(6){--a:180deg;filter:brightness(.95)}
+.lado:nth-child(7){--a:240deg;filter:brightness(1.18)}
+.lado:nth-child(8){--a:300deg;filter:brightness(1.02)}
+.suelo{position:absolute;bottom:2%;left:50%;width:calc(var(--R)*1.5);height:calc(var(--R)*.18);
+  transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent);
+  animation:sombra 4.6s ease-in-out infinite alternate}
+#ruptura{transform-box:fill-box;transform-origin:50% 100%;transition:transform .7s cubic-bezier(.3,1.6,.5,1)}
+.gema.ok #ruptura{transform:scaleY(1.45)}
+@keyframes vaiven{0%{transform:rotateX(13deg) rotateY(-33deg)}100%{transform:rotateX(5deg) rotateY(33deg)}}
+@keyframes flota{0%{transform:translateY(4px)}100%{transform:translateY(-10px)}}
+@keyframes sombra{0%{opacity:.95;transform:translateX(-50%) scale(1)}100%{opacity:.55;transform:translateX(-50%) scale(.82)}}
+@keyframes brillo{0%{background-position:100% 0}100%{background-position:0 0}}
+@keyframes giro{0%{transform:rotateX(8deg) rotateY(0)}100%{transform:rotateX(0) rotateY(360deg)}}
+
+.logotipo{margin:0;text-align:center;line-height:1}
+.logotipo b{display:block;font-size:clamp(2.1rem,5.4vw,3.3rem);font-weight:650;letter-spacing:-.02em}
+.logotipo b span{font-weight:300;letter-spacing:.06em;color:var(--niebla)}
+.logotipo small{display:block;margin-top:10px;font-size:.92rem;color:var(--acero);letter-spacing:.01em}
+.logotipo small.motor{margin-top:6px;font-size:.78rem;opacity:.75;letter-spacing:.04em}
+
+/* ---------- formulario ---------- */
+.acceso{width:100%;max-width:400px;padding:clamp(22px,4vw,34px);border-radius:18px;
+  background:linear-gradient(180deg,rgba(19,32,74,.78),rgba(13,24,58,.82));
+  border:1px solid rgba(143,168,220,.17);box-shadow:0 30px 60px -30px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.04);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.acceso.tiembla{animation:tiembla .42s}
+@keyframes tiembla{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.acceso h1{margin:0 0 4px;font-size:1.35rem;font-weight:600;letter-spacing:-.01em}
+.acceso .sub{margin:0 0 22px;color:var(--acero);font-size:.94rem}
+.campo{margin-bottom:16px}
+.campo label{display:block;margin-bottom:6px;font-size:.88rem;color:var(--niebla)}
+.entrada{position:relative}
+.entrada input{width:100%;height:48px;padding:0 14px;border-radius:10px;border:1px solid #2A3D6E;
+  background:#0B1736;color:var(--tinta);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+.entrada input:focus{border-color:var(--oro);box-shadow:0 0 0 3px rgba(232,184,74,.22)}
+.entrada input[aria-invalid="true"]{border-color:var(--error)}
+.entrada .ojo{position:absolute;right:4px;top:4px;width:40px;height:40px;border:0;border-radius:8px;
+  background:transparent;color:var(--acero);cursor:pointer;display:grid;place-items:center}
+.entrada .ojo:hover{color:var(--tinta)}
+.entrada .ojo:focus-visible{outline:2px solid var(--oro);outline-offset:-2px}
+.entrada.con-ojo input{padding-right:48px}
+.pista{min-height:0;margin:6px 0 0;font-size:.82rem;color:var(--oro-claro)}
+.recordar{display:flex;align-items:flex-start;gap:10px;margin:4px 0 20px;font-size:.9rem;color:var(--niebla);cursor:pointer}
+.recordar input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--oro);flex:none}
+.boton{width:100%;height:50px;border:0;border-radius:10px;background:var(--oro);color:#14264F;
+  font:inherit;font-weight:650;font-size:1rem;cursor:pointer;transition:background .15s,transform .1s}
+.boton:hover{background:var(--oro-claro)}
+.boton:active{transform:translateY(1px)}
+.boton:focus-visible{outline:3px solid var(--oro-claro);outline-offset:3px}
+.boton:disabled{background:#4A5578;color:#B9C7E4;cursor:not-allowed}
+.error{display:none;gap:10px;align-items:flex-start;margin:0 0 16px;padding:11px 13px;border-radius:10px;
+  background:rgba(255,142,126,.10);border:1px solid rgba(255,142,126,.35);color:var(--error);font-size:.9rem}
+.error.ver{display:flex}
+.error svg{flex:none;margin-top:2px}
+.conexion{display:flex;align-items:center;gap:8px;margin:20px 0 0;padding-top:16px;
+  border-top:1px solid rgba(143,168,220,.14);font-size:.84rem;color:var(--acero)}
+.conexion.segura{color:var(--ok)}
+.conexion.insegura{color:var(--oro-claro)}
+.preparar p{margin:0 0 12px;color:var(--niebla);font-size:.95rem}
+.preparar code{display:block;margin:4px 0 18px;padding:12px 14px;border-radius:10px;background:#0B1736;
+  border:1px solid #2A3D6E;color:var(--oro-claro);font:.95rem/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.oculto{display:none!important}
+.version{margin:14px 0 0;text-align:center;font-size:.78rem;color:rgba(143,168,220,.55)}
+
+@media (prefers-reduced-motion:reduce){
+  .gema,.flota,.suelo,.frente::after{animation:none!important}
+  .gema{transform:rotateX(8deg) rotateY(-18deg)}
+  .gema.ok{animation:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+  <section class="marca" aria-label="KaBor Quant">
+    <div class="escena" aria-hidden="true">
+      <div class="halo" id="halo"></div>
+      <div class="flota">
+        <div class="gema" id="gema">
+          <div class="cara frente">
+            <svg id="gema-svg" viewBox="-60.62 -70 121.24 140" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="f1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4E72BE"/><stop offset="1" stop-color="#2C4A8A"/></linearGradient>
+                <linearGradient id="f2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A4886"/><stop offset="1" stop-color="#18306A"/></linearGradient>
+                <linearGradient id="f3" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A3168"/><stop offset="1" stop-color="#0F2150"/></linearGradient>
+                <linearGradient id="f4" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#132654"/><stop offset="1" stop-color="#1F3872"/></linearGradient>
+                <linearGradient id="f5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A5DA6"/><stop offset="1" stop-color="#22407E"/></linearGradient>
+                <linearGradient id="f6" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4A6DB6"/><stop offset="1" stop-color="#6E90D4"/></linearGradient>
+                <clipPath id="ventana"><polygon points="0,-58 50.2,-29 50.2,29 0,58 -50.2,29 -50.2,-29"/></clipPath>
+              </defs>
+              <polygon points="0,-70 60.62,-35 0,0" fill="url(#f1)"/>
+              <polygon points="60.62,-35 60.62,35 0,0" fill="url(#f2)"/>
+              <polygon points="60.62,35 0,70 0,0" fill="url(#f3)"/>
+              <polygon points="0,70 -60.62,35 0,0" fill="url(#f4)"/>
+              <polygon points="-60.62,35 -60.62,-35 0,0" fill="url(#f5)"/>
+              <polygon points="-60.62,-35 0,-70 0,0" fill="url(#f6)"/>
+              <polygon points="0,-58 50.2,-29 50.2,29 0,58 -50.2,29 -50.2,-29" fill="rgba(6,14,36,.38)" stroke="rgba(185,199,228,.22)" stroke-width=".8"/>
+              <polygon points="0,-70 60.62,-35 60.62,35 0,70 -60.62,35 -60.62,-35" fill="none" stroke="#E8B84A" stroke-width="2.6" stroke-opacity=".9"/>
+              <g clip-path="url(#ventana)">
+               <g transform="translate(0,8)">
+                <path fill="none" stroke="#8FA8DC" stroke-width="2" transform="translate(0,-16)" d="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"><animate attributeName="d" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25;M-65,26 C-50,38 -38,14 -20,26 S5,-2 15,6 S40,-12 65,-21;M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"/></path>
+                <path fill="none" stroke="#F6D98A" stroke-width="1" stroke-dasharray="3 3" opacity=".7" d="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"><animate attributeName="d" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25;M-65,26 C-50,38 -38,14 -20,26 S5,-2 15,6 S40,-12 65,-21;M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"/></path>
+                <path fill="none" stroke="#8FA8DC" stroke-width="2" transform="translate(0,16)" d="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"><animate attributeName="d" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25;M-65,26 C-50,38 -38,14 -20,26 S5,-2 15,6 S40,-12 65,-21;M-65,30 C-50,12 -38,38 -20,20 S5,12 15,0 S40,-2 65,-25"/></path>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="-50.7,23.3;-50.7,28.7;-50.7,23.3"/><line y1="-10" y2="9" stroke="#5A7CC4"/><rect x="-3.5" y="-5" width="7" height="11" fill="#5A7CC4"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="-36.5,26.5;-36.5,23.4;-36.5,26.5"/><line y1="-8" y2="10" stroke="#DBE4F6"/><rect x="-3.5" y="-6" width="7" height="11" fill="#DBE4F6"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="-20,20;-20,26;-20,20"/><line y1="-9" y2="8" stroke="#5A7CC4"/><rect x="-3.5" y="-4" width="7" height="11" fill="#5A7CC4"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="-5.3,9.5;-5.3,24.5;-5.3,9.5"/><line y1="-11" y2="7" stroke="#DBE4F6"/><rect x="-3.5" y="-8" width="7" height="12" fill="#DBE4F6"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="5.2,6.6;5.2,10.5;5.2,6.6"/><line y1="-9" y2="8" stroke="#DBE4F6"/><rect x="-3.5" y="-6" width="7" height="9" fill="#DBE4F6"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="15,0;15,6;15,0"/><line y1="-8" y2="9" stroke="#5A7CC4"/><rect x="-3.5" y="-3" width="7" height="9" fill="#5A7CC4"/></g>
+                <g><animateTransform attributeName="transform" type="translate" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="26.7,-6.6;26.7,4.6;26.7,-6.6"/><line y1="-12" y2="6" stroke="#DBE4F6"/><rect x="-3.5" y="-9" width="7" height="12" fill="#DBE4F6"/></g>
+               </g>
+                <g id="ruptura"><line x1="35" y1="-37" x2="35" y2="-11" stroke="#E8B84A" stroke-width="1.5"/><rect x="31" y="-33" width="8" height="19" fill="#E8B84A"/><rect x="31" y="-33" width="3" height="19" fill="#F6D98A"/></g>
+              </g>
+            </svg>
+          </div>
+          <div class="cara dorso"></div>
+          <i class="lado"></i><i class="lado"></i><i class="lado"></i><i class="lado"></i><i class="lado"></i><i class="lado"></i>
+        </div>
+      </div>
+      <div class="suelo"></div>
+    </div>
+    <p class="logotipo"><b>KaBor <span>Quant</span></b><small>Sistema modular de trading para MyFundedPerps</small><small class="motor">Con Claude vía MCP</small></p>
+  </section>
+
+  <section class="acceso" id="acceso" aria-labelledby="titulo">
+    <div id="vista-form">
+      <h1 id="titulo">Inicia sesión</h1>
+      <p class="sub">Entra para gestionar tus bots y estrategias.</p>
+      <div class="error" id="error" role="alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.2v4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.05" fill="currentColor"/></svg>
+        <span id="error-txt"></span>
+      </div>
+      <form id="form" novalidate>
+        <div class="campo">
+          <label for="usuario">Usuario</label>
+          <div class="entrada"><input id="usuario" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+        </div>
+        <div class="campo">
+          <label for="clave">Contraseña</label>
+          <div class="entrada con-ojo">
+            <input id="clave" name="password" type="password" autocomplete="current-password" required>
+            <button type="button" class="ojo" id="ojo" aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg id="ico-ver" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="ico-ocultar" class="oculto" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <p class="pista oculto" id="mayus">Tienes activadas las mayúsculas.</p>
+        </div>
+        <div class="campo oculto" id="campo-codigo">
+          <label for="codigo">Código de verificación</label>
+          <div class="entrada"><input id="codigo" name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="12" spellcheck="false" autocapitalize="none"></div>
+          <p class="pista">Las 6 cifras de tu app de verificación. Si no tienes el móvil, usa un código de recuperación.</p>
+        </div>
+        <label class="recordar"><input type="checkbox" id="recordar"> <span>Mantener la sesión iniciada en este dispositivo durante 30 días</span></label>
+        <button class="boton" id="entrar" type="submit">Entrar</button>
+      </form>
+    </div>
+
+    <div id="vista-preparar" class="preparar oculto">
+      <h1>Crea tu usuario</h1>
+      <p class="sub">El panel todavía no tiene ningún usuario.</p>
+      <p>En la Raspberry, dentro de la carpeta del programa, ejecuta:</p>
+      <code>./bot.sh usuario</code>
+      <p>Elige un nombre y una contraseña de al menos 10 caracteres. No hace falta reiniciar.</p>
+      <p class="pista oculto" id="prep-msg">Todavía no veo ningún usuario. Ejecuta el comando y vuelve a pulsar.</p>
+      <button class="boton" id="recomprobar" type="button" style="margin-top:10px">Ya lo he creado</button>
+    </div>
+
+    <p class="conexion" id="conexion" aria-live="polite"></p>
+  </section>
+</main>
+<p class="version" id="version"></p>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (quieto) { try { $("gema-svg").pauseAnimations(); } catch (e) {} }
+
+const ICO_CANDADO = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+const ICO_ABIERTO = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 7.6-1.7"/></svg>';
+
+function irAlPanel() { location.replace("/" + (location.hash || "")); }
+
+function conexion(cifrada) {
+  const c = $("conexion");
+  c.className = "conexion " + (cifrada ? "segura" : "insegura");
+  c.innerHTML = cifrada ? ICO_CANDADO + "<span>Conexión cifrada</span>"
+    : ICO_ABIERTO + "<span>Conexión sin cifrar. Actívala con ./bot.sh configurar</span>";
+}
+
+function mostrarError(msg) {
+  $("error-txt").textContent = msg; $("error").classList.add("ver");
+  const a = $("acceso"); a.classList.remove("tiembla"); void a.offsetWidth; if (!quieto) a.classList.add("tiembla");
+}
+function limpiarError() { $("error").classList.remove("ver"); ["usuario", "clave", "codigo"].forEach(i => $(i).removeAttribute("aria-invalid")); }
+let pideCodigo = false;
+function verCodigo() {
+  pideCodigo = true; $("campo-codigo").classList.remove("oculto");
+  $("usuario").readOnly = true; $("clave").readOnly = true; $("codigo").value = ""; $("codigo").focus();
+}
+
+async function estado() {
+  try {
+    const r = await fetch("/api/sesion", {cache: "no-store"});
+    const j = await r.json();
+    if (j.usuario) return irAlPanel();
+    conexion(location.protocol === "https:" || j.https);
+    $("version").textContent = (j.app || "KaBor Quant") + " " + (j.version || "");
+    const preparar = j.login && !j.hay_usuarios;
+    $("vista-preparar").classList.toggle("oculto", !preparar);
+    $("vista-form").classList.toggle("oculto", preparar);
+    if (!preparar && !matchMedia("(pointer: coarse)").matches) $("usuario").focus();
+    return j;
+  } catch (e) {
+    conexion(location.protocol === "https:");
+    mostrarError("No hay conexión con la Raspberry. Comprueba que el programa está en marcha.");
+  }
+}
+
+let cuenta = null;
+function bloquear(seg) {
+  const b = $("entrar"); clearInterval(cuenta);
+  const fin = Date.now() + seg * 1000;
+  const paso = () => {
+    const s = Math.max(0, Math.round((fin - Date.now()) / 1000));
+    if (!s) { clearInterval(cuenta); b.disabled = false; b.textContent = "Entrar"; limpiarError(); return; }
+    b.disabled = true; b.textContent = `Vuelve a intentarlo en ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  };
+  paso(); cuenta = setInterval(paso, 1000);
+}
+
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  limpiarError();
+  const usuario = $("usuario").value.trim(), clave = $("clave").value;
+  if (!usuario || !clave) {
+    if (!usuario) $("usuario").setAttribute("aria-invalid", "true");
+    if (!clave) $("clave").setAttribute("aria-invalid", "true");
+    mostrarError(!usuario ? "Escribe tu usuario." : "Escribe tu contraseña.");
+    $(!usuario ? "usuario" : "clave").focus();
+    return;
+  }
+  const b = $("entrar"); b.disabled = true; b.textContent = "Comprobando…";
+  let r, j = {};
+  try {
+    r = await fetch("/api/login", {method: "POST", headers: {"Content-Type": "application/json", "X-KQ": "1"},
+      body: JSON.stringify({usuario, clave, recordar: $("recordar").checked, codigo: pideCodigo ? $("codigo").value.trim() : ""})});
+    try { j = await r.json(); } catch (e) {}
+  } catch (e) {
+    b.disabled = false; b.textContent = "Entrar";
+    return mostrarError("No hay conexión con la Raspberry. Comprueba que el programa está en marcha.");
+  }
+  if (r.ok && j.ok) {
+    b.textContent = "Bienvenido";
+    $("gema").classList.add("ok"); $("halo").classList.add("ok");
+    setTimeout(irAlPanel, quieto ? 150 : 1200);
+    return;
+  }
+  b.disabled = false; b.textContent = "Entrar";
+  if (r.status === 409) { estado(); return; }
+  if (j.codigo) { verCodigo(); return; }
+  if (pideCodigo && !j.espera) {
+    $("codigo").value = ""; $("codigo").setAttribute("aria-invalid", "true");
+    mostrarError(j.error || "Código incorrecto."); $("codigo").focus(); return;
+  }
+  if (pideCodigo) { pideCodigo = false; $("campo-codigo").classList.add("oculto"); $("usuario").readOnly = false; $("clave").readOnly = false; }
+  $("clave").value = ""; $("clave").setAttribute("aria-invalid", "true");
+  mostrarError(j.error || "No se pudo iniciar sesión.");
+  if (j.espera) bloquear(j.espera); else $("clave").focus();
+});
+
+$("ojo").addEventListener("click", () => {
+  const c = $("clave"), ver = c.type === "password";
+  c.type = ver ? "text" : "password";
+  $("ojo").setAttribute("aria-pressed", String(ver));
+  $("ojo").setAttribute("aria-label", ver ? "Ocultar contraseña" : "Mostrar contraseña");
+  $("ico-ver").classList.toggle("oculto", ver); $("ico-ocultar").classList.toggle("oculto", !ver);
+  c.focus();
+});
+["keydown", "keyup"].forEach(t => $("clave").addEventListener(t, e => {
+  if (e.getModifierState) $("mayus").classList.toggle("oculto", !e.getModifierState("CapsLock"));
+}));
+$("codigo").addEventListener("input", () => { const v = $("codigo").value.replace(/\s/g, "");
+  if (/^\d{6}$/.test(v) && !$("entrar").disabled) $("form").requestSubmit(); });
+["usuario", "clave", "codigo"].forEach(i => $(i).addEventListener("input", () => { $(i).removeAttribute("aria-invalid"); $("error").classList.remove("ver"); }));
+$("recomprobar").addEventListener("click", async () => {
+  const j = await estado();
+  $("prep-msg").classList.toggle("oculto", !(j && j.login && !j.hay_usuarios));
+});
+
+estado();
+</script>
+</body>
+</html>

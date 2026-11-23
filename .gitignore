@@ -1,0 +1,50 @@
+# KaBor Quant: private data that must never be committed
+# (API keys, panel users and sessions, HTTPS certificates, Telegram token, bots, trades, candles)
+data/
+config.env
+config.env.*
+.env
+.env.*
+
+# certificates and keys
+tls/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Python environment and caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# logs, reports, backups and temporary files
+logs/
+*.log
+nohup.out
+informes/
+*.zip
+*.tgz
+*.tar
+*.tar.gz
+*.bak
+*.tmp
+*.orig
+*.old
+*.v[0-9]*
+kcbot2_copia*
+*.swp
+.DS_Store
+
+# market data and local databases
+*.csv
+*.sqlite
+*.db
+
+# replaced strategy versions and install checks
+estrategias/anteriores/
+estrategias/.comprobando/
+# add here your own strategies that you don't want to publish, e.g.:
+# estrategias/mi_estrategia.py

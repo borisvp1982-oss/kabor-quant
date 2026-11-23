@@ -1,0 +1,28 @@
+KaBor Quant
+Copyright 2026 Borislav Vladimirov Petrakiev
+
+This product is licensed under the Apache License, Version 2.0 (see the LICENSE file).
+You may use, modify and redistribute it, including commercially, as long as you keep
+this NOTICE file, the copyright notices and the LICENSE, and mark the files you change.
+
+Original author: Borislav Vladimirov Petrakiev ("Boris").
+
+Name and logo
+The name "KaBor Quant" and the KaBor Quant logo (the faceted hexagonal gem with a Keltner
+channel and a gold breakout candle) identify the original project. Under Section 6 of the
+License they are not licensed for use as the name or logo of other products. Modified
+versions must use a different name and logo, and must not suggest that they are the
+original project or endorsed by its author.
+
+Independent project
+KaBor Quant is not affiliated with or endorsed by MyFundedPerps. "MyFundedPerps" and
+"Claude" are names of their respective owners and are used only to describe compatibility.
+
+No financial advice
+KaBor Quant is software for trading automation in sandbox accounts. Nothing in it is
+financial advice or a promise of profits or challenge passes.
+
+Third-party software
+KaBor Quant does not bundle third-party code. At install time it downloads from PyPI:
+  - websocket-client (Apache License 2.0)
+  - Pillow (MIT-CMU / HPND license)
