@@ -2,6 +2,10 @@
 
 **Modular trading system for MyFundedPerps · Powered by Claude via MCP**
 
+<p align="center"><img src="docs/img/overview.jpg" alt="KaBor Quant panel: one card per bot with results, win rate, profit factor and a live price strip" width="900"></p>
+
+**[Read the full guide →](docs/GUIDE.md)** · [PDF version](docs/KaBor_Quant_Builders_Guide.pdf)
+
 Self-hosted trading-bot platform for **MyFundedPerps (MFP) sandbox accounts**: many strategy bots on one
 Raspberry Pi, paper or sandbox execution through the MFP REST API, web panel with login and HTTPS, Telegram
 alerts with charts, and **SMT**, an MCP connector that lets Claude read the bots and draft trade plans that you confirm in the panel.
@@ -42,7 +46,8 @@ commented) and read `ESTRATEGIAS.md`. Test any file on real MFP candles without 
 ./bot.sh probar estrategias/cruce_emas.py --simbolo BTC --tf 15m --dias 60
 ```
 
-The panel and the Spanish docs (`LEEME.md`, `ESTRATEGIAS.md`) cover everything else.
+The [full guide](docs/GUIDE.md) covers architecture, installation, strategies, the SMT connector and risk controls.
+The Spanish docs (`LEEME.md`, `ESTRATEGIAS.md`) cover every setting in detail.
 
 ## License
 
