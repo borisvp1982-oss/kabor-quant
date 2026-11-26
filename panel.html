@@ -537,6 +537,91 @@ ul.rows li.ses .what{flex:1}
 .yo{font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:999px;background:rgba(30,118,80,.15);color:var(--gain);margin-left:6px}
 @media(max-width:600px){.long{display:none}}
 ul.rows{list-style:none;margin:0;padding:0}
+.gx-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.gx-bar select{width:auto}
+.gx-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gx-tools .btn.on{background:var(--gold);color:var(--panel);border-color:var(--gold)}
+.gx-wrap{position:relative;height:min(62vh,560px);min-height:340px;border:1px solid var(--rule);border-radius:10px;overflow:hidden;touch-action:none;background:var(--bg)}
+#gx-chart{position:absolute;inset:0}
+#gx-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gx-hint{position:absolute;left:10px;top:8px;font-size:.75rem;background:var(--panel);color:var(--ink);padding:3px 8px;border-radius:6px;opacity:.92;pointer-events:none;z-index:2}
+#gx-list li{gap:8px}
+#gx-list li.sel{background:var(--gold-soft);border-radius:8px}
+#gx-list .gx-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;min-width:0}
+#gx-list select{width:auto}
+#gx-list input[type=number]{width:120px}
+#gx-list input[type=number],#gx-list select,.gx-bar select,#ana-sym,#ana-tf{font:inherit;font-size:.88rem;padding:6px 8px;border:1px solid var(--rule);border-radius:var(--r-small);background:var(--bg);color:var(--ink)}
+#gx-list label.small{display:inline-flex;flex-direction:column;gap:2px}
+#gx-list input.gx-txt{flex:1;min-width:120px}
+#gx-list .gx-pos{flex-basis:100%;font-size:.8rem}
+@media (min-width:900px){#cfg-tabs.cfg-tabs{flex-wrap:wrap;overflow:visible}}
+.cfg-tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 8px 10px 2px;margin-bottom:6px;border-bottom:1px solid var(--rule);scrollbar-width:thin}
+.cfg-tabs button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer;white-space:nowrap;position:relative;font:inherit;text-align:left}
+.cfg-tabs button small{font-size:.7rem;color:var(--muted)}
+.cfg-tabs button[aria-selected="true"]{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+.cfg-tabs button .badge:not(:empty){position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--gold);color:var(--panel);font-size:.7rem;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.ay-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+.ay-top input{flex:1;min-width:220px}
+.ay-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start}
+.ay-toc{position:sticky;top:80px;max-height:calc(100vh - 110px);overflow:auto;padding:12px 10px;font-size:.86rem}
+.ay-toc a{display:block;padding:5px 8px;border-radius:8px;color:var(--ink);text-decoration:none}
+.ay-toc a.sub{padding-left:20px;font-size:.8rem;color:var(--muted)}
+.ay-toc a:hover,.ay-toc a.on{background:var(--gold-soft)}
+.ay-body{padding:20px 26px;line-height:1.6;max-width:none}
+.ay-body section{padding-bottom:18px;border-bottom:1px solid var(--rule);margin-bottom:22px;scroll-margin-top:84px}
+.ay-body section:last-child{border-bottom:0}
+.ay-body h2{margin:0 0 10px;font-size:1.35rem}
+.ay-body h3{margin:18px 0 6px;font-size:1.05rem;scroll-margin-top:84px}
+.ay-body p,.ay-body li{max-width:80ch}
+.ay-body code{background:var(--bg);border:1px solid var(--rule);border-radius:5px;padding:0 4px;font-size:.86em}
+.ay-body pre{background:var(--bg);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;overflow:auto;font-size:.82rem;line-height:1.45}
+.ay-body pre code{border:0;background:none;padding:0}
+.ay-body figure{margin:14px 0;text-align:center}
+.ay-body figure img{max-width:100%;border-radius:10px;border:1px solid var(--rule);box-shadow:0 4px 18px rgba(0,0,0,.12);cursor:zoom-in}
+.ay-body figure img.ay-alta{max-height:760px;width:auto}
+.ay-body figure img.ay-peq{max-width:min(100%,560px)}
+.ay-body figcaption{font-size:.8rem;color:var(--muted);margin-top:6px}
+.ay-nota{background:var(--gold-soft);border-left:3px solid var(--gold);padding:8px 12px;border-radius:6px}
+.ay-cajas{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+.ay-cajas div{border:1px solid var(--rule);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.ay-cajas b{display:block}.ay-cajas span{font-size:.85rem;color:var(--muted)}
+.ay-tabla{border-collapse:collapse;width:100%;font-size:.86rem;margin:8px 0}
+.ay-tabla th,.ay-tabla td{border:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
+.ay-tabla td:first-child{overflow-wrap:normal;word-break:break-word}
+.ay-tabla th{background:var(--bg)}
+.ay-prompts li{font-style:italic}
+.ay-faq dt{font-weight:600;margin-top:12px}.ay-faq dd{margin:4px 0 0 0;color:var(--ink)}
+.ay-ajustes details{border:1px solid var(--rule);border-radius:10px;margin:8px 0;background:var(--bg)}
+.ay-ajustes summary{padding:8px 12px;cursor:pointer;font-weight:600}
+.ay-ajustes dl{margin:0;padding:0 12px 10px}.ay-ajustes dt{font-weight:600;margin-top:8px}
+.ay-ajustes dd{margin:2px 0 0;font-size:.86rem;color:var(--muted)}
+.ay-oculta{display:none}
+.ay-marca{background:var(--gold-soft);border-radius:3px}
+@media (max-width:860px){.ay-layout{grid-template-columns:1fr}.ay-toc{position:static;max-height:240px}.ay-body{padding:16px}}
+@media print{body.imprimiendo-ayuda #sidebar,body.imprimiendo-ayuda .appbar,body.imprimiendo-ayuda .tk,body.imprimiendo-ayuda header.top,body.imprimiendo-ayuda #stopbar,body.imprimiendo-ayuda .veil,.ay-top,.ay-toc{display:none!important}body.imprimiendo-ayuda main{margin:0!important;padding:0!important}.ay-layout{display:block}.ay-body{box-shadow:none;border:0}
+  .ay-body section{break-inside:auto}.ay-body figure{break-inside:avoid}}
+.es-pos{color:var(--gain)}.es-neg{color:var(--loss)}
+.es-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.es-c{border:1px solid var(--rule);border-radius:12px;padding:12px;background:var(--bg)}
+.es-c h3{margin:0;font-size:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.es-c .pri{font-size:.72rem;padding:2px 7px;border-radius:999px;background:var(--gold);color:var(--panel)}
+.es-c .sc{font-size:.75rem;padding:2px 8px;border-radius:999px;color:var(--panel);margin-left:auto}
+.es-c dl{display:grid;grid-template-columns:auto auto auto;gap:2px 10px;margin:8px 0 0;font-size:.8rem}
+.es-c dt{color:var(--muted)}.es-c dd{margin:0;text-align:right}
+.es-c .sub{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:10px}
+.pe-bars{display:grid;grid-template-columns:minmax(90px,auto) 1fr auto;gap:6px 10px;align-items:center;font-size:.8rem;margin:6px 0 14px}
+.pe-bar{height:14px;border-radius:4px;min-width:2px}
+#es-eq{height:240px;position:relative;border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.pe-leg{display:flex;flex-wrap:wrap;gap:10px;font-size:.78rem;margin:-6px 0 12px}
+.pe-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.gx-sw{width:12px;height:12px;border-radius:3px;flex:0 0 12px}
+.tvw{height:min(72vh,720px);min-height:420px;border-radius:10px;overflow:hidden;border:1px solid var(--rule);background:var(--bg)}
+.tvw>div{height:100%}
+.tv-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.tv-bar select{width:auto;min-width:120px}
+.tv-sym{font-family:var(--mono,monospace);font-size:.85rem}
+ul.rows li.tvm{flex-wrap:wrap}.tvm .what{flex:1 1 220px;min-width:0}.tvm input{flex:1 1 200px;width:auto;min-width:0;max-width:300px;font-family:var(--mono,monospace)}
+.tv-link{margin-left:auto;font-size:.8rem}
 ul.rows li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--rule)}
 ul.rows li:last-child{border-bottom:0}
 ul.rows .what{min-width:0;font-size:.85rem}
@@ -640,6 +725,32 @@ tr.op-row:focus{outline:2px solid var(--gold);outline-offset:-2px}
 .bt-ops{max-height:420px;overflow:auto;margin-top:6px}
 .tv{position:fixed;inset:0;z-index:80;background:rgba(6,10,16,.62);display:flex;align-items:center;justify-content:center;padding:18px}
 .tv[hidden]{display:none}
+.bd-box{width:min(1240px,100%);height:100%}
+.bd-body{overflow:auto;padding:4px 16px 18px;flex:1 1 auto}
+.bd-body section{margin:6px 0 18px}
+.bd-body h3{margin:10px 0 8px;font-size:.95rem}
+.bd-eq{height:260px;position:relative}
+.bd-tl{position:relative;height:var(--bd-h,220px);touch-action:none;cursor:grab;border:1px solid var(--rule);border-radius:10px}
+.bd-tl canvas{width:100%;height:100%;display:block}
+.bd-tl-tools{padding:0 0 8px}
+.bd-ley{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.78rem;color:var(--muted);align-items:center}
+.bd-ley i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+.bd-ley svg{vertical-align:-2px;margin-right:5px}
+.bd-fichas{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.bd-ficha{border:1px solid var(--rule);border-radius:12px;padding:12px 14px}
+.bd-ficha h4{margin:0 0 2px;display:flex;align-items:center;gap:8px;font-size:.95rem}
+.bd-ficha h4 i{width:12px;height:12px;border-radius:3px;flex:0 0 auto}
+.bd-lados{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.bd-lados div{border:1px solid var(--rule);border-radius:8px;padding:6px 9px;font-size:.8rem}
+.bd-lados b{display:block;font-size:.95rem;margin-top:2px}
+.bd-emb{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:6px 0 4px}
+.bd-emb span{display:block;min-width:2px}
+.bd-hrs{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:56px;margin-top:6px}
+.bd-hrs span{display:block;border-radius:3px 3px 0 0;min-height:1px}
+.bd-hrs-x{display:grid;grid-template-columns:repeat(24,1fr);font-size:.62rem;color:var(--muted);text-align:center}
+.bd-pista{margin:8px 0 0;padding:7px 10px;border-radius:8px;background:var(--gold-soft);font-size:.8rem}
+.bd-sub{font-size:.78rem;color:var(--muted);margin:10px 0 2px;font-weight:600}
+@media (max-width:700px){.bd-fichas{grid-template-columns:1fr}.bd-eq{height:200px}}
 .tv-box{background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:var(--r-big, 14px);width:min(1180px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.35)}
 .tv-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:14px 16px 8px}
 .tv-head h2{margin:0;font-size:1.05rem}
@@ -758,6 +869,7 @@ html[data-tema=cristal] dialog.dlg,html[data-tema=cristal] .tst{background:var(-
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid var(--glass-line)}
 html[data-tema=cristal] dialog.dlg::backdrop{background:rgba(4,30,40,.35);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 html[data-tema=cristal] div.tv-box.tv-box{background:var(--glass-solid)}
+html[data-tema=cristal] #bd div.tv-box.tv-box{background:linear-gradient(var(--glass-solid),var(--glass-solid)),var(--glass-solid)}   /* el desglose es largo: opaco del todo */
 /* menos transparencia si el sistema lo pide, y sin animaciones si se reduce el movimiento */
 @media (prefers-reduced-transparency:reduce){html[data-tema=cristal]{--panel:var(--glass-solid);--bg:var(--glass-solid)}}
 @media (prefers-reduced-motion:reduce){html[data-tema=cristal] :is(.botcard,.totals div,.es-kpis div,.fi-tot div,.btn){transition:none}
@@ -931,11 +1043,13 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
   <symbol id="i-estrategias" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="9" width="3.2" height="6" rx=".7"/><path d="M8.6 6.5V9M8.6 15v2.5"/><rect x="14" y="6" width="3.2" height="5" rx=".7"/><path d="M15.6 3.8V6M15.6 11v3"/></symbol>
   <symbol id="i-riesgo" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.6c0 4.5-3.2 8.2-7.5 9.4-4.3-1.2-7.5-4.9-7.5-9.4V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
   <symbol id="i-noticias" viewBox="0 0 24 24"><path d="M4 5.5h13v13a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v9.5a2 2 0 0 1-4 0"/><path d="M7.5 9h6M7.5 12.5h6M7.5 16h4"/></symbol>
+  <symbol id="i-analisis" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M6 15l3.5-4 3 2.5L18 8"/><path d="M6.5 8v2.5M6.5 13.5V16" opacity=".7"/></symbol>
   <symbol id="i-instrumentos" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
   <symbol id="i-cuentas" viewBox="0 0 24 24"><path d="M3 9.5L12 4l9 5.5"/><path d="M5.5 10.5v7M10 10.5v7M14 10.5v7M18.5 10.5v7"/><path d="M3 20.5h18"/></symbol>
   <symbol id="i-fiscal" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
   <symbol id="i-planes" viewBox="0 0 24 24"><path d="M4 19l5-6 4 3 7-9"/><path d="M15 7h5v5"/><path d="M4 5h6M4 9h3" stroke-dasharray="2 2"/></symbol>
   <symbol id="i-avisos" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.6 2.2H4.4z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></symbol>
+  <symbol id="i-ayuda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></symbol>
   <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 6h9M19 6h1M4 12h3M13 12h7M4 18h11M21 18h-1"/><circle cx="16" cy="6" r="2.4"/><circle cx="10" cy="12" r="2.4"/><circle cx="17.6" cy="18" r="2.4"/></symbol>
   <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M9.5 8l-4 4 4 4"/><path d="M5.5 12H15"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
@@ -1000,7 +1114,7 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
     <div class="guard" id="guard"></div>
     <div class="grid">
       <section class="card">
-        <div class="card-head"><h2>Precio y estrategia</h2><span class="small muted" id="ind-text"></span></div>
+        <div class="card-head"><h2>Precio y estrategia</h2><span class="small muted" id="ind-text"></span><a class="tv-link" href="#analisis" id="b-tv" title="Ver este instrumento en TradingView">TradingView ↗</a></div>
         <div class="trend" id="trend-strip" hidden></div>
         <canvas class="cv-price" id="cv-price" aria-label="Gráfico de precio con canales"></canvas>
         <p class="small muted" style="margin-top:8px" id="armed-text"></p>
@@ -1038,6 +1152,10 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
       <section class="card span2" id="vg-card" hidden>
         <div class="card-head"><h2>Vigilante de deriva</h2><span id="vg-chip"></span></div>
         <div id="vg-body"></div>
+      </section>
+      <section class="card span2" id="es-card" hidden>
+        <div class="card-head"><h2>Rendimiento por estrategia</h2><span class="small muted" id="es-info"></span><button class="btn small" type="button" id="es-punt">Recalcular puntuación</button></div>
+        <div id="es-body"></div>
       </section>
       <section class="card span2"><h2>Estadísticas</h2><dl class="kv" id="stats"></dl></section>
       <section class="card">
@@ -1095,7 +1213,7 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
     <div class="alert info" id="cfg-info" style="margin-top:12px"></div>
     <div class="cfg-tools" id="new-tools" hidden>
       <input class="note" id="cfg-name" maxlength="40" placeholder="Nombre del bot nuevo (p. ej. Oro 1m dinámico)">
-      <select class="note" id="cfg-copy" style="width:auto" aria-label="Partir de los ajustes de"></select>
+      <select class="note" id="cfg-copy" style="width:auto;max-width:100%" aria-label="Partir de los ajustes de"></select>
     </div>
     <div class="cfg-tools">
       <input class="note" id="cfg-note" maxlength="200" placeholder="Nota al guardar (opcional): qué cambias y por qué">
@@ -1429,6 +1547,23 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
     </section>
   </div>
   <!-- ===================== INSTRUMENTOS ===================== -->
+  <div id="view-analisis" hidden>
+    <section class="card">
+      <div class="tv-bar">
+        <select id="ana-sym" aria-label="Instrumento"></select>
+        <select id="ana-tf" aria-label="Temporalidad"><option value="1">1m</option><option value="5">5m</option><option value="15" selected>15m</option><option value="30">30m</option><option value="60">1h</option><option value="240">4h</option><option value="D">1D</option></select>
+        <span class="tv-sym muted" id="ana-tv"></span><span class="mode" id="ana-ok"></span>
+        <a class="btn small" id="ana-open" target="_blank" rel="noopener noreferrer">Abrir en TradingView ↗</a>
+      </div>
+      <div class="tvw" id="ana-chart"><p class="small muted" style="padding:16px">Cargando gráfico…</p></div>
+      <p class="small muted" style="margin-top:8px">Gráfico y datos de <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>, del mismo mercado que usa MyFundedPerps. Puede haber pequeñas diferencias con el precio de MFP: los bots operan siempre con las velas de MFP.</p>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <div class="card-head"><h2>Símbolos en TradingView</h2></div>
+      <p class="small muted">KaBor elige solo el símbolo de TradingView de cada instrumento: Binance → <code>BINANCE:BTCUSDT.P</code>, Hyperliquid (Trade[XYZ]) → <code>HIP3XYZ:XYZ100USDC.P</code>. Si alguno no carga o prefieres otro, escríbelo aquí; déjalo vacío para volver al automático.</p>
+      <ul class="rows" id="tvm-list"></ul>
+    </section>
+  </div>
   <div id="view-instrumentos" hidden>
     <section class="card" style="margin-top:14px">
       <div class="card-head"><h2>Tus instrumentos</h2><span class="badge" id="instr-count"></span></div>
@@ -1457,6 +1592,16 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
     </section>
   </div>
   <!-- ===================== AJUSTES ===================== -->
+  <div id="view-ayuda" hidden>
+    <div class="ay-top">
+      <input class="note" id="ay-buscar" type="search" placeholder="Buscar en la ayuda (p. ej. «puntuación», «FVG», «copia»)" aria-label="Buscar en la ayuda" autocomplete="off">
+      <button class="btn small" type="button" id="ay-imprimir">Imprimir o guardar en PDF</button>
+    </div>
+    <div class="ay-layout">
+      <nav class="ay-toc card" id="ay-toc" aria-label="Índice de la ayuda"></nav>
+      <article class="ay-body card" id="ay-body" data-noi18n><p class="muted">Cargando la guía…</p></article>
+    </div>
+  </div>
   <div id="view-ajustes" hidden>
     <div class="grid">
       <section class="card">
@@ -1587,6 +1732,26 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
       <p class="small">Pásale a Claude la captura con tu análisis y tus condiciones. Las comprueba con las velas reales y, cuando le des el visto bueno, crea aquí un plan <b>pendiente</b>. Nada se opera hasta que lo confirmas tú. Un plan activo no se edita y cancelarlo pide <span id="pl-espera">5</span> minutos de espera.</p>
       <p class="small muted" id="pl-bots" style="margin-top:6px"></p>
     </section>
+    <section class="card" style="margin-top:14px" id="gx-card">
+      <div class="card-head"><h2>Gráfico de análisis</h2><span class="small muted" id="gx-info"></span></div>
+      <div class="gx-bar">
+        <select id="gx-sym" aria-label="Instrumento"></select><select id="gx-tf" aria-label="Temporalidad"></select>
+        <div class="gx-tools" role="toolbar" aria-label="Herramientas de dibujo">
+          <button class="btn small on" type="button" data-gx="cursor">Mover</button>
+          <button class="btn small" type="button" data-gx="nivel">Nivel</button>
+          <button class="btn small" type="button" data-gx="zona">Zona</button>
+          <button class="btn small" type="button" data-gx="tendencia">Tendencia</button>
+          <button class="btn small" type="button" data-gx="largo">▲ Largo</button>
+          <button class="btn small" type="button" data-gx="corto">▼ Corto</button>
+          <select id="gx-rol" aria-label="Papel del dibujo" hidden></select>
+          <button class="btn small" type="button" id="gx-fvg">Marcar FVG</button>
+          <button class="btn primary small" type="button" id="gx-plan">Crear plan desde el gráfico</button>
+        </div>
+      </div>
+      <div class="gx-wrap" id="gx-wrap"><div id="gx-chart"></div><canvas id="gx-cv"></canvas><div class="gx-hint" id="gx-hint" hidden></div></div>
+      <ul class="rows" id="gx-list"></ul>
+      <p class="small muted" style="margin-top:8px">Marca tu análisis con las velas reales de MFP: niveles de entrada, stop y objetivos, zonas FVG u order blocks y tendencias. Se guarda en la Raspberry y Claude lo lee con SMT («revisa lo que he marcado en BTC»). Los planes vivos se ven en línea discontinua.</p>
+    </section>
     <div class="row" style="margin-top:14px"><select id="pl-filtro" aria-label="Filtrar planes" style="width:auto"><option value="vivos">Pendientes y activos</option><option value="">Todos</option><option value="cerrados">Terminados</option></select>
       <button class="btn primary" type="button" id="b-pl-nuevo">Plan a mano</button></div>
     <section class="card" id="pl-edit" hidden style="margin-top:14px">
@@ -1658,6 +1823,34 @@ button.sb-label{width:100%;border:0;background:none;font-family:inherit;cursor:d
   </div>
   <footer id="foot"></footer>
 </main>
+<div class="tv bd" id="bd" hidden role="dialog" aria-modal="true" aria-labelledby="bd-t">
+  <div class="tv-box bd-box">
+    <div class="tv-head">
+      <div><h2 id="bd-t">Desglose por estrategia</h2><div class="small muted" id="bd-sub"></div></div>
+      <div class="tv-nav">
+        <button class="btn small" type="button" id="bd-json" title="Para el script del portátil (analizar_estrategias.py)">Descargar datos</button>
+        <button class="btn small" type="button" id="bd-close" aria-label="Cerrar" title="Cerrar (Esc)">✕</button>
+      </div>
+    </div>
+    <div class="bd-body" id="bd-body">
+      <section><h3>Comparación</h3><div class="tbl" id="bd-tabla"></div></section>
+      <section><h3>Curva de cada estrategia</h3><div class="bd-eq" id="bd-eq"></div><div class="bd-ley" id="bd-ley-eq"></div></section>
+      <section><h3>Cuándo da señal cada estrategia</h3>
+        <div class="tv-tools bd-tl-tools">
+          <button class="btn small" type="button" data-bd-rango="0">Todo</button>
+          <button class="btn small" type="button" data-bd-rango="14">Últimos 14 días</button>
+          <button class="btn small" type="button" data-bd-rango="3">Últimos 3 días</button>
+          <span class="small muted hint">Arrastra para moverte · rueda para el zoom · toca una marca para ver qué pasó</span>
+        </div>
+        <div class="bd-tl" id="bd-tl"><canvas id="cv-bd" aria-label="Línea de tiempo de señales y operaciones por estrategia"></canvas><div class="tv-tip" id="bd-tip" hidden></div></div>
+        <div class="bd-ley" id="bd-ley-tl"></div>
+        <p class="small muted" id="bd-coinc"></p></section>
+      <section><h3>Cómo se pisan</h3><div class="tbl" id="bd-pisan"></div>
+        <p class="small muted">Cada fila es la estrategia que dio la señal; cada columna, la que tenía la operación abierta y la bloqueó.</p></section>
+      <div id="bd-fichas"></div>
+    </div>
+  </div>
+</div>
 <div class="tv" id="tv" hidden role="dialog" aria-modal="true" aria-labelledby="tv-t">
   <div class="tv-box">
     <div class="tv-head">
@@ -1815,12 +2008,14 @@ function empty(cv, msg) { cv.x.fillStyle = css("--muted"); cv.x.textAlign = "cen
 function drawPrice() {
   const cv = canvas("cv-price"), {x, w, h} = cv, data = S.chart || [];
   if (data.length < 5) return empty(cv, "Esperando velas…");
-  const pos = S.position, padR = 58, padT = 8, padB = 18, cw = w - padR;
+  const pos = S.position, padT = 8, padB = 18;
   let lo = Infinity, hi = -Infinity;
   const meta = S.lineas || [];
   data.forEach(d => { lo = Math.min(lo, d.l); hi = Math.max(hi, d.h); meta.forEach(m => { const v = d.v && d.v[m.key]; if (v !== undefined && v !== null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }); });
   if (pos) [pos.sl, pos.tp].forEach(v => { if (v !== null && v !== undefined) { lo = Math.min(lo, v); hi = Math.max(hi, v); } });
   const pad = (hi - lo) * .04; lo -= pad; hi += pad;
+  // el eje de precios a la derecha, tan ancho como su etiqueta más larga (BTC necesita más que el oro)
+  const padR = Math.max(58, Math.ceil(Math.max(...[0, 1, 2, 3, 4].map(k => x.measureText(fp(lo + (hi - lo) * k / 4)).width))) + 12), cw = w - padR;
   const Y = v => padT + (hi - v) / (hi - lo) * (h - padT - padB);
   const step = cw / data.length, X = i => i * step + step / 2;
   x.strokeStyle = css("--rule"); x.lineWidth = 1; x.fillStyle = css("--muted"); x.textAlign = "left";
@@ -1951,7 +2146,7 @@ function renderPanel() {
   const p = s.position;
   if (p) {
     const tpTxt = p.tp === null || p.tp === undefined ? "–" : fp(p.tp);
-    $("pos").innerHTML = `<p style="margin-bottom:10px"><span class="side ${p.side}">${p.side}</span> <b class="${cls(p.unreal_r)}" id="pos-unreal" style="font-size:1.3rem;margin-left:6px">${sgn(p.unreal_r)} R</b> <span class="muted small" id="pos-note">sin cerrar${p.be ? " · stop en break-even" : ""}${p.trail_moved ? " · trailing activo" : ""}${p.ext_n ? " · " + p.ext_n + " ampliación" + (p.ext_n > 1 ? "es" : "") : ""}</span></p>
+    $("pos").innerHTML = `<p style="margin-bottom:10px"><span class="side ${p.side}">${p.side}</span> <b class="${cls(p.unreal_r)}" id="pos-unreal" style="font-size:1.3rem;margin-left:6px">${sgn(p.unreal_r)} R</b> <span class="muted small" id="pos-note">sin cerrar${p.be ? " · stop en break-even" : ""}${p.trail_moved ? " · trailing activo" : ""}${p.ext_n ? " · " + (p.ext_n > 1 ? p.ext_n + " ampliaciones" : "1 ampliación") : ""}</span></p>
       <div class="pos"><div><span>Entrada</span><b>${fp(p.entry)}</b></div><div><span>Stop${p.be ? " (BE)" : ""}</span><b class="loss">${fp(p.sl)}</b></div><div><span>Objetivo${p.modo_tp === "dinamico" ? " (dinámico)" : ""}</span><b class="gain">${tpTxt}</b></div>
       ${p.part ? `<div><span>Vendido</span><b>${fmt(p.part[0] * 100, 0)} % a ${fp(p.part[1])}</b></div>` : ""}${p.asegurado_r != null ? `<div><span>Asegurado</span><b class="${cls(p.asegurado_r)}">${sgn(p.asegurado_r)} R</b></div>` : ""}${p.si_stop_r != null ? `<div><span>Si salta el stop</span><b class="${cls(p.si_stop_r)}">${sgn(p.si_stop_r)} R</b></div>` : ""}<div><span>Abierta</span><b>${tloc(p.t_open)}</b></div><div><span>Velas</span><b>${p.bars}</b></div></div>`;
     $("pos-age").textContent = ago(p.t_open);
@@ -2012,7 +2207,7 @@ function renderLog() {
   if (!S) return;
   const items = logFilter === "events"
     ? S.events.map(e => ({t: e.t, level: ["bot_detenido", "limite_estrategia", "configuracion"].includes(e.kind) ? "warn" : "info",
-        msg: `${e.kind.replace(/_/g, " ")}${e.side ? " " + e.side : ""}${e.price !== "" && e.price !== undefined ? " @ " + fp(+e.price) : ""}${e.r !== "" && e.r !== undefined ? " " + sgn(+e.r) + "R" : ""}${e.info ? " · " + e.info : ""}`}))
+        msg: `${TR(EV_NOM[e.kind] || e.kind.replace(/_/g, " "))}${e.side ? " " + e.side : ""}${e.price !== "" && e.price !== undefined ? " @ " + fp(+e.price) : ""}${e.r !== "" && e.r !== undefined ? " " + sgn(+e.r) + "R" : ""}${e.info ? " · " + evInfo(e.info) : ""}`}))
     : S.log;
   $("log").innerHTML = items.length ? items.map(i => `<li class="${i.level}"><time>${tloc(i.t, true)}</time><span>${esc(i.msg)}</span></li>`).join("") : `<li><span class="muted">Sin actividad todavía.</span></li>`;
 }
@@ -2053,19 +2248,49 @@ async function control(action, ask) {
 /* ---------- configuración ---------- */
 let BUILT_FOR = null;
 const STR = id => CFG.estrategias[id] || CFG.estrategias[CFG.default_strategy] || Object.values(CFG.estrategias)[0];
-const SCH = () => STR(FORM.estrategia).schema;
-const DEF = () => STR(FORM.estrategia).defaults;
+const GRUPO_TFDIR = "Temporalidad y dirección", PROPIOS_PRINCIPAL = ["tf_principal", "direction"];
+function STRX(sid, comb) {   // la estrategia del formulario junto con las combinadas (mismo criterio que el núcleo)
+  sid = sid || FORM.estrategia; comb = (comb === undefined ? FORM.combinar : comb) || [];
+  comb = comb.filter(x => x !== sid && CFG.estrategias[x]);
+  const base = STR(sid); if (!comb.length) return base;
+  const key = base.id + "|" + comb.join(","); if (STRX._k === key) return STRX._v;
+  const lastOwn = base.schema.map(f => f.common ? 0 : 1).lastIndexOf(1);
+  const ins = [], keys = new Set(base.schema.map(f => f.key)), defaults = Object.assign({}, base.defaults);
+  let reload = [...base.reload_keys];
+  const tfp = base.schema.find(f => f.key === "tf_principal"), dirf = base.schema.find(f => f.key === "direction");
+  comb.forEach(x => { const st = CFG.estrategias[x], pk = k => x + "__" + k;   // mismo nombre interno que el núcleo (clave_sub)
+    const own = new Set(st.schema.filter(f => !f.common).map(f => f.key));
+    const g0 = (st.schema.find(f => !f.common) || {group: "Ajustes"}).group;
+    const gtd = st.nombre + " · " + GRUPO_TFDIR;   // su temporalidad y su dirección (mismo grupo que el núcleo)
+    if (tfp) { ins.push({key: pk("tf_estr"), group: gtd, label: "Temporalidad", type: "select", default: tfp.default,
+      options: tfp.options, help: tfp.help, estrategia: x}); defaults[pk("tf_estr")] = tfp.default; keys.add(pk("tf_estr")); reload.push(pk("tf_estr")); }
+    if (dirf) { ins.push({key: pk("direction"), group: gtd, label: dirf.label, type: "select", default: "ambos",
+      options: dirf.options, help: dirf.help, estrategia: x}); defaults[pk("direction")] = "ambos"; keys.add(pk("direction")); }
+    st.schema.forEach(f => { if (f.common) return; const k = pk(f.key); keys.add(k);
+      const g = Object.assign({}, f, {key: k, group: st.nombre + " · " + f.group, estrategia: x});
+      if (f.show_if) g.show_if = Object.fromEntries(Object.entries(f.show_if).map(([a, v]) => [own.has(a) ? pk(a) : a, v]));
+      ins.push(g); defaults[k] = st.defaults[f.key]; });
+    reload = reload.concat(st.reload_keys.map(k => own.has(k) ? pk(k) : k)); });
+  STRX._k = key;
+  STRX._v = Object.assign({}, base, {schema: base.schema.slice(0, lastOwn + 1).concat(ins, base.schema.slice(lastOwn + 1)), defaults,
+    reload_keys: [...new Set(reload)], nombre: [base.nombre].concat(comb.map(x => CFG.estrategias[x].nombre)).join(" + ")});
+  return STRX._v;
+}
+const formKey = () => FORM.estrategia + "|" + (FORM.combinar || []).join(",");
+const SCH = () => STRX().schema;
+const DEF = () => STRX().defaults;
 const fieldOf = k => SCH().find(f => f.key === k) || Object.values(CFG.estrategias).map(x => x.schema.find(f => f.key === k)).find(Boolean) || {key: k, label: k, type: "text"};
 function fieldOk(f, v) {
   if (v === undefined || v === null) return false;
   if (f.type === "select") return f.options.includes(v);
-  if (f.type === "cuentas") return Array.isArray(v);
+  if (f.type === "cuentas" || f.type === "combinar") return Array.isArray(v);
   if (f.type === "int" || f.type === "float") return typeof v === "number" && !isNaN(v) && (f.min === undefined || v >= f.min) && (f.max === undefined || v <= f.max);
   return true;
 }
 function loadParams(params, keepCommon) {
-  const sid = (params && params.estrategia) || CFG.default_strategy, st = CFG.estrategias[sid];
-  if (!st) { toast(`La estrategia «${sid}» no está instalada`); return false; }
+  const sid = (params && params.estrategia) || CFG.default_strategy;
+  if (!CFG.estrategias[sid]) { toast(`La estrategia «${sid}» no está instalada`); return false; }
+  const st = STRX(sid, (params && params.combinar) || []);
   const out = Object.assign({}, st.defaults);
   st.schema.forEach(f => { const src = keepCommon ? (f.common ? params[f.key] : undefined) : params[f.key]; if (fieldOk(f, src) || (f.type === "symbol" && src)) out[f.key] = src; });
   out.estrategia = sid; FORM = out; fillForm(); return true;
@@ -2073,6 +2298,7 @@ function loadParams(params, keepCommon) {
 let MEMO = {};      // ajustes propios de cada estrategia mientras se cambia de una a otra en el formulario
 function switchStrategy(id) {
   const old = FORM; MEMO[old.estrategia] = Object.assign({}, old);
+  FORM = Object.assign({}, FORM, {combinar: id === "plan_manual" ? [] : (FORM.combinar || []).filter(x => x !== id)});
   const saved = MEMO[id] || (CFG.params && CFG.params.estrategia === id ? CFG.params : null);
   const base = Object.assign({}, STR(id).defaults, saved || {});
   const oldSch = STR(old.estrategia).schema;
@@ -2093,16 +2319,50 @@ function visible(f) {
 }
 const same = (x, y) => (Array.isArray(x) || Array.isArray(y)) ? JSON.stringify(x || []) === JSON.stringify(y || []) : x === y;
 const ctaName = id => ((CFG && CFG.cuentas) || []).find(c => c.id === id)?.nombre || id;
-function showVal(f, v) { if (f.type === "cuentas") return v && v.length ? v.map(ctaName).join(", ") : "la primera de la lista"; return f.type === "bool" ? (v ? "sí" : "no") : f.type === "strategy" ? (CFG.estrategias[v] ? CFG.estrategias[v].nombre : v) : f.type === "float" ? fmt(v, (String(v).split(".")[1] || "").length) : String(v); }
+function showVal(f, v) { if (f.type === "combinar") return v && v.length ? v.map(x => CFG.estrategias[x] ? CFG.estrategias[x].nombre : x).join(", ") : "ninguna"; if (f.type === "cuentas") return v && v.length ? v.map(ctaName).join(", ") : "la primera de la lista"; return f.type === "bool" ? (v ? "sí" : "no") : f.type === "strategy" ? (CFG.estrategias[v] ? CFG.estrategias[v].nombre : v) : f.type === "float" ? fmt(v, (String(v).split(".")[1] || "").length) : String(v); }
 function changedKeys(a, b) { return SCH().filter(f => !same(a[f.key], b[f.key])).map(f => f.key); }
 
-function buildForm() {
+let CFG_TAB = "bot";
+function cfgTabs() {   // pestañas del formulario: los ajustes del bot y los de cada estrategia
+  const main = FORM.estrategia, comb = (FORM.combinar || []).filter(x => CFG.estrategias[x] && x !== main);
+  const tabs = [{id: "bot", name: TR("Bot"), sub: TR("mercado, riesgo, límites, ejecución")},
+    {id: main, name: STR(main).nombre, sub: comb.length ? TR("estrategia principal") : TR("estrategia")}]
+    .concat(comb.map(x => ({id: x, name: CFG.estrategias[x].nombre, sub: TR("estrategia añadida")})));
   const groups = [];
-  BUILT_FOR = FORM.estrategia;
-  SCH().forEach(f => { let g = groups.find(x => x.name === f.group); if (!g) groups.push(g = {name: f.group, fields: []}); g.fields.push(f); });
-  $("cfg-form").innerHTML = groups.map((g, gi) => `<details class="group" data-group="${esc(g.name)}"${gi < 2 ? " open" : ""}>
+  SCH().forEach(f => {
+    const propio = PROPIOS_PRINCIPAL.includes(f.key);   // temporalidad y dirección de la principal: en su pestaña
+    const tab = f.estrategia ? f.estrategia : propio ? main : null;
+    let name = propio ? GRUPO_TFDIR : f.estrategia ? f.group.split(" · ").slice(1).join(" · ") || f.group : f.group;
+    if (name === GRUPO_TFDIR) name = TR(GRUPO_TFDIR);
+    const gkey = (tab || "?") + "|" + name;
+    let g = groups.find(x => x.key === gkey && x.name === name);
+    if (!g) groups.push(g = {key: gkey, name, full: f.group, tab, fields: []});
+    g.fields.push(f);
+  });
+  groups.forEach(g => { if (!g.tab) g.tab = g.fields.some(f => !f.common) ? main : "bot"; });
+  // la temporalidad y la dirección de cada estrategia van las primeras de su pestaña
+  const prim = g => g.name === TR(GRUPO_TFDIR) ? -1 : 0;
+  groups.sort((a, b) => prim(a) - prim(b));
+  return {tabs, groups};
+}
+function cfgTab(id) {
+  CFG_TAB = id;
+  document.querySelectorAll("#cfg-tabs [data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === id ? "true" : "false"));
+  document.querySelectorAll("#cfg-form [data-pane]").forEach(p => p.hidden = p.dataset.pane !== id);
+}
+function buildForm() {
+  BUILT_FOR = formKey();
+  const {tabs, groups} = cfgTabs();
+  if (!tabs.some(t => t.id === CFG_TAB)) CFG_TAB = "bot";
+  const gHtml = (g, gi) => `<details class="group" data-group="${esc(g.full)}"${gi < 2 ? " open" : ""}>
     <summary><span>${esc(g.name)}<span class="badge" data-badge></span></span></summary>
-    <div class="fields">${g.fields.map(fieldHtml).join("")}</div></details>`).join("");
+    <div class="fields">${g.fields.map(fieldHtml).join("")}</div></details>`;
+  $("cfg-form").innerHTML = `<div class="cfg-tabs" id="cfg-tabs" role="tablist">${tabs.map(t => `<button type="button" role="tab" data-tab="${esc(t.id)}" aria-selected="false">
+      <b>${esc(TR(t.name))}</b><small>${esc(t.sub)}</small><span class="badge" data-tbadge></span></button>`).join("")}</div>`
+    + tabs.map(t => `<div data-pane="${esc(t.id)}" role="tabpanel" hidden>${groups.filter(g => g.tab === t.id).map(gHtml).join("")
+      || `<p class="small muted">${esc(TR("Esta estrategia no tiene ajustes propios."))}</p>`}</div>`).join("");
+  $("cfg-form").querySelectorAll("#cfg-tabs [data-tab]").forEach(b => b.onclick = () => cfgTab(b.dataset.tab));
+  cfgTab(CFG_TAB);
   $("cfg-form").querySelectorAll("[data-key]").forEach(el => {
     el.addEventListener(el.type === "checkbox" || el.tagName === "SELECT" || el.tagName === "DIV" ? "change" : "input", () => readField(el));
   });
@@ -2113,6 +2373,7 @@ function fieldHtml(f) {
   const def = `<div class="def" data-def="${f.key}"></div>`;
   if (f.type === "bool") return `<div class="field" data-field="${f.key}"><label class="switch"><input type="checkbox" id="${id}" data-key="${f.key}"> ${esc(f.label)}</label>${help}${def}</div>`;
   if (f.type === "cuentas") return `<div class="field" data-field="${f.key}" style="grid-column:1/-1"><label>${esc(f.label)}</label><div class="chk-list" id="${id}" data-key="${f.key}"></div><div class="help" data-ctahint></div>${help}${def}</div>`;
+  if (f.type === "combinar") return `<div class="field" data-field="${f.key}" style="grid-column:1/-1"><label>${esc(f.label)}</label><div class="chk-list" id="${id}" data-key="${f.key}"></div><div class="help" data-combhint></div>${help}${def}</div>`;
   if (f.type === "symbol") return `<div class="field" data-field="${f.key}"><label for="${id}">${esc(f.label)}</label><select id="${id}" data-key="${f.key}"></select>${help}${def}</div>`;
   if (f.type === "strategy") return `<div class="field" data-field="${f.key}" style="grid-column:1/-1"><label for="${id}">${esc(f.label)}</label><select id="${id}" data-key="${f.key}">${Object.values(CFG.estrategias).map(x => `<option value="${esc(x.id)}">${esc(TR(x.nombre))}${x.version ? " · v" + esc(x.version) : ""}</option>`).join("")}</select><div class="help" data-sdesc></div>${help}${def}</div>`;
   if (f.type === "select") return `<div class="field" data-field="${f.key}"><label for="${id}">${esc(f.label)}</label><select id="${id}" data-key="${f.key}">${f.options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}</select>${help}${def}</div>`;
@@ -2138,21 +2399,34 @@ function cuentasOptions() {
   });
   cuentasHint();
 }
+function combinarOptions() {
+  const el = $("f-combinar"); if (!el) return;
+  const sel = FORM.combinar || [], main = FORM.estrategia;
+  if (main === "plan_manual") { el.innerHTML = `<span class="small muted">${esc(TR("El plan manual va siempre en su propio bot."))}</span>`; return; }
+  const ops = Object.values(CFG.estrategias).filter(x => x.id !== main && x.id !== "plan_manual");
+  el.innerHTML = ops.map(x => `<label><input type="checkbox" data-comb="${esc(x.id)}"${sel.includes(x.id) ? " checked" : ""}${!sel.includes(x.id) && sel.length >= 4 ? " disabled" : ""}> ${esc(TR(x.nombre))}</label>`).join("")
+    || `<span class="small muted">${esc(TR("No hay más estrategias instaladas."))}</span>`;
+  const h = document.querySelector("[data-combhint]");
+  if (h) h.textContent = sel.length ? TR("Sus ajustes aparecen abajo, en un grupo con su nombre. La prioridad la decide la puntuación de cada una (Panel → Rendimiento por estrategia).") : "";
+}
 function cuentasHint() {
   const h = document.querySelector("[data-ctahint]"); if (!h) return;
   const sel = FORM.ex_cuentas || [], d = CFG.cuenta_defecto;
   h.textContent = (!sel.length && d ? `Sin elegir: operará en «${ctaName(d)}». ` : "") + (CFG.ordenes === false ? "El envío de órdenes está desactivado en Cuentas: mientras tanto, en papel." : "");
 }
 function fillForm() {
-  if (BUILT_FOR !== FORM.estrategia) buildForm();
-  symbolOptions(); cuentasOptions();
-  SCH().forEach(f => { const el = $("f-" + f.key); if (!el || f.type === "cuentas") return;
+  if (BUILT_FOR !== formKey()) buildForm();
+  symbolOptions(); cuentasOptions(); combinarOptions();
+  SCH().forEach(f => { const el = $("f-" + f.key); if (!el || f.type === "cuentas" || f.type === "combinar") return;
     if (f.type === "bool") el.checked = !!FORM[f.key]; else el.value = FORM[f.key]; el.classList.remove("bad"); });
   refreshForm();
 }
 function readField(el) {
   const f = fieldOf(el.dataset.key);
   if (f.type === "strategy") { if (el.value !== FORM.estrategia) switchStrategy(el.value); return; }
+  if (f.type === "combinar") { const prev = FORM.combinar || [], now = [...el.querySelectorAll("input:checked")].map(x => x.dataset.comb);
+    const comb = prev.filter(x => now.includes(x)).concat(now.filter(x => !prev.includes(x))).slice(0, 4);
+    const y = window.scrollY; loadParams(Object.assign({}, FORM, {combinar: comb})); window.scrollTo(0, y); return; }
   if (f.type === "cuentas") { FORM[f.key] = [...el.querySelectorAll("input:checked")].map(x => x.dataset.cta); cuentasHint(); }
   else if (f.type === "bool") FORM[f.key] = el.checked;
   else if (f.type === "select" || f.type === "symbol") FORM[f.key] = el.value;
@@ -2165,17 +2439,25 @@ function refreshForm() {
   SCH().forEach(f => {
     const box = document.querySelector(`[data-field="${f.key}"]`); if (!box) return;
     box.hidden = !visible(f); box.classList.toggle("changed", ch.includes(f.key));
-    box.querySelector("[data-def]").textContent = f.type !== "strategy" && f.type !== "cuentas" && !same(FORM[f.key], D[f.key]) ? `por defecto: ${showVal(f, D[f.key])}` : "";
+    box.querySelector("[data-def]").textContent = f.type !== "strategy" && f.type !== "cuentas" && f.type !== "combinar" && !same(FORM[f.key], D[f.key]) ? `por defecto: ${showVal(f, D[f.key])}` : "";
   });
   const sd = document.querySelector("[data-sdesc]"); if (sd) sd.textContent = STR(FORM.estrategia).descripcion || "";
+  const cbf = document.querySelector('[data-field="combinar"]'); if (cbf && FORM.estrategia === "plan_manual" && !(FORM.combinar || []).length) cbf.hidden = true;
+  const tpf = document.querySelector('[data-field="tf_principal"]'); if (tpf && !(FORM.combinar || []).length && FORM.tf_principal === "la del bot") tpf.hidden = true;
+  document.querySelectorAll("#cfg-form details.group").forEach(d => { d.hidden = ![...d.querySelectorAll("[data-field]")].some(x => !x.hidden); });
   document.querySelectorAll("#cfg-form details.group").forEach(d => {
-    const n = SCH().filter(f => f.group === d.dataset.group && ch.includes(f.key)).length;
+    const n = [...d.querySelectorAll("[data-field]")].filter(x => ch.includes(x.dataset.field)).length;
     d.querySelector("[data-badge]").textContent = n ? `${n} cambio${n > 1 ? "s" : ""}` : "";
   });
+  document.querySelectorAll("#cfg-tabs [data-tab]").forEach(b => {
+    const pane = document.querySelector(`#cfg-form [data-pane="${CSS.escape(b.dataset.tab)}"]`);
+    const n = pane ? [...pane.querySelectorAll("[data-field]")].filter(x => ch.includes(x.dataset.field)).length : 0;
+    b.querySelector("[data-tbadge]").textContent = n || "";
+  });
   const labels = ch.map(k => fieldOf(k).label);
-  $("cfg-changes").textContent = isNew ? `${STR(FORM.estrategia).nombre} · ${FORM.symbol} ${FORM.timeframe}` : ch.length ? `${ch.length} cambio${ch.length > 1 ? "s" : ""} sin guardar` : "Sin cambios";
+  $("cfg-changes").textContent = isNew ? `${STRX().nombre} · ${FORM.symbol} ${FORM.timeframe}` : ch.length ? `${ch.length} cambio${ch.length > 1 ? "s" : ""} sin guardar` : "Sin cambios";
   $("b-save").disabled = !ch.length && !isNew; $("b-revert").disabled = !ch.length;
-  const reload = ch.filter(k => STR(FORM.estrategia).reload_keys.includes(k)), mk = CFG.market_keys || ["estrategia", "symbol", "timeframe"];
+  const reload = ch.filter(k => STRX().reload_keys.includes(k)), mk = CFG.market_keys || ["estrategia", "symbol", "timeframe"];
   let info = isNew ? "<b>Bot nuevo.</b> Elige el instrumento y los ajustes, pruébalos en el histórico y pulsa «Lanzar». Los demás bots no se tocan."
     : `Configuración activa de este bot: <b>nº ${CFG.id}</b>. Los cambios se aplican al momento al pulsar «Guardar y aplicar», sin reiniciar.`;
   if (isNew) {}
@@ -2185,7 +2467,9 @@ function refreshForm() {
   $("cfg-info").innerHTML = info;
   showErrors([]);
 }
-function showErrors(errs) { const ul = $("cfg-errors"); ul.innerHTML = errs.map(e => `<li>${esc(e)}</li>`).join(""); ul.hidden = !errs.length; }
+function showErrors(errs) { const ul = $("cfg-errors"); ul.innerHTML = errs.map(e => `<li>${esc(e)}</li>`).join(""); ul.hidden = !errs.length;
+  const bad = document.querySelector("#cfg-form .bad"), pane = bad && bad.closest("[data-pane]");     // lleva a la pestaña del primer error
+  if (pane && pane.hidden) cfgTab(pane.dataset.pane); }
 
 async function loadConfig(keepForm) {
   const key = VIEW.kind === "nuevo" ? "nuevo" : "b" + VIEW.id;
@@ -2228,6 +2512,742 @@ async function loadInstrumentos() {
     renderInstr();
   } catch (e) { toast("Sin conexión con la Raspberry", "error"); }
 }
+/* ---------- Análisis: gráficos de TradingView ---------- */
+let TVM = null, ANA_SYM = null, ANA_KEY = "";
+try { ANA_SYM = localStorage.getItem("kq_ana_sym"); const tf = localStorage.getItem("kq_ana_tf"); if (tf) $("ana-tf").value = tf; } catch (e) {}
+$("b-tv").onclick = () => { if (S && S.symbol) ANA_SYM = S.symbol; };
+async function loadAnalisis() {
+  try { const r = await fetch("/api/tradingview", {cache: "no-store"}); if (!r.ok) return; TVM = (await r.json()).instrumentos || []; } catch (e) { return; }
+  const sel = $("ana-sym");
+  sel.innerHTML = TVM.map(i => `<option value="${esc(i.symbol)}">${esc(i.symbol)}</option>`).join("");
+  if (ANA_SYM && TVM.some(i => i.symbol === ANA_SYM)) sel.value = ANA_SYM;
+  renderTvm(); anaDraw(true);
+}
+function tvTema() {   // si el texto del panel es claro, el tema es oscuro
+  const el = document.createElement("span"); el.style.color = css("--ink"); document.body.appendChild(el);
+  const c = (getComputedStyle(el).color.match(/\d+/g) || [0, 0, 0]).map(Number); el.remove();
+  return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) > 140 ? "dark" : "light";
+}
+function anaDraw(force) {
+  if (!TVM || !TVM.length) { $("ana-chart").innerHTML = `<p class="small muted" style="padding:16px">${esc(TR("No hay instrumentos."))}</p>`; return; }
+  const sym = $("ana-sym").value, it = TVM.find(i => i.symbol === sym) || TVM[0], tf = $("ana-tf").value;
+  ANA_SYM = it.symbol; try { localStorage.setItem("kq_ana_sym", ANA_SYM); localStorage.setItem("kq_ana_tf", tf); } catch (e) {}
+  $("ana-tv").textContent = it.tv || "";
+  $("ana-ok").textContent = TR(!it.tv ? "SIN SÍMBOLO" : it.propio ? "ELEGIDO POR TI" : it.exacto ? "MISMO MERCADO" : "APROXIMADO");
+  $("ana-open").href = it.tv ? "https://www.tradingview.com/chart/?symbol=" + encodeURIComponent(it.tv) : "https://www.tradingview.com/";
+  const key = [it.tv, tf, tvTema(), document.documentElement.lang].join("|");
+  if (!force && key === ANA_KEY) return; ANA_KEY = key;
+  const box = $("ana-chart");
+  if (!it.tv) { box.innerHTML = `<p class="small muted" style="padding:16px">${esc(TR("Este instrumento no tiene equivalente en TradingView. Escribe uno abajo."))}</p>`; return; }
+  box.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget" style="height:100%"></div></div>';
+  const sc = document.createElement("script");
+  sc.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"; sc.async = true;
+  let tz = "Etc/UTC"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch (e) {}
+  sc.textContent = JSON.stringify({autosize: true, symbol: it.tv, interval: tf, timezone: tz, theme: tvTema(), style: "1",
+    locale: document.documentElement.lang || "es", allow_symbol_change: true, withdateranges: true, save_image: true,
+    hide_side_toolbar: false, calendar: false, support_host: "https://www.tradingview.com"});
+  box.firstChild.appendChild(sc);
+}
+function renderTvm() {
+  $("tvm-list").innerHTML = TVM.map(i => `<li class="tvm"><div class="what"><b>${esc(i.symbol)}</b>
+      <div class="nums">${esc(i.provider || "–")} · ${esc(i.coin || "–")} · ${esc(TR(i.propio ? "elegido por ti" : i.exacto ? "automático, mismo mercado" : i.auto ? "automático, aproximado" : "sin equivalente"))}</div></div>
+    <input class="note" data-tvm="${esc(i.symbol)}" value="${esc(i.propio ? i.tv : "")}" placeholder="${esc(i.auto || "BINANCE:XXXUSDT.P")}" aria-label="${esc(TR("Símbolo de TradingView"))}" autocomplete="off" spellcheck="false">
+    <button class="btn small" type="button" data-tvms="${esc(i.symbol)}">${esc(TR("Guardar"))}</button></li>`).join("");
+  $("tvm-list").querySelectorAll("[data-tvms]").forEach(b => b.onclick = async () => {
+    const sym = b.dataset.tvms, inp = $("tvm-list").querySelector(`[data-tvm="${CSS.escape(sym)}"]`);
+    const j = await post("/api/tradingview", {symbol: sym, tv: inp.value});
+    if (!j.ok) return toast((j.errors || [TR("No se pudo")])[0], "error");
+    TVM = j.instrumentos; toast(TR(inp.value.trim() ? "Símbolo guardado" : "Vuelve al automático")); renderTvm(); anaDraw(true);
+  });
+}
+$("ana-sym").onchange = () => anaDraw(); $("ana-tf").onchange = () => anaDraw();
+
+/* ---------- gráfico de análisis (Planes): velas de MFP + dibujos ---------- */
+const GX = {chart: null, series: null, data: [], T: [], sym: null, tf: "15m", tfMs: 900000, objs: [], sel: null, tool: "cursor",
+  draft: null, drag: null, saveT: null, raf: 0, roles: null, rol: {nivel: "entrada", zona: "fvg_alcista", tendencia: ""}, lib: null, symLoaded: null, n: 0};
+const GX_TFS = ["1m", "5m", "15m", "30m", "1h", "4h", "1d"];
+const GX_COL = {entrada: "--gold", stop: "--loss", tp1: "--gain", tp: "--gain", invalidacion: "--purple", nivel: "--blue",
+  fvg_alcista: "--gain", fvg_bajista: "--loss", ob_alcista: "--blue", ob_bajista: "--purple", liquidez: "--warn", zona: "--muted", tendencia: "--ink"};
+const GX_HINT = {largo: "Toca el precio de entrada", corto: "Toca el precio de entrada", nivel: "Toca el precio donde va el nivel", zona: "Arrastra de una esquina a la otra (o toca las dos esquinas)", tendencia: "Arrastra de un punto al otro (o toca los dos puntos)"};
+const gxCol = k => css(GX_COL[k] || "--muted") || "#888";
+const gxLt = ms => ms / 1000 - new Date(ms).getTimezoneOffset() * 60;   // hora local en el eje
+function gxLib() {
+  if (window.LightweightCharts) return Promise.resolve();
+  if (!GX.lib) GX.lib = new Promise((ok, ko) => { const sc = document.createElement("script"); sc.src = "/vendor/lightweight-charts.js"; sc.onload = ok; sc.onerror = ko; document.head.appendChild(sc); });
+  return GX.lib;
+}
+async function gxStart() {
+  try { await gxLib(); } catch (e) { $("gx-info").textContent = TR("No se pudo cargar el gráfico"); return; }
+  if (!GX.chart) gxInit();
+  gxColors();
+  if (!GX.roles) { try { const j = await (await fetch("/api/dibujos?simbolo=", {cache: "no-store"})).json(); GX.roles = {nivel: j.roles_nivel, zona: j.roles_zona}; } catch (e) { GX.roles = {nivel: {}, zona: {}}; } }
+  let inst = []; try { inst = (await (await fetch("/api/tradingview", {cache: "no-store"})).json()).instrumentos.map(i => i.symbol); } catch (e) {}
+  const prev = $("gx-sym").value;
+  $("gx-sym").innerHTML = inst.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  $("gx-tf").innerHTML = GX_TFS.map(x => `<option value="${x}">${x}</option>`).join("");
+  let sym = prev, tf = GX.tf; try { sym = sym || localStorage.getItem("kq_gx_sym"); tf = localStorage.getItem("kq_gx_tf") || tf; } catch (e) {}
+  if (!inst.includes(sym)) sym = PLN && PLN.bots[0] && inst.includes(PLN.bots[0].symbol) ? PLN.bots[0].symbol : inst[0];
+  if (!sym) return;
+  $("gx-sym").value = sym; $("gx-tf").value = GX_TFS.includes(tf) ? tf : "15m";
+  await gxLoad(sym !== GX.symLoaded);
+  gxLoop();
+}
+function gxInit() {
+  const L = LightweightCharts;
+  GX.chart = L.createChart($("gx-chart"), {autoSize: true, layout: {background: {type: "solid", color: "transparent"}, attributionLogo: true},
+    timeScale: {timeVisible: true, secondsVisible: false, rightOffset: 12}, crosshair: {mode: L.CrosshairMode.Normal},
+    localization: {locale: LOCALE()}});
+  GX.series = GX.chart.addSeries(L.CandlestickSeries, {borderVisible: false, priceLineVisible: true});
+  const w = $("gx-wrap"), opt = {capture: true, passive: false};
+  w.addEventListener("mousedown", gxDown, opt); w.addEventListener("touchstart", gxDown, opt);
+  w.addEventListener("mousemove", gxHover, true);
+  window.addEventListener("mousemove", gxMove, {passive: false}); window.addEventListener("touchmove", gxMove, {passive: false});
+  window.addEventListener("mouseup", gxUp); window.addEventListener("touchend", gxUp); window.addEventListener("touchcancel", gxUp);
+  document.addEventListener("keydown", e => {
+    if (VIEW.kind !== "planes" || /INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) return;
+    if (e.key === "Escape") { GX.draft = null; gxTool("cursor"); }
+    if ((e.key === "Delete" || e.key === "Backspace") && GX.sel) { e.preventDefault(); gxDel(GX.sel); }
+  });
+}
+function gxColors() {
+  if (!GX.chart) return;
+  const ink = css("--muted"), rule = css("--rule");
+  GX.chart.applyOptions({layout: {textColor: ink, fontFamily: css("--font")}, grid: {vertLines: {color: rule}, horzLines: {color: rule}},
+    rightPriceScale: {borderColor: rule}, timeScale: {borderColor: rule}, localization: {locale: LOCALE()}});
+  GX.series.applyOptions({upColor: css("--gain"), downColor: css("--loss"), wickUpColor: css("--gain"), wickDownColor: css("--loss")});
+}
+async function gxLoad(dibujos) {
+  const sym = $("gx-sym").value, tf = $("gx-tf").value;
+  try { localStorage.setItem("kq_gx_sym", sym); localStorage.setItem("kq_gx_tf", tf); } catch (e) {}
+  $("gx-info").textContent = TR("Cargando velas…");
+  try {
+    const j = await (await fetch(`/api/velas?simbolo=${encodeURIComponent(sym)}&tf=${tf}&n=600`, {cache: "no-store"})).json();
+    if (!j.ok) throw new Error((j.errors || [""])[0]);
+    GX.sym = sym; GX.tf = tf; GX.tfMs = j.tf_ms; GX.data = j.velas.map(c => ({t: c[0], o: c[1], h: c[2], l: c[3], c: c[4]}));
+    GX.T = GX.data.map(d => d.t);
+    const last = GX.data.length ? GX.data[GX.data.length - 1].c : 1, pr = last >= 1000 ? 2 : last >= 10 ? 3 : last >= 1 ? 4 : 6;
+    GX.pr = pr; GX.series.applyOptions({priceFormat: {type: "price", precision: pr, minMove: Math.pow(10, -pr)}});
+    GX.series.setData(GX.data.map(d => ({time: gxLt(d.t), open: d.o, high: d.h, low: d.l, close: d.c})));
+    if (GX.n !== GX.data.length || dibujos) GX.chart.timeScale().setVisibleLogicalRange({from: Math.max(0, GX.data.length - 140), to: GX.data.length + 10});
+    GX.n = GX.data.length;
+    $("gx-info").textContent = `${sym} · ${tf} · ${TR("velas de MFP")}`;
+  } catch (e) { $("gx-info").textContent = TR("No se pudieron leer las velas") + (e.message ? ": " + e.message : ""); return; }
+  if (dibujos) {
+    try { const j = await (await fetch("/api/dibujos?simbolo=" + encodeURIComponent(sym), {cache: "no-store"})).json(); GX.objs = j.objetos || []; GX.symLoaded = sym; }
+    catch (e) { GX.objs = []; }
+    GX.sel = null; gxList();
+  }
+  gxFvgBtn();
+}
+async function gxTick() {   // velas nuevas cada 15 s mientras se ve la página
+  if (!GX.chart || VIEW.kind !== "planes" || document.hidden || !GX.sym) return;
+  try {
+    const j = await (await fetch(`/api/velas?simbolo=${encodeURIComponent(GX.sym)}&tf=${GX.tf}&n=50`, {cache: "no-store"})).json();
+    if (!j.ok || j.tf !== GX.tf) return;
+    const lastT = GX.T[GX.T.length - 1] || 0;
+    j.velas.forEach(c => { if (c[0] < lastT) return; const d = {t: c[0], o: c[1], h: c[2], l: c[3], c: c[4]};
+      if (c[0] === lastT) GX.data[GX.data.length - 1] = d; else { GX.data.push(d); GX.T.push(d.t); }
+      GX.series.update({time: gxLt(d.t), open: d.o, high: d.h, low: d.l, close: d.c}); });
+  } catch (e) {}
+}
+setInterval(gxTick, 15000);
+/* coordenadas: tiempo (ms UTC) <-> posición lógica <-> píxel */
+function gxLg(t) { const T = GX.T, n = T.length; if (!n) return 0;
+  if (t <= T[0]) return (t - T[0]) / GX.tfMs; if (t >= T[n - 1]) return n - 1 + (t - T[n - 1]) / GX.tfMs;
+  let lo = 0, hi = n - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (T[m] <= t) lo = m; else hi = m; }
+  return lo + (t - T[lo]) / (T[lo + 1] - T[lo]); }
+function gxTl(lg) { const T = GX.T, n = T.length, i = Math.floor(lg); if (!n) return 0;
+  if (i < 0) return T[0] + lg * GX.tfMs; if (i >= n - 1) return T[n - 1] + (lg - (n - 1)) * GX.tfMs; return T[i] + (lg - i) * (T[i + 1] - T[i]); }
+const gxX = t => { const x = GX.chart.timeScale().logicalToCoordinate(gxLg(t)); return x == null ? null : x; };
+const gxY = p => { const y = GX.series.priceToCoordinate(p); return y == null ? null : y; };
+const gxP = y => GX.series.coordinateToPrice(y);
+const gxT = (x, snap) => { const lg = GX.chart.timeScale().coordinateToLogical(x); return lg == null ? null : gxTl(snap ? Math.round(lg) : lg); };
+const gxFmt = v => Number(v).toLocaleString(LOCALE(), {maximumFractionDigits: v >= 1000 ? 2 : v >= 1 ? 4 : 6});
+function gxPosInfo(o) {
+  const s = o.lado === "corto" ? -1 : 1, dist = Math.abs(o.entrada - o.stop);
+  const b = ((PLN && PLN.bots) || []).find(b => b.symbol === GX.sym && b.tf === GX.tf) || ((PLN && PLN.bots) || []).find(b => b.symbol === GX.sym);
+  const riesgoRef = o.riesgo > 0 ? o.riesgo : (b && b.riesgo) || 100;
+  const c = o.tamano > 0 ? o.tamano : dist ? riesgoRef / dist : 0, pnl = v => (v - o.entrada) * s * c;
+  return {s, c, dist, riesgo: c * dist, gana: pnl(o.tp), g1: o.tp1 != null ? pnl(o.tp1) : null,
+    rr: dist ? (o.tp - o.entrada) * s / dist : 0, pct: v => (v - o.entrada) / o.entrada * 100, ok: (o.entrada - o.stop) * s > 0 && (o.tp - o.entrada) * s > 0};
+}
+const gxUsd = v => (v >= 0 ? "+" : "−") + fmt(Math.abs(v), 2) + " $";
+const gxPct = v => (v >= 0 ? "+" : "−") + fmt(Math.abs(v), 2) + " %";
+function gxName(o) { return o.tipo === "tendencia" ? TR("Tendencia") : TR(((GX.roles || {})[o.tipo] || {})[o.rol] || o.rol); }
+/* dibujo */
+function gxLoop() { if (GX.raf) return; const f = () => { if (VIEW.kind !== "planes" || !GX.chart) { GX.raf = 0; return; } gxDraw(); GX.raf = requestAnimationFrame(f); }; GX.raf = requestAnimationFrame(f); }
+function gxDraw() {
+  const cv = $("gx-cv"), r = $("gx-wrap").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+  const x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, r.width, r.height);
+  if (!GX.T.length) return;
+  const ps = GX.chart.paneSize(), pw = ps.width, ph = ps.height, font = css("--font");
+  x.save(); x.beginPath(); x.rect(0, 0, pw, ph); x.clip(); x.textBaseline = "middle";
+  const tag = (txt, tx, ty, col, align) => { x.font = "600 11px " + font; const w = x.measureText(txt).width + 10;
+    const lx = Math.max(2, Math.min(align === "right" ? tx - w : tx, pw - w - 2));   // siempre dentro del gráfico x.globalAlpha = .9; x.fillStyle = css("--panel"); x.fillRect(lx, ty - 9, w, 18);
+    x.globalAlpha = 1; x.fillStyle = col; x.textAlign = "left"; x.fillText(txt, lx + 5, ty); };
+  const objs = GX.objs.concat(GX.draft ? [GX.draft] : []);
+  objs.filter(o => o.tipo === "zona").forEach(o => {
+    const x1 = gxX(o.t1), x2 = o.t2 == null ? pw : gxX(o.t2), y1 = gxY(o.p1), y2 = gxY(o.p2); if ([x1, x2, y1, y2].includes(null)) return;
+    const c = gxCol(o.rol), sel = GX.sel === o.id || o === GX.draft, L = Math.min(x1, x2), R = Math.max(x1, x2), Tp = Math.min(y1, y2), B = Math.max(y1, y2);
+    x.globalAlpha = sel ? .26 : .16; x.fillStyle = c; x.fillRect(L, Tp, R - L, B - Tp);
+    x.globalAlpha = sel ? 1 : .7; x.strokeStyle = c; x.lineWidth = sel ? 1.6 : 1; x.setLineDash(o.auto ? [4, 3] : []); x.strokeRect(L, Tp, R - L, B - Tp); x.setLineDash([]); x.globalAlpha = 1;
+    if (o !== GX.draft && (sel || !o.auto || B - Tp >= 16)) tag(gxName(o) + (o.tf ? " · " + o.tf : "") + (o.texto ? " · " + o.texto : ""), Math.max(L, 2) + 2, Tp + 11, c);
+    if (sel) [[L, Tp], [R, Tp], [L, B], [R, B]].forEach(([a, b]) => { x.fillStyle = css("--panel"); x.strokeStyle = c; x.beginPath(); x.arc(a, b, 4.5, 0, 7); x.fill(); x.stroke(); });
+  });
+  objs.filter(o => o.tipo === "posicion").forEach(o => {
+    let L = gxX(o.t1), R = gxX(o.t2); const ye = gxY(o.entrada), yt = gxY(o.tp), ys = gxY(o.stop);
+    if ([L, R, ye, yt, ys].includes(null)) return; if (R < L) [L, R] = [R, L];
+    const I = gxPosInfo(o), sel = GX.sel === o.id, g = css("--gain"), l = css("--loss"), ink = css("--ink");
+    x.globalAlpha = sel ? .26 : .17; x.fillStyle = g; x.fillRect(L, Math.min(ye, yt), R - L, Math.abs(yt - ye));
+    x.fillStyle = l; x.fillRect(L, Math.min(ye, ys), R - L, Math.abs(ys - ye)); x.globalAlpha = 1;
+    const line = (y, c, w, dash) => { x.strokeStyle = c; x.lineWidth = w; x.setLineDash(dash || []); x.beginPath(); x.moveTo(L, y); x.lineTo(R, y); x.stroke(); x.setLineDash([]); };
+    line(yt, g, sel ? 2 : 1.4); line(ys, l, sel ? 2 : 1.4); line(ye, ink, sel ? 2 : 1.4);
+    const y1 = o.tp1 != null ? gxY(o.tp1) : null; if (y1 != null) line(y1, g, 1.2, [5, 3]);
+    const tx = Math.min(R, pw) - 4, up = o.lado !== "corto" ? -1 : 1, mini = pw < 520;   // móvil: etiquetas cortas
+    tag(mini ? `TP ${gxFmt(o.tp)} · ${gxUsd(I.gana)} · ${fmt(I.rr, 1)}R` : `TP ${gxFmt(o.tp)} · ${gxPct(I.pct(o.tp))} · ${gxUsd(I.gana)} · ${fmt(I.rr, 2)}R`, tx, yt + up * 11, I.ok ? g : l, "right");
+    tag(mini ? `${TR("Stop")} ${gxFmt(o.stop)} · ${gxUsd(-I.riesgo)}` : `${TR("Stop")} ${gxFmt(o.stop)} · ${gxPct(I.pct(o.stop))} · ${gxUsd(-I.riesgo)}`, tx, ys - up * 11, l, "right");
+    tag(`${TR(o.lado === "corto" ? "Corto" : "Largo")} ${gxFmt(o.entrada)}` + (mini ? "" : ` · ${fmt(I.c, I.c >= 100 ? 0 : I.c >= 1 ? 2 : 4)} ${TR("contratos")}${o.texto ? " · " + o.texto : ""}`), tx, ye, ink, "right");
+    if (y1 != null) tag(`TP1 ${gxFmt(o.tp1)} · ${gxUsd(I.g1)}`, tx, y1, g, "right");
+    if (!I.ok) tag(TR("Revisa: stop u objetivo al lado equivocado"), L + 4, ye + 22, l);
+    if (sel) { x.fillStyle = css("--panel"); [[L, ye, ink], [L, yt, g], [L, ys, l], [R, (yt + ys) / 2, ink]].concat(y1 != null ? [[L, y1, g]] : [])
+      .forEach(([a, b, c]) => { x.strokeStyle = c; x.beginPath(); x.arc(a, b, 5, 0, 7); x.fill(); x.stroke(); }); }
+  });
+  objs.filter(o => o.tipo === "tendencia").forEach(o => {
+    const x1 = gxX(o.t1), x2 = gxX(o.t2), y1 = gxY(o.p1), y2 = gxY(o.p2); if ([x1, x2, y1, y2].includes(null)) return;
+    const c = gxCol("tendencia"), sel = GX.sel === o.id || o === GX.draft;
+    x.strokeStyle = c; x.lineWidth = sel ? 2.2 : 1.5; x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2, y2); x.stroke();
+    if (sel) [[x1, y1], [x2, y2]].forEach(([a, b]) => { x.fillStyle = css("--panel"); x.beginPath(); x.arc(a, b, 4.5, 0, 7); x.fill(); x.stroke(); });
+    if (o.texto) tag(o.texto, x2 + 4, y2, c);
+  });
+  // planes vivos de este instrumento (discontinua, etiqueta a la derecha)
+  ((PLN && PLN.planes) || []).filter(p => p.simbolo === GX.sym && (p.estado === "pendiente" || p.estado === "activo")).forEach(p => {
+    [["Entrada", p.condicion.nivel, "--gold"], ["Stop", p.sl, "--loss"], ["TP1", p.tp1, "--gain"], [p.tp1 ? "TP2" : "TP", p.tp, "--gain"]].forEach(([lab, v, k]) => {
+      if (v == null) return; const y = gxY(v); if (y == null) return; const c = css(k);
+      x.strokeStyle = c; x.globalAlpha = .8; x.lineWidth = 1; x.setLineDash([6, 4]); x.beginPath(); x.moveTo(0, y); x.lineTo(pw, y); x.stroke(); x.setLineDash([]); x.globalAlpha = 1;
+      tag(`${TR("Plan")} ${p.id} · ${TR(lab)}`, pw - 6, y - 10, c, "right"); });
+  });
+  const lv = objs.filter(o => o.tipo === "nivel");
+  lv.forEach(o => { const y = gxY(o.precio); if (y == null) return; const c = gxCol(o.rol), sel = GX.sel === o.id;
+    x.strokeStyle = c; x.lineWidth = sel ? 2.2 : 1.4; x.setLineDash(o.rol === "nivel" ? [3, 3] : []); x.beginPath(); x.moveTo(0, y); x.lineTo(pw, y); x.stroke(); x.setLineDash([]);
+    tag(gxName(o) + (o.texto ? " · " + o.texto : ""), 6, y - 10, c);
+    if (sel) { x.fillStyle = css("--panel"); x.beginPath(); x.arc(pw / 2, y, 5, 0, 7); x.fill(); x.stroke(); } });
+  x.restore();
+  // precio de cada nivel en el eje
+  x.textBaseline = "middle"; x.font = "600 11px " + font;
+  const ax = (v, c) => { const y = gxY(v); if (y == null || y < 0 || y > ph) return; x.fillStyle = c; x.fillRect(pw, y - 9, r.width - pw, 18);
+    x.fillStyle = css("--panel"); x.textAlign = "left"; x.fillText(gxFmt(v), pw + 4, y); };
+  lv.forEach(o => ax(o.precio, gxCol(o.rol)));
+  objs.filter(o => o.tipo === "posicion").forEach(o => { ax(o.tp, css("--gain")); ax(o.stop, css("--loss")); ax(o.entrada, css("--ink")); if (o.tp1 != null) ax(o.tp1, css("--gain")); });
+}
+/* ratón y dedo */
+function gxPt(e) { const r = $("gx-wrap").getBoundingClientRect(), p = e.touches ? (e.touches[0] || e.changedTouches[0]) : e; return {x: p.clientX - r.left, y: p.clientY - r.top, touch: !!e.touches}; }
+function gxHit(pt) {
+  const tol = pt.touch ? 14 : 7, pw = GX.chart.paneSize().width;
+  const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) <= tol + 2;
+  for (const o of GX.objs.slice().reverse()) {
+    if (o.tipo !== "posicion") continue;
+    let L = gxX(o.t1), R = gxX(o.t2); if (L == null || R == null) continue; if (R < L) [L, R] = [R, L];
+    if (pt.x < L - tol || pt.x > R + tol) continue;
+    const ys = {tp1: o.tp1 != null ? gxY(o.tp1) : null, entrada: gxY(o.entrada), tp: gxY(o.tp), stop: gxY(o.stop)};
+    const top = Math.min(ys.tp, ys.stop), bot = Math.max(ys.tp, ys.stop);
+    if (Math.abs(pt.x - R) <= tol && pt.y > top + tol && pt.y < bot - tol) return {o, part: "ancho"};
+    for (const k of ["tp1", "entrada", "tp", "stop"]) if (ys[k] != null && Math.abs(pt.y - ys[k]) <= tol) return {o, part: k};
+    if (pt.y >= top && pt.y <= bot) return {o, part: "body"};
+  }
+  for (const o of GX.objs.slice().reverse()) {
+    if (o.tipo === "nivel") { const y = gxY(o.precio); if (y != null && Math.abs(pt.y - y) <= tol && pt.x <= pw) return {o, part: "body"}; }
+    if (o.tipo === "tendencia") { const a = [gxX(o.t1), gxY(o.p1)], b = [gxX(o.t2), gxY(o.p2)]; if (a.includes(null) || b.includes(null)) continue;
+      if (near([pt.x, pt.y], a)) return {o, part: "p1"}; if (near([pt.x, pt.y], b)) return {o, part: "p2"};
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, u = ((pt.x - a[0]) * (b[0] - a[0]) + (pt.y - a[1]) * (b[1] - a[1])) / (L * L);
+      if (u >= 0 && u <= 1 && Math.abs((b[0] - a[0]) * (a[1] - pt.y) - (a[0] - pt.x) * (b[1] - a[1])) / L <= tol) return {o, part: "body"}; }
+  }
+  for (const o of GX.objs.slice().reverse()) {
+    if (o.tipo !== "zona") continue;
+    const x1 = gxX(o.t1), x2 = o.t2 == null ? pw : gxX(o.t2), y1 = gxY(o.p1), y2 = gxY(o.p2); if ([x1, x2, y1, y2].includes(null)) continue;
+    const L = Math.min(x1, x2), R = Math.max(x1, x2), T = Math.min(y1, y2), B = Math.max(y1, y2);
+    if (GX.sel === o.id) for (const [k, c] of [["tl", [L, T]], ["tr", [R, T]], ["bl", [L, B]], ["br", [R, B]]]) if (near([pt.x, pt.y], c)) return {o, part: k};
+    if (pt.x >= L - 2 && pt.x <= R + 2 && pt.y >= T - 2 && pt.y <= B + 2) return {o, part: "body"};
+  }
+  return null;
+}
+function gxHover(e) { if (GX.drag || GX.tool !== "cursor" || !GX.T.length) return; const h = gxHit(gxPt(e));
+  $("gx-wrap").style.cursor = !h ? "" : h.part === "ancho" ? "ew-resize" : ["entrada", "tp", "stop", "tp1"].includes(h.part) ? "ns-resize"
+    : h.part === "body" ? (h.o.tipo === "nivel" ? "ns-resize" : "move") : "crosshair"; }
+function gxBlock(e) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); }
+function gxDown(e) {
+  if (!GX.T.length || (e.button && e.button !== 0)) return;
+  const pt = gxPt(e), pw = GX.chart.paneSize().width, ph = GX.chart.paneSize().height;
+  if (pt.x > pw || pt.y > ph) return;   // ejes: zoom normal del gráfico
+  const t = gxT(pt.x, true), p = gxP(pt.y); if (t == null || p == null) return;
+  if (GX.tool === "cursor") {
+    const h = gxHit(pt);
+    if (!h) { if (GX.sel) { GX.sel = null; gxList(); } return; }
+    gxBlock(e); GX.sel = h.o.id; GX.drag = {o: h.o, part: h.part, x0: pt.x, p0: p, orig: Object.assign({}, h.o), moved: false}; gxList(); return;
+  }
+  gxBlock(e);
+  if (GX.tool === "nivel") { const o = {id: gxId(), tipo: "nivel", rol: GX.rol.nivel, precio: p, tf: GX.tf}; GX.objs.push(o); GX.sel = o.id;
+    GX.drag = {o, part: "body", x0: pt.x, p0: p, orig: Object.assign({}, o), moved: true}; return; }
+  if (GX.tool === "largo" || GX.tool === "corto") {
+    const s = GX.tool === "largo" ? 1 : -1, D = GX.data.slice(-50), rg = D.reduce((a, d) => a + d.h - d.l, 0) / (D.length || 1) || p * 0.004, d = rg * 2;
+    const t2 = gxTl(gxLg(t) + Math.max(12, Math.round(GX.chart.timeScale().getVisibleLogicalRange() ? (GX.chart.timeScale().getVisibleLogicalRange().to - GX.chart.timeScale().getVisibleLogicalRange().from) / 5 : 20)));
+    const o = {id: gxId(), tipo: "posicion", lado: GX.tool, entrada: p, stop: p - s * d, tp: p + s * 2 * d, tp1: null, t1: t, t2, tf: GX.tf, riesgo: null, tamano: null};
+    GX.objs.push(o); GX.sel = o.id; GX.drag = {o, part: "body", x0: pt.x, p0: p, orig: Object.assign({}, o), moved: true}; return;
+  }
+  if (GX.draft && GX.draft.espera) { gxDraftTo(pt); gxCommit(); return; }   // segundo toque
+  GX.draft = GX.tool === "zona" ? {id: gxId(), tipo: "zona", rol: GX.rol.zona, t1: t, t2: t, p1: p, p2: p, tf: GX.tf, x0: pt.x, y0: pt.y}
+    : {id: gxId(), tipo: "tendencia", t1: gxT(pt.x), p1: p, t2: gxT(pt.x), p2: p, tf: GX.tf, x0: pt.x, y0: pt.y};
+}
+function gxDraftTo(pt) { const d = GX.draft; if (!d) return; const t = gxT(pt.x, d.tipo === "zona"), p = gxP(pt.y); if (t == null || p == null) return; d.t2 = t; d.p2 = p; }
+function gxMove(e) {
+  if (GX.draft && !GX.draft.espera && (e.buttons || e.touches)) { gxBlock(e); gxDraftTo(gxPt(e)); return; }
+  if (GX.draft && GX.draft.espera && !e.touches) { gxDraftTo(gxPt(e)); return; }
+  const D = GX.drag; if (!D) return; gxBlock(e);
+  const pt = gxPt(e), p = gxP(pt.y); if (p == null) return;
+  const o = D.o, O = D.orig, dp = p - D.p0, ts = GX.chart.timeScale();
+  const lgNow = ts.coordinateToLogical(pt.x), lg0 = ts.coordinateToLogical(D.x0); if (lgNow == null || lg0 == null) return;
+  const dl = o.tipo === "zona" ? Math.round(lgNow - lg0) : lgNow - lg0, sh = t => t == null ? null : gxTl(gxLg(t) + dl);
+  D.moved = true;
+  if (o.tipo === "posicion") {
+    if (["entrada", "tp", "stop", "tp1"].includes(D.part)) o[D.part] = O[D.part] + dp;
+    else if (D.part === "ancho") { const t2 = gxT(pt.x, true); if (t2 != null) o.t2 = Math.max(t2, gxTl(gxLg(o.t1) + 3)); }
+    else { ["entrada", "tp", "stop"].forEach(k => o[k] = O[k] + dp); if (O.tp1 != null) o.tp1 = O.tp1 + dp; o.t1 = sh(O.t1); o.t2 = sh(O.t2); }
+    gxPosFix(o); return;
+  }
+  if (o.tipo === "nivel") o.precio = O.precio + dp;
+  else if (D.part === "body") { o.p1 = O.p1 + dp; o.p2 = O.p2 + dp; o.t1 = sh(O.t1); o.t2 = sh(O.t2); }
+  else if (o.tipo === "tendencia") { o["t" + D.part[1]] = gxT(pt.x); o["p" + D.part[1]] = p; }
+  else { const top = D.part[0] === "t", left = D.part[1] === "l", tt = gxT(pt.x, true);
+    const hiK = O.p1 >= O.p2 ? "p1" : "p2", loK = hiK === "p1" ? "p2" : "p1"; o[top ? hiK : loK] = p;
+    if (left) o.t1 = tt; else if (o.t2 != null || tt < GX.T[GX.T.length - 1]) o.t2 = tt; }
+}
+function gxUp(e) {
+  if (GX.draft && !GX.draft.espera) {
+    const d = GX.draft, pt = gxPt(e); if (pt.x === undefined || isNaN(pt.x)) return;
+    if (Math.abs(pt.x - d.x0) < 8 && Math.abs(pt.y - d.y0) < 8) { d.espera = true; gxHintSet(TR("Toca el segundo punto")); return; }
+    gxCommit(); return;
+  }
+  const D = GX.drag; if (!D) return; GX.drag = null;
+  gxNorm(D.o); if (D.moved) gxSave(); gxList();
+  if (GX.tool !== "cursor") gxTool("cursor");
+}
+function gxPosFix(o) {   // stop y objetivos siempre al lado correcto de la entrada
+  const s = o.lado === "corto" ? -1 : 1, e = Math.abs(o.entrada) * 0.0005 || 0.0001;
+  if ((o.entrada - o.stop) * s < e) o.stop = o.entrada - s * e;
+  if ((o.tp - o.entrada) * s < e) o.tp = o.entrada + s * e;
+  if (o.tp1 != null && ((o.tp1 - o.entrada) * s <= 0 || (o.tp - o.tp1) * s <= 0)) o.tp1 = o.entrada + (o.tp - o.entrada) / 2;
+}
+function gxNorm(o) {
+  const rd = v => v == null ? v : +(+v).toFixed(GX.pr == null ? 2 : GX.pr);
+  ['precio', 'p1', 'p2', 'entrada', 'stop', 'tp', 'tp1'].forEach(k => { if (o[k] != null) o[k] = rd(o[k]); });
+  if (o.tipo === "zona") { const a = o.p1, b = o.p2; o.p1 = Math.max(a, b); o.p2 = Math.min(a, b);
+    if (o.t2 != null && o.t2 < o.t1) [o.t1, o.t2] = [o.t2, o.t1];
+    if (o.t2 != null && o.t2 >= GX.T[GX.T.length - 1] && /^(fvg|ob)_|liquidez/.test(o.rol)) o.t2 = null; }
+}
+function gxCommit() {
+  const d = GX.draft; GX.draft = null; if (!d) return;
+  delete d.x0; delete d.y0; delete d.espera;
+  if (d.tipo === "zona" && (d.p1 === d.p2 || d.t1 === d.t2)) { gxTool("cursor"); return; }
+  if (d.tipo === "zona" && d.t2 != null && d.t2 < d.t1) [d.t1, d.t2] = [d.t2, d.t1];
+  gxNorm(d); GX.objs.push(d); GX.sel = d.id; gxSave(); gxTool("cursor"); gxList();
+}
+const gxId = () => Math.random().toString(36).slice(2, 10);
+function gxHintSet(t) { $("gx-hint").textContent = t || ""; $("gx-hint").hidden = !t; }
+function gxTool(k) {
+  GX.tool = k; GX.draft = null;
+  document.querySelectorAll("[data-gx]").forEach(b => b.classList.toggle("on", b.dataset.gx === k));
+  const roles = k === "nivel" || k === "zona" ? (GX.roles || {})[k] || {} : null, sel = $("gx-rol");
+  sel.hidden = !roles;
+  if (roles) { sel.innerHTML = Object.entries(roles).map(([v, t]) => `<option value="${v}">${esc(TR(t))}</option>`).join(""); sel.value = GX.rol[k]; }
+  gxHintSet(TR(GX_HINT[k] || ""));
+}
+document.querySelectorAll("[data-gx]").forEach(b => b.onclick = () => gxTool(b.dataset.gx));
+$("gx-rol").onchange = () => { GX.rol[GX.tool] = $("gx-rol").value; };
+$("gx-sym").onchange = () => gxLoad(true);
+$("gx-tf").onchange = () => gxLoad(false);
+/* guardar y lista */
+function gxSave() {
+  clearTimeout(GX.saveT); const sym = GX.sym, objs = GX.objs.map(o => Object.assign({}, o));
+  GX.saveT = setTimeout(async () => { const j = await post("/api/dibujos", {simbolo: sym, objetos: objs});
+    if (!j.ok) toast((j.errors || [TR("No se pudo guardar")])[0], "error"); else if (GX.sym === sym) $("gx-info").textContent = `${sym} · ${GX.tf} · ${TR("guardado")}`; }, 600);
+}
+function gxDel(id) { GX.objs = GX.objs.filter(o => o.id !== id); if (GX.sel === id) GX.sel = null; gxSave(); gxList(); gxFvgBtn(); }
+function gxList() {
+  const ord = {posicion: -1, nivel: 0, zona: 1, tendencia: 2}, L = GX.objs.slice().sort((a, b) => ord[a.tipo] - ord[b.tipo] || (b.precio || b.p1 || 0) - (a.precio || a.p1 || 0));
+  const num = (o, k, lab) => `<label class="small muted">${esc(TR(lab))} <input type="number" step="any" data-k="${k}" value="${o[k] == null ? "" : +(+o[k]).toPrecision(10)}"></label>`;
+  const rolSel = o => `<select data-k="rol">${Object.entries((GX.roles || {})[o.tipo] || {}).map(([v, t]) => `<option value="${v}"${v === o.rol ? " selected" : ""}>${esc(TR(t))}</option>`).join("")}</select>`;
+  $("gx-list").innerHTML = L.length ? L.map(o => `<li data-id="${o.id}"${GX.sel === o.id ? ' class="sel"' : ""}><span class="gx-sw" style="background:${gxCol(o.tipo === "tendencia" ? "tendencia" : o.rol)}"></span><div class="gx-row">
+      ${o.tipo === "tendencia" ? `<b>${esc(TR("Tendencia"))}</b>` : o.tipo === "posicion" ? `<select data-k="lado"><option value="largo"${o.lado !== "corto" ? " selected" : ""}>${esc(TR("Largo"))}</option><option value="corto"${o.lado === "corto" ? " selected" : ""}>${esc(TR("Corto"))}</option></select>` : rolSel(o)}
+      ${o.tipo === "posicion" ? num(o, "entrada", "Entrada") + num(o, "stop", "Stop") + num(o, "tp1", "TP1") + num(o, "tp", "TP") + num(o, "riesgo", "Riesgo $") + num(o, "tamano", "Contratos") +
+        (() => { const I = gxPosInfo(o); return `<span class="gx-pos ${I.ok ? "muted" : ""}"${I.ok ? "" : ' style="color:var(--loss)"'}>${I.ok ? `R:R ${fmt(I.rr, 2)} · ${esc(TR("si llega al TP"))} ${gxUsd(I.gana)} · ${esc(TR("si toca el stop"))} ${gxUsd(-I.riesgo)} · ${fmt(I.c, 4)} ${esc(TR("contratos"))}` : esc(TR("Revisa: stop u objetivo al lado equivocado"))}</span>`; })() :
+        o.tipo === "nivel" ? num(o, "precio", "Precio") : o.tipo === "zona" ? num(o, "p1", "Arriba") + num(o, "p2", "Abajo") + `<label class="small"><input type="checkbox" data-k="ext"${o.t2 == null ? " checked" : ""}> ${esc(TR("hasta ahora"))}</label>` : ""}
+      <input class="note gx-txt" data-k="texto" maxlength="120" placeholder="${esc(TR("Nota (opcional)"))}" value="${esc(o.texto || "")}">
+      ${o.tf ? `<span class="small muted">${esc(o.tf)}${o.auto ? " · auto" : ""}</span>` : ""}</div>
+      ${o.tipo === "posicion" ? `<button class="btn primary small" type="button" data-plan="${o.id}">${esc(TR("Crear plan"))}</button>` : ""}
+      <button class="btn small" type="button" data-del="${o.id}">${esc(TR("Borrar"))}</button></li>`).join("")
+    : `<li class="small muted">${esc(TR("Aún no hay nada dibujado en este instrumento."))}</li>`;
+  $("gx-list").querySelectorAll("li[data-id]").forEach(li => {
+    const o = GX.objs.find(x => x.id === li.dataset.id); if (!o) return;
+    li.onclick = ev => { if (ev.target.closest("input,select,button")) return; GX.sel = o.id; gxList(); };
+    li.querySelectorAll("[data-k]").forEach(inp => inp.onchange = () => { const k = inp.dataset.k;
+      if (k === "ext") { o.t2 = inp.checked ? null : GX.T[GX.T.length - 1]; }
+      else if (k === "texto" || k === "rol") o[k] = inp.value;
+      else if (k === "lado") { const e = o.entrada; o.lado = inp.value; ["stop", "tp", "tp1"].forEach(q => { if (o[q] != null) o[q] = 2 * e - o[q]; }); }
+      else if (inp.value === "" && ["tp1", "riesgo", "tamano"].includes(k)) o[k] = null;
+      else { const v = parseFloat(inp.value); if (!isFinite(v)) return; o[k] = v; }
+      if (o.tipo === "posicion") gxPosFix(o);
+      gxNorm(o); gxSave(); if (k !== "texto") gxList(); });
+  });
+  $("gx-list").querySelectorAll("[data-del]").forEach(b => b.onclick = () => gxDel(b.dataset.del));
+  $("gx-list").querySelectorAll("[data-plan]").forEach(b => b.onclick = () => { GX.sel = b.dataset.plan; $("gx-plan").onclick(); });
+}
+/* FVG automáticos: huecos de 3 velas que siguen abiertos */
+function gxFvgBtn() { const hay = GX.objs.some(o => o.auto && o.tf === GX.tf); $("gx-fvg").textContent = TR(hay ? "Quitar FVG automáticos" : "Marcar FVG"); }
+$("gx-fvg").onclick = () => {
+  if (GX.objs.some(o => o.auto && o.tf === GX.tf)) { GX.objs = GX.objs.filter(o => !(o.auto && o.tf === GX.tf)); gxSave(); gxList(); gxFvgBtn(); return; }
+  const D = GX.data.slice(-400), n = D.length; if (n < 20) return;
+  const rng = D.slice(-100).reduce((a, d) => a + d.h - d.l, 0) / Math.min(100, n), min = rng * 0.35, out = [], last = D[n - 1].c;
+  for (let i = 1; i < n - 1; i++) {
+    const a = D[i - 1], c = D[i + 1]; let z = null;
+    if (c.l > a.h && c.l - a.h >= min) z = {rol: "fvg_alcista", p1: c.l, p2: a.h};
+    if (c.h < a.l && a.l - c.h >= min) z = {rol: "fvg_bajista", p1: a.l, p2: c.h};
+    if (!z) continue;
+    const rest = D.slice(i + 2), lleno = z.rol === "fvg_alcista" ? rest.some(d => d.l <= z.p2) : rest.some(d => d.h >= z.p1);
+    if (!lleno) out.push(Object.assign(z, {id: gxId(), tipo: "zona", t1: D[i].t, t2: null, tf: GX.tf, auto: true, texto: ""}));
+  }
+  const mid = z => (z.p1 + z.p2) / 2, nuevos = out.sort((a, b) => Math.abs(mid(a) - last) - Math.abs(mid(b) - last)).slice(0, 6).sort((a, b) => a.t1 - b.t1);
+  if (!nuevos.length) { toast(TR("No hay FVG abiertos en las velas cargadas")); return; }
+  GX.objs = GX.objs.concat(nuevos); gxSave(); gxList(); gxFvgBtn(); toast(`${nuevos.length} ${TR("FVG abiertos marcados")}`);
+};
+/* plan a partir de los niveles dibujados */
+$("gx-plan").onclick = () => {
+  const r = {}; GX.objs.filter(o => o.tipo === "nivel").forEach(o => { if (r[o.rol] == null || o.id === GX.sel) r[o.rol] = o.precio; });
+  const ps = GX.objs.filter(o => o.tipo === "posicion"), pos = ps.find(o => o.id === GX.sel) || ps[ps.length - 1];
+  if (pos) Object.assign(r, {entrada: pos.entrada, stop: pos.stop, tp: pos.tp, tp1: pos.tp1});
+  if (r.entrada == null || r.stop == null || r.tp == null) { Dlg.error(TR("Faltan niveles"), TR("Dibuja una posición (Largo o Corto), o al menos un nivel de Entrada, uno de Stop y uno de TP final.")); return; }
+  const s = r.tp > r.entrada ? 1 : -1;
+  if ((r.entrada - r.stop) * s <= 0) { Dlg.error(TR("Revisa el stop"), TR("El stop tiene que quedar al otro lado de la entrada que el objetivo.")); return; }
+  $("b-pl-nuevo").onclick();
+  if ([...$("pl-sim").options].some(o => o.value === GX.sym)) $("pl-sim").value = GX.sym;
+  if ([...$("pl-tf").options].some(o => o.value === GX.tf)) $("pl-tf").value = GX.tf;
+  $("pl-lado").value = s === 1 ? "largo" : "corto"; $("pl-cond").value = "limite"; $("pl-cond").dispatchEvent(new Event("change"));
+  $("pl-nivel").value = r.entrada; $("pl-sl").value = r.stop; $("pl-tp").value = r.tp; $("pl-tp1").value = r.tp1 != null ? r.tp1 : "";
+  if (r.invalidacion != null) { $("pl-icond").value = (r.invalidacion - r.entrada) * s < 0 ? (s === 1 ? "cierre_debajo" : "cierre_encima") : (s === 1 ? "toca_arriba" : "toca_abajo"); $("pl-inivel").value = r.invalidacion; }
+  const zonas = GX.objs.filter(o => o.tipo === "zona").sort((a, b) => (a.auto ? 1 : 0) - (b.auto ? 1 : 0) || Math.abs((a.p1 + a.p2) / 2 - r.entrada) - Math.abs((b.p1 + b.p2) / 2 - r.entrada)).slice(0, 6).map(o => `${gxName(o)} ${gxFmt(o.p2)}–${gxFmt(o.p1)}${o.tf ? " (" + o.tf + ")" : ""}${o.texto ? ": " + o.texto : ""}`);
+  const notas = GX.objs.filter(o => o.texto && o.tipo !== "zona").map(o => `${gxName(o)}: ${o.texto}`);
+  $("pl-an").value = [TR("Desde el gráfico de análisis") + ` (${GX.sym} ${GX.tf}).`, zonas.length ? TR("Zonas") + ": " + zonas.join("; ") + "." : "", notas.join(". ")].filter(Boolean).join(" ").slice(0, 2000);
+  if (pos && (pos.tamano > 0 || pos.riesgo > 0)) { $("pl-tammodo").value = "fijo"; $("pl-tam-f").hidden = false; $("pl-tam").value = +gxPosInfo(pos).c.toPrecision(6); }
+  plRR(); plTam(); $("pl-edit").scrollIntoView({behavior: "smooth", block: "start"});
+};
+/* ---------- rendimiento por estrategia (bots con varias estrategias) ---------- */
+let PEST = null, PE_CH = null, PE_T = 0;
+const PE_COL = ["--gold", "--blue", "--purple", "--gain", "--warn", "--loss"];
+async function loadPe(force) {
+  if (VIEW.kind !== "bot" || VIEW.sub !== "panel") return;
+  if (!force && PEST && PEST.bot === VIEW.id && Date.now() - PE_T < 60000) return peRender();
+  const want = VIEW.id;
+  try { const r = await fetch(q(B("estrategias")), {cache: "no-store"}); if (!r.ok) return; const j = await r.json(); if (VIEW.id !== want) return; PEST = Object.assign(j, {bot: want}); PE_T = Date.now(); }
+  catch (e) { return; }
+  peRender();
+  if (PEST.calculando) setTimeout(() => loadPe(true), 4000);
+}
+function peScore(v) { return v == null ? ["–", "var(--muted)"] : [fmt(v, 2), v >= 2.5 ? "var(--gain)" : v >= 1.6 ? "var(--blue)" : v >= 0 ? "var(--warn)" : "var(--loss)"]; }
+function peSpark(vals, col) {
+  if (!vals || vals.length < 2) return `<div class="small muted" style="height:34px;line-height:34px">${esc(TR("sin operaciones"))}</div>`;
+  const w = 240, h = 34, mn = Math.min(0, ...vals), mx = Math.max(0, ...vals), sy = v => h - 2 - (v - mn) / ((mx - mn) || 1) * (h - 4);
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * w).toFixed(1)},${sy(v).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:34px"><line x1="0" x2="${w}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--rule)" stroke-dasharray="3 3"/><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${pts}"/></svg>`;
+}
+function peRender() {
+  const card = $("es-card"), E = PEST && PEST.bot === VIEW.id ? PEST : null;
+  const show = E && (E.combinada || E.estrategias.filter(e => e.vivo.n).length > 1);
+  card.hidden = !show; if (!show) return;
+  $("es-punt").hidden = !E.combinada; $("es-punt").disabled = !!E.calculando;
+  $("es-info").textContent = E.calculando ? TR("Calculando puntuación…") : E.puntuado ? `${TR("Puntuación")}: ${TR("backtest de")} ${E.dias} ${TR("días")} · ${new Date(E.puntuado).toLocaleString(LOCALE(), {dateStyle: "short", timeStyle: "short"})}` : (E.combinada ? TR("Sin puntuación todavía") : "");
+  const L = E.estrategias, col = i => css(PE_COL[i % PE_COL.length]);
+  const maxR = Math.max(1e-9, ...L.map(e => Math.abs(e.vivo.total_r)), ...L.map(e => Math.abs((e.backtest || {}).total_r || 0)));
+  const bars = (k, lab) => `<div class="sub" style="grid-column:1/-1">${esc(TR(lab))}</div>` + L.map((e, i) => { const v = k === "vivo" ? e.vivo.total_r : (e.backtest || {}).total_r;
+      return `<span>${esc(TR(e.nombre))}${e.tf ? ` <span class="muted">${esc(e.tf)}</span>` : ""}</span><div><div class="pe-bar" style="width:${v == null ? 0 : Math.max(1, Math.abs(v) / maxR * 100)}%;background:${v >= 0 ? "var(--gain)" : "var(--loss)"};opacity:${e.activa ? 1 : .45}"></div></div><b class="${v >= 0 ? "es-pos" : "es-neg"}">${v == null ? "–" : sgn(v, 1) + " R"}</b>`; }).join("");
+  const dl = (rows) => `<dl>${rows.map(([a, b, c]) => `<dt>${esc(TR(a))}</dt><dd>${b}</dd><dd class="muted">${c || ""}</dd>`).join("")}</dl>`;
+  $("es-body").innerHTML = `<div class="pe-bars">${bars("vivo", "R total en directo")}${E.combinada ? bars("bt", `R total en el backtest de puntuación`) : ""}</div>
+    <div id="es-eq"></div><div class="pe-leg">${L.map((e, i) => `<span><i style="background:${col(i)}"></i>${esc(TR(e.nombre))}</span>`).join("")}</div>
+    <div class="es-grid">${L.map((e, i) => { const v = e.vivo, b = e.backtest || {}, [st, sc] = peScore(b.puntuacion);
+      return `<div class="es-c" style="border-top:3px solid ${col(i)}"><h3>${e.prioridad ? `<span class="pri">#${e.prioridad}</span>` : `<span class="mode">${esc(TR("ANTERIOR"))}</span>`}${esc(TR(e.nombre))}${e.tf ? ` <span class="small muted">${esc(e.tf)}</span>` : ""}
+        ${e.activa && E.combinada ? `<span class="sc" style="background:${sc}" title="${esc(TR("SQN del backtest: más de 1,6 bueno, más de 2,5 muy bueno"))}">${esc(TR("Puntuación"))} ${st}</span>` : ""}</h3>
+        <div class="sub">${esc(TR("En directo"))}</div>
+        ${dl([["Operaciones", v.n, v.n ? fmt(v.winrate, 1) + " % " + TR("acierto") : ""], ["R total", `<b class="${v.total_r >= 0 ? "es-pos" : "es-neg"}">${sgn(v.total_r, 2)}</b>`, v.usd != null ? sgn(v.usd, 0) + " $" : ""],
+            ["Profit factor", v.pf == null ? "–" : fmt(v.pf, 2), `${TR("media")} ${sgn(v.avg_r, 2)} R`], ["Drawdown máx.", fmt(v.max_dd, 2) + " R", `${TR("mejor")} ${sgn(v.best, 1)} / ${TR("peor")} ${sgn(v.worst, 1)}`],
+            ["Señales bloqueadas", e.bloqueadas, ""]])}
+        ${peSpark(e.equity.map(x => x[1]), col(i))}
+        ${e.activa && E.combinada ? `<div class="sub">${esc(TR("Backtest de puntuación"))} (${E.dias} ${esc(TR("días"))})</div>${b.error ? `<p class="small" style="color:var(--loss)">${esc(b.error)}</p>`
+          : b.n == null ? `<p class="small muted">${esc(TR("Pendiente de calcular"))}</p>` : dl([["Operaciones", b.n, fmt(b.winrate, 1) + " % " + TR("acierto")], ["R total", `<b class="${b.total_r >= 0 ? "es-pos" : "es-neg"}">${sgn(b.total_r, 2)}</b>`, `${TR("media")} ${sgn(b.avg_r, 2)} R`],
+            ["Profit factor", b.pf == null ? "–" : fmt(b.pf, 2), `DD ${fmt(b.max_dd, 1)} R`]]) + peSpark(b.equity, col(i)) + (b.n < E.min_ops ? `<p class="small muted">${esc(TR("Menos de"))} ${E.min_ops} ${esc(TR("operaciones: sin puntuación, va al final de la prioridad."))}</p>` : "")}` : ""}
+      </div>`; }).join("")}</div>
+    <p class="small muted" style="margin-top:10px">${esc(TR("Una operación a la vez: la primera señal válida abre y bloquea al resto hasta que se cierra. Si varias dan señal en la misma vela, manda la de mejor puntuación (SQN de su backtest de los últimos 90 días con los ajustes del bot; se recalcula cada día y al cambiar la configuración)."))}</p>`;
+  peEquity(L, col);
+}
+async function peEquity(L, col) {
+  try { await gxLib(); } catch (e) { return; }
+  const box = $("es-eq"); if (!box) return;
+  if (PE_CH) { try { PE_CH.remove(); } catch (e) {} PE_CH = null; }
+  const conDatos = L.filter(e => e.equity.length);
+  if (!conDatos.length) { box.innerHTML = `<p class="small muted" style="padding:14px">${esc(TR("Aún no hay operaciones en directo: la curva aparecerá con la primera."))}</p>`; return; }
+  const Lc = LightweightCharts;
+  PE_CH = Lc.createChart(box, {autoSize: true, layout: {background: {type: "solid", color: "transparent"}, textColor: css("--muted"), fontFamily: css("--font"), attributionLogo: true},
+    grid: {vertLines: {color: css("--rule")}, horzLines: {color: css("--rule")}}, rightPriceScale: {borderColor: css("--rule")},
+    timeScale: {borderColor: css("--rule"), timeVisible: true}, localization: {locale: LOCALE(), priceFormatter: v => sgn(v, 1) + " R"}});
+  L.forEach((e, i) => { if (!e.equity.length) return;
+    const sr = PE_CH.addSeries(Lc.LineSeries, {color: col(i), lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: ""});
+    const pts = [], seen = new Set();
+    e.equity.forEach(([t, v]) => { let k = Math.floor(gxLt(t)); while (seen.has(k)) k++; seen.add(k); pts.push({time: k, value: v}); });
+    sr.setData(pts); });
+  PE_CH.timeScale().fitContent();
+}
+$("es-punt").onclick = async () => { const j = await post(B("puntuar")); toast(j.ok ? j.msg : (j.errors || [TR("No se pudo")])[0], j.ok ? "" : "error"); if (j.ok) { PEST.calculando = true; peRender(); setTimeout(() => loadPe(true), 3000); } };
+/* ---------- Desglose de una prueba por estrategia (ventana flotante) ---------- */
+const BD = {j: null, a: 0, b: 1, geom: null, hover: null, drag: null, eq: null};
+const bdCol = i => css(PE_COL[i % PE_COL.length]);
+const BD_RES = {entra: "Entra", ocupada: "Bloqueada por otra operación", propia: "Ya estaba en su operación", limite: "Límite del día", filtro: "Filtrada"};
+function bdOpen(j) {
+  BD.j = j; const D = j.desglose, P = j.params;
+  $("bd-sub").textContent = `${P.symbol} ${P.timeframe} · ${dloc(j.from)} → ${dloc(j.to)} · ${j.metrics.n} ${TR("operaciones")}`;
+  $("bd").hidden = false; document.body.style.overflow = "hidden";
+  bdTabla(D); bdPisan(D); bdFichas(D, j); bdLeyendas(D);
+  const c = D.coinciden || {};
+  $("bd-coinc").textContent = TR("Velas con señal de dos o más estrategias a la vez") + `: ${(c.mismo || 0) + (c.contrario || 0)} (${TR("mismo lado")} ${c.mismo || 0}, ${TR("lados contrarios")} ${c.contrario || 0}).`
+    + (D.recortadas ? " " + TR("La línea de tiempo muestra las señales más recientes.") : "");
+  $("bd-tl").style.setProperty("--bd-h", (36 + D.estrategias.length * 46 + 26) + "px");
+  bdRango(0); bdEquity(D);
+  $("bd-close").focus();
+}
+function bdClose() { $("bd").hidden = true; document.body.style.overflow = ""; if (BD.eq) { try { BD.eq.remove(); } catch (e) {} BD.eq = null; } const b = $("bt-desglose"); if (b) b.focus(); }
+function bdTabla(D) {
+  const cel = v => v === null || v === undefined ? "–" : v;
+  $("bd-tabla").innerHTML = `<table class="small"><thead><tr><th>#</th><th>${esc(TR("Estrategia"))}</th><th>TF</th><th>${esc(TR("Dirección"))}</th><th>${esc(TR("Ops."))}</th><th>${esc(TR("Acierto"))}</th><th>PF</th><th>R</th><th>${esc(TR("R medio"))}</th><th>DD</th><th>SQN</th><th>${esc(TR("Señales"))}</th><th>${esc(TR("Bloqueadas"))}</th><th>${esc(TR("Filtradas"))}</th></tr></thead><tbody>
+  ${D.estrategias.map((e, i) => { const m = e.metrics, S = e.senales, fil = Object.values(S.filtro).reduce((a, b) => a + b, 0);
+    return `<tr><td>${e.prioridad}</td><td><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${bdCol(i)};margin-right:6px"></i>${esc(TR(e.nombre))}</td><td>${esc(e.tf)}</td><td>${esc(TR(e.direccion))}</td>
+      <td>${m.n}</td><td>${m.n ? fmt(m.winrate, 1) + " %" : "–"}</td><td>${m.pf === null || m.pf === undefined ? "–" : fmt(m.pf, 2)}</td><td class="${m.total_r >= 0 ? "es-pos" : "es-neg"}">${sgn(m.total_r, 2)}</td>
+      <td>${m.n ? sgn(m.avg_r, 2) : "–"}</td><td>${m.n ? fmt(m.max_dd, 1) : "–"}</td><td>${m.sqn === null || m.sqn === undefined ? "–" : fmt(m.sqn, 2)}</td><td>${S.total}</td><td>${S.ocupada}</td><td>${fil}</td></tr>`; }).join("")}</tbody></table>`;
+}
+function bdPisan(D) {
+  const L = D.estrategias;
+  if (L.length < 2) { $("bd-pisan").innerHTML = `<p class="small muted">${esc(TR("Solo hay una estrategia en este bot."))}</p>`; return; }
+  $("bd-pisan").innerHTML = `<table class="small"><thead><tr><th>${esc(TR("Señal de"))} ↓ · ${esc(TR("bloqueada por"))} →</th>${L.map(e => `<th>${esc(TR(e.nombre))}</th>`).join("")}<th>${esc(TR("Total"))}</th></tr></thead><tbody>
+  ${L.map(a => `<tr><td>${esc(TR(a.nombre))}</td>${L.map(b => a.id === b.id ? `<td class="muted">·</td>` : `<td>${a.ocupada_por[b.id] || 0}</td>`).join("")}<td><b>${a.senales.ocupada}</b></td></tr>`).join("")}</tbody></table>`;
+}
+function bdPistas(e) {   // sugerencias para probar (no son consejos: solo leen los números de esta prueba)
+  const out = [], L = e.lados.LONG, S = e.lados.SHORT, m = e.metrics;
+  if (m.n < 10) out.push(TR("Pocas operaciones: no saques conclusiones fuertes de esta prueba."));
+  if (L.n >= 8 && S.n >= 8 && e.direccion === "ambos") {
+    if (L.total_r > 0 && S.total_r < 0) out.push(TR("Gana en largos y pierde en cortos: prueba «Dirección: solo largos» en su pestaña."));
+    if (S.total_r > 0 && L.total_r < 0) out.push(TR("Gana en cortos y pierde en largos: prueba «Dirección: solo cortos» en su pestaña."));
+  }
+  if (e.senales.ocupada > Math.max(5, e.senales.entra)) out.push(TR("Pierde más señales bloqueada por otras que las que opera: prueba otro orden de prioridad o llévala a su propio bot."));
+  const f = Object.entries(e.senales.filtro).sort((a, b) => b[1] - a[1])[0];
+  if (f && f[1] > Math.max(5, e.senales.entra)) out.push(TR("El filtro que más señales le quita") + `: ${TR((BD.j.filter_names || {})[f[0]] || f[0])} (${f[1]}).`);
+  return out;
+}
+function bdFichas(D, j) {
+  const WH = trMap(Object.assign({}, WHY0, j.why_names || {})), FN = j.filter_names || {};
+  const DIAS = [0, 1, 2, 3, 4, 5, 6].map(k => new Date(2024, 0, 1 + k).toLocaleDateString(LOCALE(), {weekday: "short"}));   // 1/1/2024 fue lunes
+  $("bd-fichas").className = "bd-fichas";
+  $("bd-fichas").innerHTML = D.estrategias.map((e, i) => {
+    const m = e.metrics, S = e.senales, col = bdCol(i);
+    const lado = (k, t) => { const x = e.lados[k]; return `<div>${esc(TR(t))}<b class="${x.total_r >= 0 ? "es-pos" : "es-neg"}">${x.n ? sgn(x.total_r, 2) + " R" : "–"}</b>${x.n} ${esc(TR("ops."))}${x.n ? ` · ${fmt(x.winrate, 0)} %` : ""}${x.n && x.pf !== null && x.pf !== undefined ? ` · PF ${fmt(x.pf, 2)}` : ""}</div>`; };
+    const fil = Object.values(S.filtro).reduce((a, b) => a + b, 0), tot = Math.max(1, S.total);
+    const seg = [[S.entra, col, "Entra"], [S.ocupada, css("--muted"), "Bloqueada"], [fil, css("--warn"), "Filtrada"], [S.limite, css("--loss"), "Límite del día"], [S.propia, css("--rule"), "Ya en su operación"]];
+    const hmax = Math.max(1, ...e.horas.map(h => h[0]));
+    const motivos = Object.entries(m.why || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(TR(WH[k] || k))} ${v}`).join(" · ");
+    const filtros = Object.entries(S.filtro).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(TR(FN[k] || k))} ${v}`).join(" · ");
+    const bloq = Object.entries(e.ocupada_por).map(([k, v]) => `${esc(TR((D.estrategias.find(x => x.id === k) || {nombre: k}).nombre))} ${v}`).join(" · ");
+    const pistas = bdPistas(e);
+    return `<div class="bd-ficha"><h4><i style="background:${col}"></i>${e.prioridad}. ${esc(TR(e.nombre))}</h4>
+      <div class="small muted">${esc(e.tf)} · ${esc(TR("Dirección"))}: ${esc(TR(e.direccion))} · ${m.n} ${esc(TR("ops."))} · <span class="${m.total_r >= 0 ? "es-pos" : "es-neg"}">${sgn(m.total_r, 2)} R</span></div>
+      <div class="bd-lados">${lado("LONG", "Largos")}${lado("SHORT", "Cortos")}</div>
+      <div class="bd-sub">${esc(TR("Qué pasó con sus señales"))} (${S.total}: ${S.largos} ▲ · ${S.cortos} ▼)</div>
+      <div class="bd-emb" role="img" aria-label="${esc(seg.filter(x => x[0]).map(x => TR(x[2]) + " " + x[0]).join(", "))}">${seg.filter(x => x[0]).map(x => `<span style="flex:${x[0] / tot};background:${x[1]}" title="${esc(TR(x[2]))}: ${x[0]}"></span>`).join("")}</div>
+      <div class="small">${seg.filter(x => x[0]).map(x => `${esc(TR(x[2]))} <b>${x[0]}</b>`).join(" · ") || esc(TR("Sin señales en este periodo."))}</div>
+      ${bloq ? `<div class="small muted" style="margin-top:4px">${esc(TR("Bloqueada por"))}: ${bloq}</div>` : ""}
+      ${filtros ? `<div class="small muted" style="margin-top:2px">${esc(TR("Filtros"))}: ${filtros}</div>` : ""}
+      <div class="bd-sub">${esc(TR("Operaciones por hora de entrada"))}</div>
+      <div class="bd-hrs">${e.horas.map((h, k) => `<span style="height:${h[0] ? Math.max(6, 100 * h[0] / hmax) : 2}%;background:${h[0] ? (h[1] >= 0 ? css("--gain") : css("--loss")) : css("--rule")}" title="${k}:00 · ${h[0]} ${esc(TR("ops."))} · ${sgn(h[1], 2)} R"></span>`).join("")}</div>
+      <div class="bd-hrs-x">${e.horas.map((h, k) => `<span>${k % 3 === 0 ? k : ""}</span>`).join("")}</div>
+      <div class="bd-sub">${esc(TR("Por día de la semana"))}</div>
+      <div class="small">${e.dias.map((d, k) => d[0] ? `${DIAS[k]} <span class="${d[1] >= 0 ? "es-pos" : "es-neg"}">${sgn(d[1], 1)}</span> (${d[0]})` : "").filter(Boolean).join(" · ") || "–"}</div>
+      ${motivos ? `<div class="bd-sub">${esc(TR("Motivos de salida"))}</div><div class="small">${motivos}</div>` : ""}
+      ${pistas.map(p => `<p class="bd-pista">${esc(p)}</p>`).join("")}
+    </div>`; }).join("");
+}
+function bdLeyendas(D) {
+  $("bd-ley-eq").innerHTML = D.estrategias.map((e, i) => `<span><i style="background:${bdCol(i)}"></i>${esc(TR(e.nombre))}</span>`).join("");
+  const tri = (fill, stroke) => `<svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1 L11 11 L1 11 Z" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/></svg>`;
+  $("bd-ley-tl").innerHTML = [[tri(css("--ink"), css("--ink")), "Entra"], [tri("none", css("--muted")), "Bloqueada por otra operación"],
+    [tri("none", css("--warn")), "Filtrada"], [tri("none", css("--loss")), "Límite del día"],
+    [`<i style="background:${css("--gain")};height:6px"></i>`, "Operación ganadora"], [`<i style="background:${css("--loss")};height:6px"></i>`, "Operación perdedora"],
+    ["▲ ▼", "Largo · corto"]].map(([k, t]) => `<span>${k}${esc(TR(t))}</span>`).join("");
+}
+async function bdEquity(D) {
+  try { await gxLib(); } catch (e) { return; }
+  const box = $("bd-eq"); if (BD.eq) { try { BD.eq.remove(); } catch (e) {} BD.eq = null; }
+  if (!D.estrategias.some(e => e.curva.length)) { box.innerHTML = `<p class="small muted">${esc(TR("Sin operaciones en este periodo."))}</p>`; return; }
+  box.innerHTML = "";
+  const Lc = LightweightCharts;
+  BD.eq = Lc.createChart(box, {autoSize: true, layout: {background: {type: "solid", color: "transparent"}, textColor: css("--muted"), fontFamily: css("--font"), attributionLogo: true},
+    grid: {vertLines: {visible: false}, horzLines: {color: css("--rule")}}, rightPriceScale: {borderColor: css("--rule")},
+    timeScale: {borderColor: css("--rule"), timeVisible: true}, localization: {locale: LOCALE(), priceFormatter: v => sgn(v, 1) + " R"}});
+  D.estrategias.forEach((e, i) => { if (!e.curva.length) return;
+    const sr = BD.eq.addSeries(Lc.LineSeries, {color: bdCol(i), lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: ""});
+    const pts = [], seen = new Set();
+    e.curva.forEach(([t, v]) => { let k = Math.floor(gxLt(t)); while (seen.has(k)) k++; seen.add(k); pts.push({time: k, value: v}); });
+    sr.setData(pts); });
+  BD.eq.timeScale().fitContent();
+}
+function bdLimites() { const j = BD.j; return [j.from, j.to + 60000]; }
+function bdRango(dias) {
+  const [t0, t1] = bdLimites();
+  BD.a = dias ? Math.max(t0, t1 - dias * 86400000) : t0; BD.b = t1; BD.hover = null; bdDraw();
+}
+function bdDraw() {
+  const cv = $("cv-bd"), box = $("bd-tl"); if (!BD.j || $("bd").hidden) return;
+  const D = BD.j.desglose, dpr = window.devicePixelRatio || 1, W = box.clientWidth, H = box.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr; const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const izq = Math.min(170, W * .3), top = 14, fila = 46, x0 = izq, x1 = W - 12, abajo = top + D.estrategias.length * fila;
+  const X = t => x0 + (t - BD.a) / (BD.b - BD.a) * (x1 - x0);
+  BD.geom = {x0, x1, top, fila, X, marcas: []};
+  g.font = `12px ${css("--font") || "sans-serif"}`; g.textBaseline = "middle";
+  // filas
+  D.estrategias.forEach((e, i) => { const y = top + i * fila;
+    g.fillStyle = bdCol(i); g.fillRect(8, y + fila / 2 - 5, 10, 10);
+    g.fillStyle = css("--ink"); let nom = TR(e.nombre); while (g.measureText(nom).width > izq - 30 && nom.length > 4) nom = nom.slice(0, -2);
+    g.fillText(nom === TR(e.nombre) ? nom : nom + "…", 24, y + fila / 2);
+    g.strokeStyle = css("--rule"); g.lineWidth = 1; g.beginPath(); g.moveTo(x0, y + fila); g.lineTo(x1, y + fila); g.stroke(); });
+  // eje de tiempo
+  const span = BD.b - BD.a, paso = [3600e3, 3 * 3600e3, 6 * 3600e3, 12 * 3600e3, 86400e3, 2 * 86400e3, 7 * 86400e3, 14 * 86400e3, 30 * 86400e3].find(p => span / p <= Math.max(3, (x1 - x0) / 110)) || 30 * 86400e3;
+  g.fillStyle = css("--muted"); g.textAlign = "center"; g.font = `11px ${css("--font") || "sans-serif"}`;
+  const off = new Date().getTimezoneOffset() * 60000;
+  for (let t = Math.ceil((BD.a - off) / paso) * paso + off; t < BD.b; t += paso) { const x = X(t); if (x < x0 || x > x1 - 34) continue;
+    g.strokeStyle = css("--rule"); g.beginPath(); g.moveTo(x, top); g.lineTo(x, abajo); g.stroke();
+    g.fillText(paso >= 86400e3 ? dloc(t) : tloc(t, true), x, abajo + 12); }
+  g.textAlign = "start";
+  g.save(); g.beginPath(); g.rect(x0, 0, x1 - x0, H); g.clip();
+  // operaciones: barra de la entrada a la salida
+  D.operaciones.forEach(o => { const [ta, tc, k, side, r] = o; if (tc < BD.a || ta > BD.b) return;
+    const y = top + k * fila + fila - 12, xa = X(ta), xb = Math.max(X(tc), xa + 3);
+    g.fillStyle = r >= 0 ? css("--gain") : css("--loss"); g.globalAlpha = .85; g.fillRect(xa, y, xb - xa, 6); g.globalAlpha = 1;
+    BD.geom.marcas.push({tipo: "op", x: (xa + xb) / 2, xa, xb, y: y + 3, o}); });
+  // señales: triángulo arriba (largo) o abajo (corto)
+  D.senales.forEach(s => { const [t, k, side, res, det] = s; if (t < BD.a || t > BD.b) return;
+    const x = X(t), y = top + k * fila + 17, sz = 6;
+    const propia = res === "ocupada" && det === k, r2 = propia ? "propia" : res;
+    const col = r2 === "entra" ? css("--ink") : r2 === "filtro" ? css("--warn") : r2 === "limite" ? css("--loss") : css("--muted");
+    g.beginPath(); if (side === 1) { g.moveTo(x, y - sz); g.lineTo(x + sz, y + sz); g.lineTo(x - sz, y + sz); } else { g.moveTo(x, y + sz); g.lineTo(x + sz, y - sz); g.lineTo(x - sz, y - sz); } g.closePath();
+    if (r2 === "entra") { g.fillStyle = col; g.fill(); } else { g.strokeStyle = col; g.lineWidth = 1.5; if (r2 === "propia") g.globalAlpha = .45; g.stroke(); g.globalAlpha = 1; }
+    BD.geom.marcas.push({tipo: "sen", x, y, s, r2}); });
+  // marca señalada
+  if (BD.hover) { g.strokeStyle = css("--gold"); g.lineWidth = 2; g.beginPath();
+    if (BD.hover.tipo === "op") g.rect(BD.hover.xa - 2, BD.hover.y - 6, BD.hover.xb - BD.hover.xa + 4, 12); else g.arc(BD.hover.x, BD.hover.y, 10, 0, 7);
+    g.stroke(); }
+  g.restore();
+  bdTip();
+}
+function bdTip() {
+  const tip = $("bd-tip"), h = BD.hover, D = BD.j && BD.j.desglose; if (!h || !D) { tip.hidden = true; return; }
+  const nom = k => TR((D.estrategias[k] || {nombre: "?"}).nombre), lado = sd => sd === 1 ? TR("Largo") : TR("Corto");
+  let txt;
+  if (h.tipo === "op") { const [ta, tc, k, side, r] = h.o; txt = `<b>${esc(nom(k))}</b> · ${lado(side)} · <span class="${r >= 0 ? "es-pos" : "es-neg"}">${sgn(r, 2)} R</span><br>${tloc(ta, true)} → ${tloc(tc, true)}`; }
+  else { const [t, k, side, res, det] = h.s;
+    const que = h.r2 === "ocupada" ? `${TR("Bloqueada por la operación de")} ${esc(nom(det))}` : h.r2 === "propia" ? TR("Ya estaba en su operación")
+      : h.r2 === "filtro" ? `${TR("Filtrada")}: ${esc(TR((BD.j.filter_names || {})[det] || det))}` : h.r2 === "limite" ? `${TR("Límite del día")}: ${esc(det)}`
+      : det === "limite" ? TR("Entra con orden límite") : TR("Entra");
+    txt = `<b>${esc(nom(k))}</b> · ${lado(side)} · ${tloc(t, true)}<br>${que}`; }
+  tip.innerHTML = txt; tip.hidden = false;
+  const W = $("bd-tl").clientWidth; tip.style.left = Math.min(Math.max(4, h.x + 12), W - tip.offsetWidth - 4) + "px"; tip.style.top = Math.max(4, h.y - 46) + "px";
+}
+function bdBuscar(x, y) {
+  if (!BD.geom) return null; let mejor = null, dm = 14;
+  BD.geom.marcas.forEach(m => { const d = m.tipo === "op" ? (x >= m.xa - 3 && x <= m.xb + 3 ? Math.abs(y - m.y) : 99) : Math.hypot(x - m.x, y - m.y);
+    if (d < dm) { dm = d; mejor = m; } });
+  return mejor;
+}
+function bdZoom(f, tc) {
+  const [t0, t1] = bdLimites(); tc = tc === undefined ? (BD.a + BD.b) / 2 : tc;
+  let w = Math.min(Math.max((BD.b - BD.a) * f, 4 * 3600e3), t1 - t0);
+  BD.a = tc - (tc - BD.a) * w / (BD.b - BD.a); BD.b = BD.a + w;
+  if (BD.a < t0) { BD.b += t0 - BD.a; BD.a = t0; } if (BD.b > t1) { BD.a -= BD.b - t1; BD.b = t1; }
+  bdDraw();
+}
+(() => {
+  const el = $("bd-tl"), pos = e => { const r = el.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  el.addEventListener("pointerdown", e => { const p = pos(e); BD.drag = {x: p.x, a: BD.a, b: BD.b, mov: false}; el.setPointerCapture(e.pointerId); el.style.cursor = "grabbing"; });
+  el.addEventListener("pointermove", e => { const p = pos(e);
+    if (BD.drag && BD.geom) { const dx = p.x - BD.drag.x; if (Math.abs(dx) > 3) BD.drag.mov = true;
+      if (BD.drag.mov) { const [t0, t1] = bdLimites(), dt = -dx / (BD.geom.x1 - BD.geom.x0) * (BD.drag.b - BD.drag.a);
+        let a = BD.drag.a + dt, b = BD.drag.b + dt; if (a < t0) { b += t0 - a; a = t0; } if (b > t1) { a -= b - t1; b = t1; } BD.a = a; BD.b = b; BD.hover = null; bdDraw(); return; } }
+    if (e.pointerType === "mouse" && !BD.drag) { const m = bdBuscar(p.x, p.y); if (m !== BD.hover) { BD.hover = m; bdDraw(); } } });
+  const up = e => { const p = pos(e); if (BD.drag && !BD.drag.mov) { BD.hover = bdBuscar(p.x, p.y); bdDraw(); } BD.drag = null; el.style.cursor = ""; };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", () => { BD.drag = null; });
+  el.addEventListener("pointerleave", e => { if (e.pointerType === "mouse" && !BD.drag && BD.hover) { BD.hover = null; bdDraw(); } });
+  el.addEventListener("wheel", e => { if (!BD.geom) return; e.preventDefault(); const p = pos(e);
+    bdZoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, BD.a + (p.x - BD.geom.x0) / (BD.geom.x1 - BD.geom.x0) * (BD.b - BD.a)); }, {passive: false});
+})();
+document.querySelectorAll("[data-bd-rango]").forEach(b => b.onclick = () => bdRango(+b.dataset.bdRango));
+$("bd-close").onclick = bdClose;
+$("bd").addEventListener("click", e => { if (e.target === $("bd")) bdClose(); });
+$("bd-json").onclick = () => {   // los datos de la prueba para analizar_estrategias.py
+  const j = BD.j; if (!j) return;
+  const datos = {kabor: 1, tipo: "desglose", version: (CFG && CFG.version) || "", params: j.params, desde: j.from, hasta: j.to, metrics: j.metrics,
+    filter_names: j.filter_names, why_names: j.why_names, desglose: j.desglose,
+    trades: (j.trades || []).map(t => ({t_open: t.t_open, t_close: t.t_close, side: t.side, r: t.r, why: t.why, estrategia: t.estrategia}))};
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(datos)], {type: "application/json"}));
+  a.download = `desglose_${j.params.symbol}_${j.params.timeframe}_${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+document.addEventListener("keydown", e => { if ($("bd").hidden) return;
+  if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); bdClose(); }
+  else if (e.key === "Tab") { const f = [...$("bd").querySelectorAll("button:not([disabled])")]; const k = f.indexOf(document.activeElement);
+    if (e.shiftKey && k <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && k === f.length - 1) { e.preventDefault(); f[0].focus(); } } }, true);
+window.addEventListener("resize", () => { if (!$("bd").hidden) bdDraw(); });
+/* ---------- Ayuda: guía del sistema (web/ayuda/guia.html) ---------- */
+let AY = null, AY_LANG = null;
+async function loadAyuda() {   // la guía en el idioma del panel (guia.html, guia.en.html, guia.fr.html)
+  const lang = ["en", "fr"].includes(document.documentElement.lang) ? document.documentElement.lang : "es";
+  if (AY && AY_LANG === lang) return;
+  try { const r = await fetch(lang === "es" ? "/ayuda/guia.html" : `/ayuda/guia.${lang}.html`, {cache: "no-cache"}); if (!r.ok) throw 0; AY = await r.text(); AY_LANG = lang; }
+  catch (e) { $("ay-body").innerHTML = `<p>${esc(TR("No se pudo cargar la guía."))}</p>`; return; }
+  $("ay-buscar").value = "";
+  $("ay-body").innerHTML = AY;
+  $("ay-body").querySelectorAll("img").forEach(im => { im.loading = "lazy"; im.onclick = () => window.open(im.src, "_blank", "noopener"); });
+  // índice
+  $("ay-toc").innerHTML = [...$("ay-body").querySelectorAll("section")].map(sec => {
+    const h = sec.querySelector("h2"), subs = [...sec.querySelectorAll("h3")];
+    subs.forEach((h3, i) => { if (!h3.id) h3.id = sec.id + "-" + (i + 1); });
+    return `<a href="#ayuda" data-ir="${sec.id}">${esc(h ? h.textContent : sec.id)}</a>` + subs.map(h3 => `<a class="sub" href="#ayuda" data-ir="${h3.id}">${esc(h3.textContent)}</a>`).join("");
+  }).join("");
+  $("ay-toc").querySelectorAll("[data-ir]").forEach(a => a.onclick = ev => { ev.preventDefault(); const t = document.getElementById(a.dataset.ir); if (t) t.scrollIntoView({behavior: "smooth", block: "start"}); });
+  ayDinamico();
+}
+async function ayDinamico() {   // partes que salen del propio programa: los ajustes comunes y las estrategias instaladas
+  let E = null; try { const r = await fetch("/api/esquema", {cache: "no-store"}); if (r.ok) E = await r.json(); } catch (e) {}
+  const caja = document.querySelector('#ay-body [data-ayuda="ajustes"]'), est = document.querySelector('#ay-body [data-ayuda="estrategias"]');
+  if (!E) { if (caja) caja.textContent = "No se pudieron leer los ajustes."; return; }
+  const sid = E.default_strategy, st = E.estrategias[sid] || Object.values(E.estrategias)[0];
+  if (caja && st) {
+    const grupos = [];
+    st.schema.filter(f => f.common && !["estrategia"].includes(f.key)).forEach(f => { let g = grupos.find(x => x.n === f.group); if (!g) grupos.push(g = {n: f.group, f: []}); g.f.push(f); });
+    const def = f => f.type === "bool" ? TR(f.default ? "sí" : "no") : Array.isArray(f.default) ? (f.default.length ? f.default.join(", ") : TR("ninguna")) : TR(String(f.default));
+    caja.className = "ay-ajustes";
+    caja.innerHTML = grupos.map(g => `<details><summary>${esc(TR(g.n))} <span class="small muted">(${g.f.length})</span></summary><dl>${g.f.map(f =>
+      `<dt>${esc(TR(f.label))}</dt><dd>${esc(f.help ? TR(f.help) : "")}${f.help ? " " : ""}<span class="muted">${esc(TR("Por defecto"))}: ${esc(def(f))}${f.options && f.type === "select" && f.options.length <= 8 ? ` · ${esc(TR("opciones"))}: ${esc(f.options.map(o => TR(o)).join(", "))}` : ""}.</span></dd>`).join("")}</dl></details>`).join("");
+  }
+  if (est) est.innerHTML = `<dl class="ay-faq">${Object.values(E.estrategias).map(x => `<dt>${esc(TR(x.nombre))}${x.version ? ` <span class="small muted">v${esc(x.version)}</span>` : ""}</dt><dd>${esc(x.descripcion ? TR(x.descripcion) : TR("Sin descripción."))}</dd>`).join("")}</dl>`;
+}
+$("ay-buscar").addEventListener("input", () => {
+  const q = $("ay-buscar").value.trim().toLowerCase();
+  $("ay-body").querySelectorAll("section").forEach(sec => sec.classList.toggle("ay-oculta", !!q && !sec.textContent.toLowerCase().includes(q)));
+  $("ay-toc").querySelectorAll("[data-ir]").forEach(a => { const t = document.getElementById(a.dataset.ir), sec = t && t.closest("section"); a.hidden = !!(sec && sec.classList.contains("ay-oculta")); });
+  if (q) { const first = [...$("ay-body").querySelectorAll("section")].find(s => !s.classList.contains("ay-oculta")); if (first) first.querySelectorAll("details").forEach(d => d.open = d.textContent.toLowerCase().includes(q)); }
+});
+$("ay-imprimir").onclick = () => { $("ay-body").querySelectorAll("details").forEach(d => d.open = true); document.body.classList.add("imprimiendo-ayuda");
+  setTimeout(() => { window.print(); document.body.classList.remove("imprimiendo-ayuda"); }, 200); };
 /* ---------- datos externos ---------- */
 let EXT = null, EXT_T = null;
 const EX_MODOS = {no: "No usar", completar: "Completar MFP hacia atrás", solo: "Solo los externos"};
@@ -2328,7 +3348,8 @@ async function runBacktest() {
   $("bt-meta").textContent = "Calculando con el historial (la primera vez puede tardar mientras descarga velas)…";
   try {
     const params = Object.assign({}, FORM), days = +$("bt-days").value;
-    const j = await post("/api/backtest", {params, days});
+    const orden = (FORM.combinar || []).length && PEST && PEST.bot === VIEW.id ? PEST.estrategias.filter(e => e.activa).map(e => e.id) : null;
+    const j = await post("/api/backtest", {params, days, orden});
     if (!j.ok) { showErrors(j.errors || [j.error || "No se pudo hacer la prueba"]); $("bt-meta").textContent = "La prueba no se pudo hacer."; return; }
     BT_LAST = j; renderBt(j);
     const mm = j.metrics; toast(`Prueba: ${mm.n} operaciones, ${sgn(mm.total_r, 1)} R, PF ${mm.pf === null ? "–" : fmt(mm.pf, 2)}, drawdown ${fmt(mm.max_dd, 1)} R`);
@@ -2337,7 +3358,17 @@ async function runBacktest() {
   } catch (e) { showErrors(["Sin conexión con la Raspberry"]); }
   finally { b.disabled = false; b.innerHTML = 'Probar<span class="long"> en el histórico</span>'; }
 }
+function btEstr(j) {   // desglose de una prueba con varias estrategias
+  let el = $("bt-estr"); if (!el) { el = document.createElement("div"); el.id = "bt-estr"; $("bt-extra").before(el); }
+  const pe = j.por_estrategia, boton = j.desglose ? `<button class="btn small" type="button" id="bt-desglose" style="margin-top:10px">${esc(TR("Desglose detallado"))}</button>` : "";
+  el.hidden = !boton; if (!pe || !pe.length) { el.innerHTML = boton; if (boton) $("bt-desglose").onclick = () => bdOpen(j); return; }
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:12px 0 6px">${esc(TR("Por estrategia"))}</h3>${boton}</div><div class="tbl"><table class="small"><thead><tr><th>#</th><th>${esc(TR("Estrategia"))}</th><th>TF</th><th>${esc(TR("Ops."))}</th><th>${esc(TR("Acierto"))}</th><th>PF</th><th>R</th><th>${esc(TR("Bloqueadas"))}</th></tr></thead><tbody>
+    ${pe.map((e, i) => { const m = e.metrics; return `<tr><td>${i + 1}</td><td>${esc(TR(e.nombre))}</td><td>${esc(e.tf || "")}</td><td>${m.n}</td><td>${m.n ? fmt(m.winrate, 1) + " %" : "–"}</td><td>${m.pf === null ? "–" : fmt(m.pf, 2)}</td><td class="${m.total_r >= 0 ? "es-pos" : "es-neg"}">${sgn(m.total_r, 2)}</td><td>${e.bloqueadas}</td></tr>`; }).join("")}</tbody></table></div>
+    <p class="small muted">${esc(TR("Orden de prioridad de la prueba: el de la puntuación actual del bot. «Bloqueadas»: señales que no se tomaron porque ya había una operación de otra estrategia."))}</p>`;
+  if (boton) $("bt-desglose").onclick = () => bdOpen(j);
+}
 function renderBt(j) {
+  btEstr(j);
   const m = j.metrics, P = j.params;
   const WH = trMap(Object.assign({}, WHY0, j.why_names || {}));
   const fu = j.fuente || {tipo: "mfp"};
@@ -2576,7 +3607,7 @@ function mcDraw() {
 }
 
 /* ---------- optimizador con walk-forward (7.0) ---------- */
-const OP_GRUPOS_NO = ["Mercado", "Ejecución en sandbox", "Guardián (detiene el bot)"], OP_TIPOS_NO = ["symbol", "strategy", "cuentas", "text"];
+const OP_GRUPOS_NO = ["Mercado", "Ejecución en sandbox", "Guardián (detiene el bot)"], OP_TIPOS_NO = ["symbol", "strategy", "cuentas", "combinar", "text"];
 const OP_METRICAS = {r_dd: "R / drawdown", total: "R total", pf: "Profit factor", sqn: "SQN"};
 const OP_MAX = 225, OP_MAXV = 15;
 let OP_UI = null, OP_JOB = null, OP_T = null, OP_SEL = null, OP_VER = "v", OP_GEOM = null;
@@ -2901,7 +3932,7 @@ function vgBlock(e, cid) {
   const v = e.vivo, x = e.exp;
   const kv = v && x ? kvHtml([
     ["Real, ajustes actuales", `<span class="${cls(e.total)}">${sgn(e.total, 1)} R</span> <span class="muted small">${e.n} ops en ${fmt(v.dias, 0)} días</span>`],
-    ["Esperado", `${sgn(x.avg * e.n, 1)} R <span class="muted small">en ${e.n} ops${x.n === null ? "" : ` · unas ${fmt(x.n, 0)} ops en esos días`}</span>`],
+    ["Esperado", `${sgn(x.avg * e.n, 1)} R <span class="muted small"><span>${esc(TR("en " + e.n + " ops"))}</span>${x.n === null ? "" : ` <span>${esc(TR("· unas " + fmt(x.n, 0) + " ops en esos días"))}</span>`}</span>`],
     ["R por operación", `${v.avg === null ? "–" : sgn(v.avg, 2)} <span class="muted small">backtest ${sgn(x.avg, 2)}</span>`],
     ["Acierto", `${v.wr === null ? "–" : fmt(v.wr, 0) + " %"} <span class="muted small">backtest ${fmt(x.wr, 0)} %</span>`],
     ["Pérdidas seguidas", `${v.racha} <span class="muted small">máximo real</span>`],
@@ -3300,6 +4331,7 @@ function spark(vals) {
 }
 const TOOLS = {
   estadisticas: ["Estadísticas", "Rendimiento de tus bots con gráficos y métricas", "i-estadisticas"],
+  analisis: ["Análisis", "Gráficos de TradingView del mismo mercado que opera MyFundedPerps", "i-analisis"],
   diario: ["Diario", "Tus operaciones con notas, etiquetas y si siguieron el plan", "i-diario"],
   planes: ["Planes", "Tu análisis convertido en reglas que ejecuta el bot «Plan manual»", "i-planes"],
   cartera: ["Cartera", "Varios bots juntos, como en la misma cuenta", "i-cartera"],
@@ -3311,7 +4343,8 @@ const TOOLS = {
   estrategias: ["Estrategias", "Archivos de estrategia que pueden usar los bots", "i-estrategias"],
   instrumentos: ["Instrumentos", "Mercados disponibles y su comisión", "i-instrumentos"],
   avisos: ["Avisos", "Mensajes por Telegram con el gráfico de cada operación", "i-avisos"],
-  ajustes: ["Ajustes", "Tu cuenta, las sesiones abiertas y el programa", "i-ajustes"]};
+  ajustes: ["Ajustes", "Tu cuenta, las sesiones abiertas y el programa", "i-ajustes"],
+  ayuda: ["Ayuda", "Guía del sistema: bots, ajustes, estrategias, planes, SMT y mantenimiento", "i-ayuda"]};
 const ico = id => `<svg class="ic" aria-hidden="true"><use href="#${id}"/></svg>`;
 /* ---------- estilo del panel: color de la barra del navegador ---------- */
 function temaColor() {
@@ -3564,14 +4597,14 @@ function renderNav() {
   const plTag = plPend ? `<span class="sb-tag">${plPend} PEND</span>` : "";
   const item = (k, extra = "") => `<a href="#${k}"${at(k)}>${ico(TOOLS[k][2])}<span class="nm">${TOOLS[k][0]}</span>${extra}</a>`;
   $("nav").innerHTML =
-    `<a href="#resumen"${at("resumen")}>${ico("i-resumen")}<span class="nm">Resumen</span></a>` + item("estadisticas") + item("diario") + item("planes", plTag) + item("fiscal") + item("cartera") + item("vigilante", vgTag) +
+    `<a href="#resumen"${at("resumen")}>${ico("i-resumen")}<span class="nm">Resumen</span></a>` + item("estadisticas") + item("analisis") + item("diario") + item("planes", plTag) + item("fiscal") + item("cartera") + item("vigilante", vgTag) +
     navSec("bots", "Bots", (bots.length ? `<span class="sb-count">${bots.length}</span>` : ""),
       bots.some(b => ["detenido", "error", "sin_datos"].includes(b.status)), VIEW.kind === "bot" || VIEW.kind === "nuevo",
       navGrupos(bots, at) + `<a href="#nuevo" class="new"${at("nuevo")}>${ico("i-plus")}<span class="nm">Nuevo bot</span></a>`) +
     navSec("herr", "Herramientas", "", !!(nBlq || rgStop || (nt && nt.config.activo && (nt.ahora || nt.caducado)))
       , ["cuentas", "estrategias", "riesgo", "noticias", "instrumentos", "avisos", "ajustes"].includes(VIEW.kind),
       item("cuentas", acTag) + item("estrategias") + item("riesgo", rgStop ? '<span class="sb-tag bad">STOP</span>' : "") + item("noticias", ntTag) + item("instrumentos") + item("avisos") +
-      `<div class="sb-label"><span>Sistema</span></div>` + item("ajustes"));
+      `<div class="sb-label"><span>Sistema</span></div>` + item("ajustes") + item("ayuda"));
   const w = VIEW.kind === "bot" ? (bots.find(b => String(b.id) === String(VIEW.id)) || {}).name : VIEW.kind === "nuevo" ? "Bot nuevo" : TOOLS[VIEW.kind] ? TOOLS[VIEW.kind][0] : "Resumen";
   $("where").textContent = w || "";
   renderStopbar();
@@ -3731,7 +4764,7 @@ async function tvShow(i) {
     ["Duración", `${fmt(t.dur, 0)} min${t.bars !== undefined ? ` · ${t.bars} velas` : ""}`],
     t.mfe !== undefined && t.mfe !== null ? ["A favor / en contra", `<span class="gain">${sgn(t.mfe)} R</span> / <span class="loss">${sgn(t.mae)} R</span>`] : null,
     t.part_pct ? ["Venta parcial", `${fmt(t.part_pct, 0)} % a ${ptxt(t.part_px)}`] : null,
-    t.trail || t.ext_n ? ["Gestión", [t.trail ? "trailing" : "", t.ext_n ? `${t.ext_n} ampliación${t.ext_n > 1 ? "es" : ""}` : ""].filter(Boolean).join(" · ")] : null,
+    t.trail || t.ext_n ? ["Gestión", [t.trail ? "trailing" : "", t.ext_n ? (t.ext_n > 1 ? `${t.ext_n} ampliaciones` : "1 ampliación") : ""].filter(Boolean).join(" · ")] : null,
     t.trend ? ["Tendencia al entrar", esc(t.trend)] : null,
     t.inv ? ["Señal", `invertida · ${esc(t.inv)}`] : null,
     t.r_bruto !== undefined ? ["Sin comisiones", `<span class="${cls(t.r_bruto)}">${sgn(t.r_bruto)} R</span>`] : null]);
@@ -4000,7 +5033,29 @@ async function acPost(body) {
   if (j.cuentas) { AC = j; renderAc(); }
   return j;
 }
-function acState(c) { return c.bloqueo ? "blq" : !c.activa ? "off" : c.listo ? "ok" : "err"; }
+function acState(c) {   // con el envío de órdenes apagado la cuenta no está «sin conexión»: solo no opera
+  return c.bloqueo ? "blq" : !c.activa ? "off" : c.listo ? "ok" : AC && !AC.ordenes && !c.error && (c.snap_t || c.cuenta_mfp) ? "pap" : "err"; }
+const EV_NOM = {"señal": "señal", apertura: "apertura", cierre: "cierre", configuracion: "configuración", ampliacion: "ampliación",
+  bot_detenido: "bot detenido", bot_reactivado: "bot reactivado", bot_reanudado: "bot reanudado", descartada_coste: "descartada por coste",
+  error_estrategia: "error de la estrategia", limite_estrategia: "límite de la estrategia", manual: "gestión manual", orden_limite: "orden límite",
+  parcial: "venta parcial", pausa_manual: "pausa manual", reanudar_manual: "reanudado a mano", "señal_filtrada": "señal filtrada",
+  "señal_ignorada": "señal ignorada", trailing_activo: "trailing activo", orden_enviada: "orden enviada", apertura_real: "apertura real",
+  cierre_enviado: "cierre enviado", cierre_real: "cierre real", salidas_real: "salidas en la cuenta", ejecucion: "ejecución",
+  ejecucion_bloqueada: "ejecución bloqueada", ejecucion_error: "error de ejecución"};
+function evInfo(t) {   // «Configuración nº 4 aplicada. Cambios: A, B»: cada ajuste por separado
+  const m = /^Configuración nº (\d+) aplicada\. Cambios: (.+)$/.exec(t);
+  return m ? `${TR("Configuración nº " + m[1] + " aplicada.")} ${TR("Cambios:")} ${m[2].split(", ").map(x => TR(x)).join(", ")}` : TR(t);
+}
+function acApi(c) {   // 9.4: stream de la cuenta y lecturas de la clave (MFP limita a 30 GET por minuto)
+  const A = c.api; if (!A) return [];
+  const S = A.stream, L = A.lecturas, out = [];
+  out.push(["Stream de la cuenta", !S ? `<span class="muted">${esc(TR("sin stream"))}</span>`
+    : S.al_dia ? `<span class="gain">● ${esc(TR("conectado"))}</span>${S.desde ? ` <span class="muted small">${esc(ago(S.desde))}</span>` : ""}`
+    : `<span class="loss">● ${esc(TR(S.estado))}</span>${S.error ? ` <span class="muted small">${esc(S.error)}</span>` : ""}`]);
+  if (L) out.push(["Lecturas por minuto", `${L.minuto} <span class="muted small">· ${esc(TR("máx."))} <span class="${L.max_hora >= L.tope ? "loss" : ""}">${L.max_hora}</span> (1 h) · ${L.max_dia} (24 h) · ${esc(TR("límite de MFP"))} ${L.limite_mfp}</span>`]);
+  if (L && (L.avisos_dia || L.r429_dia || L.frenado_hasta)) out.push(["Avisos de MFP (24 h)", `<span class="loss">${L.avisos_dia} ${esc(TR("avisos"))} · ${L.r429_dia} ${esc(TR("frenadas"))}</span>${L.frenado_hasta ? ` · ${esc(TR("esperando hasta"))} ${esc(tloc(L.frenado_hasta, true))}` : ""}`]);
+  return out;
+}
 function acLimits(b) {
   if (!b.auto) return "Sin bloqueo automático.";
   const L = [b.perdida_usd && `pérdida ${fmt(b.perdida_usd, 0)} $`, b.ganancia_usd && `ganancia ${fmt(b.ganancia_usd, 0)} $`,
@@ -4019,14 +5074,14 @@ function renderAc() {
   $("b-ac-new").disabled = AC.cuentas.length >= AC.max;
   $("ac-list").innerHTML = AC.cuentas.length ? AC.cuentas.map((c, i) => {
     const st = acState(c), a = c.cuenta || {}, d = c.dia || {}, b = c.bloqueo_cfg, thr = b.auto && b.dll_pct ? b.dll_pct : 0;
-    const label = {ok: "OPERATIVA", blq: "BLOQUEADA", off: "DESACTIVADA", err: "SIN CONEXIÓN"}[st];
+    const label = {ok: "OPERATIVA", blq: "BLOQUEADA", off: "DESACTIVADA", pap: "SIN ENVÍO DE ÓRDENES", err: "SIN CONEXIÓN"}[st];
     const pct = d.dll_usado_pct;
     const bots = c.bots.length ? c.bots.map(x => `<a href="#bot/${esc(x.id)}">${esc(x.nombre)}</a>${x.posicion ? " ●" : ""}${x.archivado ? " (" + TR("archivado") + ")" : ""}`).join(", ") : "ninguno";
     return `<section class="card ac" data-s="${st}">
       ${c.bloqueo ? `<div class="ac-lock"><span>Bloqueada ${esc(c.bloqueo_texto)}</span><span>${esc(AC_ORIG[c.bloqueo.origen] || "")}${c.bloqueo.estricto ? " · estricto" : ""}</span></div>` : ""}
       <div class="card-head"><h2>${i + 1}. ${esc(c.nombre)}</h2><span class="mode${st === "ok" ? " live" : st === "blq" ? " bad" : ""}">${label}</span></div>
       <div class="ac-big ${cls(d.pnl_dia)}">${d.pnl_dia === null || d.pnl_dia === undefined ? "–" : sgn(d.pnl_dia) + " $"}</div>
-      <div class="small muted">Resultado de hoy · ${d.ops || 0} operaci${d.ops === 1 ? "ón" : "ones"} de los bots${b.auto && b.max_ops ? ` (máximo ${b.max_ops})` : ""}</div>
+      <div class="small muted"><span>${esc(TR(d.ops === 1 ? "Resultado de hoy · 1 operación de los bots" : `Resultado de hoy · ${d.ops || 0} operaciones de los bots`))}</span>${b.auto && b.max_ops ? ` <span>${esc(TR(`(máximo ${b.max_ops})`))}</span>` : ""}</div>
       ${pct !== null && pct !== undefined ? `<div class="dll" title="Daily loss usado"><i style="width:${Math.min(100, pct)}%;${thr && pct >= thr * .75 ? "background:var(--loss)" : ""}"></i>${thr ? `<b style="left:${thr}%"></b>` : ""}</div>
         <div class="small muted">Daily loss usado: ${fmt(pct, 0)} % · quedan ${fmt(d.dll_queda, 0)} $ de ${fmt(d.dll_limite, 0)} $${thr ? ` · se bloquea al ${fmt(thr, 0)} %` : ""}</div>` : ""}
       ${c.bloqueo ? `<p class="small loss" style="margin-top:8px">${esc(c.bloqueo.motivo)}</p>` : c.problema && c.activa && AC.ordenes ? `<p class="small loss" style="margin-top:8px">${esc(c.problema)}</p>` : ""}
@@ -4037,7 +5092,7 @@ function renderAc() {
         ["Equity", a.equity !== undefined && a.equity !== null ? fmt(a.equity, 2) + " $" : "–"],
         ["Margen al drawdown", a.dd_queda !== undefined && a.dd_queda !== null ? fmt(a.dd_queda, 0) + " $" : "–"],
         ["Multiplicador de riesgo", "×" + fmt(c.mult, 2)], ["Clave", `<code>${esc(c.clave)}</code>`],
-        ["Leída", c.snap_t ? ago(c.snap_t) : c.snap_err ? `<span class="loss">${esc(c.snap_err)}</span>` : "–"]])}</dl>
+        ["Leída", c.snap_t ? ago(c.snap_t) : c.snap_err ? `<span class="loss">${esc(c.snap_err)}</span>` : "–"], ...acApi(c)])}</dl>
       <p class="small ac-bots" style="margin-top:10px"><b>Bots:</b> ${bots}</p>
       <p class="small muted" style="margin-top:4px">${esc(acLimits(b))}</p>
       <div class="ac-actions">
@@ -4216,11 +5271,13 @@ function route() {
   if (VIEW.kind === "vigilante") { renderVg(); loadVg(); }
   if (VIEW.kind === "diario") loadDiario();
   if (VIEW.kind === "ajustes") pwaRender();
-  if (isBot && VIEW.sub === "panel") { $("vg-card").dataset.k = ""; vgPanel(); loadVg(); }
+  if (isBot && VIEW.sub === "panel") { $("vg-card").dataset.k = ""; vgPanel(); loadVg(); loadPe(); }
   if (isCfg) mcHome("config");
   if (VIEW.kind === "estrategias") loadStrategies();
   if (VIEW.kind === "avisos") loadAvisos();
-  if (VIEW.kind === "planes") loadPlanes();
+  if (VIEW.kind === "planes") { loadPlanes(); gxStart(); }
+  if (VIEW.kind === "analisis") loadAnalisis();
+  if (VIEW.kind === "ayuda") loadAyuda();
   if (VIEW.kind === "fiscal") loadFiscal();
   if (VIEW.kind === "cuentas") { if (!$("ac-edit").hidden && prev.kind !== "cuentas") $("ac-edit").hidden = true; loadAc(); }
   if (prev.kind !== VIEW.kind || prev.id !== VIEW.id || prev.sub !== VIEW.sub) window.scrollTo(0, 0);
@@ -4760,7 +5817,7 @@ function esCalendar(T) {
   const sc = cal.parentElement; sc.scrollLeft = sc.scrollWidth;
   cal.onclick = e => { const c = e.target.closest("i[data-k]"); if (!c) return; cal.querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); c.classList.add("sel");
     const d = days[c.dataset.k], dt = new Date(c.dataset.k + "T12:00:00");
-    $("es-cal-info").innerHTML = `<b>${dLong(dt.getTime())}</b>: ${d ? `<b class="${cls(d.v)}">${esFmt(d.v)}</b> en ${d.n} operación${d.n === 1 ? "" : "es"} (${d.w} ganadora${d.w === 1 ? "" : "s"})` : '<span class="muted">sin operaciones</span>'}`; };
+    $("es-cal-info").innerHTML = `<b>${dLong(dt.getTime())}</b>: ${d ? `<b class="${cls(d.v)}">${esFmt(d.v)}</b> en ${d.n === 1 ? "1 operación" : d.n + " operaciones"} (${d.w} ganadora${d.w === 1 ? "" : "s"})` : '<span class="muted">sin operaciones</span>'}`; };
   const vals = Object.values(days), gd = vals.filter(d => d.v > 0).length, bd = vals.filter(d => d.v < 0).length;
   $("es-cal-info").innerHTML = vals.length ? `<span class="muted">${gd} día${gd === 1 ? "" : "s"} en verde y ${bd} en rojo. Toca un día para ver su resultado.</span>` : '<span class="muted">Sin operaciones en este periodo.</span>';
 }

@@ -30,6 +30,7 @@ import csv
 import hmac
 import io
 import json
+import math
 import os
 import queue
 import random
@@ -70,13 +71,15 @@ import fiscal as FI  # noqa: E402
 import temas as TM  # noqa: E402
 
 APP = "KaBor Quant"
-VERSION = "8.9"
+VERSION = "9.4.2"
 WEB_DIR = os.path.join(HERE, "web")
 ESTATICOS = {"/favicon.svg": ("favicon.svg", "image/svg+xml"), "/icono-180.png": ("icono-180.png", "image/png"),
              "/icono-512.png": ("icono-512.png", "image/png"), "/icono-192.png": ("icono-192.png", "image/png"),
              "/manifest.webmanifest": ("manifest.webmanifest", "application/manifest+json"),
              "/sw.js": ("sw.js", "text/javascript; charset=utf-8"),
              "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
+             "/vendor/lightweight-charts.js": ("vendor/lightweight-charts.standalone.production.js",
+                                               "text/javascript; charset=utf-8"),
              "/i18n/en.json": ("i18n/en.json", "application/json; charset=utf-8"),
              "/i18n/fr.json": ("i18n/fr.json", "application/json; charset=utf-8")}
 SANDBOX_HOST = "https://sandbox.myfundedperpetuals.com"
@@ -86,6 +89,9 @@ BT_MAX = 60000           # velas máximas en un backtest del panel
 MAX_BOTS = 10
 ALIASES = {"GOLD": ["GOLD", "XAU", "XAUUSD"], "NAS100": ["NAS100", "US100", "XYZ100", "NDX", "NASDAQ"],
            "BTC": ["BTC", "BTCUSDT"], "CL": ["CL", "WTI", "USOIL", "CLUSDT"], "BRENT": ["BRENT", "BRENTOIL"]}
+PUNT_DIAS = 90            # backtest de cada estrategia de un bot combinado para su puntuación
+PUNT_MIN_OPS = 10         # con menos operaciones no hay puntuación (va al final de la prioridad)
+PUNT_CADA_MS = 24 * 3_600_000
 DEFAULT_CNT = {"signals": 0, "ignored": 0, "skipped_cost": 0, "day_blocks": 0, "guard_stops": 0, "errors": 0,
                "reconnects": 0, "gaps": 0, "recovered": 0, "partials": 0, "extensions": 0, "filtered": {}}
 WHY_ES = dict(K.EXIT_NAMES, **{"RSI": "RSI extremo", "RSI EN CONTRA": "RSI en contra"})
@@ -606,12 +612,44 @@ def is_crypto(m):
     return "crypto" in cat or "cripto" in cat or (m or {}).get("provider") == "binance"
 
 
+TV_RE = re.compile(r"^[A-Z0-9_]{1,20}:[A-Z0-9_.!&-]{1,40}$")
+# Instrumentos de MFP sin el mismo mercado en TradingView: se muestra uno parecido (precio aproximado).
+TV_APROX = {"veranta": "OANDA:{coin}", "ostium": {"DJI": "OANDA:US30USD"},
+            "composite": {"XYZ100": "HIP3XYZ:XYZ100USDC.P"}}
+
+
+def tv_auto(m):
+    """Símbolo de TradingView del mismo mercado que usa MyFundedPerps. Devuelve (símbolo, exacto)."""
+    prov = str((m or {}).get("provider") or "").lower()
+    coin = str((m or {}).get("coin") or "").upper()
+    if not coin:
+        return None, False
+    if prov == "binance":
+        if not coin.endswith(("USDT", "USDC")):
+            coin += "USDT"
+        return "BINANCE:{}.P".format(coin), True
+    if prov == "hyperliquid":
+        dex, _, base = coin.rpartition(":")
+        if dex == "XYZ":
+            return "HIP3XYZ:{}USDC.P".format(base), True
+        if not dex:
+            return "HYPERLIQUID:{}USDC.P".format(base), True
+        return None, False
+    regla = TV_APROX.get(prov)
+    if isinstance(regla, str):
+        return regla.format(coin=coin), False
+    if isinstance(regla, dict) and coin in regla:
+        return regla[coin], False
+    return None, False
+
+
 class Markets:
     """Catálogo de MyFundedPerps (público) + lista de instrumentos añadidos por el usuario."""
 
     def __init__(self, rest):
         self.rest, self.data, self.t = rest, [], 0
         self.lock = threading.Lock()
+        self.cambios = []          # mercados que MFP ha movido en su catálogo (se avisan desde la vigilancia)
         self.instr = self._load()
 
     def catalog(self, force=False):
@@ -710,17 +748,32 @@ class Markets:
         i = self.get(symbol)
         if i is None:
             raise RuntimeError("{} no está en tu lista de instrumentos".format(symbol))
-        if i.get("market_id"):
-            m = next((x for x in cat if x.get("market_id") == i["market_id"]), None)
-            if m is None:
-                raise RuntimeError("El mercado {} ({}) ya no aparece en el catálogo de MyFundedPerps".format(
-                    i["market_id"], symbol))
-            return {k: m.get(k) for k in MKT_KEYS}
-        cands = set(ALIASES.get(symbol, [symbol]))
-
         def names(x):
             s_, c = str(x.get("symbol", "")).upper(), str(x.get("coin", "")).upper()
             return {s_, c, c.split(":")[-1]}
+        cands = set(ALIASES.get(symbol, [symbol]))
+        if i.get("market_id"):
+            m = next((x for x in cat if x.get("market_id") == i["market_id"]), None)
+            if m is not None:
+                return {k: m.get(k) for k in MKT_KEYS}
+            # MyFundedPerps ha cambiado el mercado de sitio (p. ej. el Nasdaq pasó de hyperliquid|xyz:XYZ100 a
+            # composite|XYZ100): se busca el mismo instrumento por su nombre y se actualiza solo
+            viejo = i["market_id"]
+            cands |= {str(i.get("coin") or "").upper().split(":")[-1]} - {""}
+            found = [x for x in cat if names(x) & cands]
+            found.sort(key=lambda x: (x.get("trading_enabled") is False, x.get("provider") != "hyperliquid"))
+            if not found:
+                raise RuntimeError("El mercado {} ({}) ya no aparece en el catálogo de MyFundedPerps".format(viejo, symbol))
+            m = found[0]
+            with self.lock:
+                i.update({k: m.get(k) for k in MKT_KEYS})
+                i["market_id_anterior"] = viejo
+                try:
+                    self._save()
+                except OSError:
+                    pass
+            self.cambios.append((symbol, viejo, m.get("market_id")))
+            return {k: m.get(k) for k in MKT_KEYS}
         found = [x for x in cat if names(x) & cands]
         if not found:
             raise RuntimeError("No encuentro {} en el catálogo de MyFundedPerps (ver data/mercados.json)".format(symbol))
@@ -734,6 +787,46 @@ class Markets:
             except OSError:
                 pass
         return {k: m.get(k) for k in MKT_KEYS}
+
+
+    # ---- TradingView: símbolo equivalente de cada instrumento (automático o elegido por el usuario) ----
+    def _tv_load(self):
+        try:
+            with open("tradingview.json", encoding="utf-8") as f:
+                d = json.load(f)
+            return {str(k): str(v) for k, v in d.items()} if isinstance(d, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def tradingview(self):
+        propios = self._tv_load()
+        out = []
+        for i in self.list():
+            sym = i["symbol"]
+            try:
+                m = self.resolve(sym) if not i.get("provider") else i
+            except Exception:
+                m = None
+            auto, exacto = tv_auto(m)
+            tv = propios.get(sym) or auto
+            out.append({"symbol": sym, "tv": tv, "auto": auto, "propio": sym in propios,
+                        "exacto": bool(exacto) and sym not in propios, "provider": (m or {}).get("provider"),
+                        "coin": (m or {}).get("coin")})
+        return out
+
+    def set_tradingview(self, symbol, tv):
+        if not self.get(symbol):
+            raise ValueError("No existe {}".format(symbol))
+        tv = str(tv or "").strip().upper()
+        if tv and not TV_RE.match(tv):
+            raise ValueError("Escribe el símbolo como en TradingView, con la bolsa delante: BINANCE:BTCUSDT.P")
+        with self.lock:
+            d = self._tv_load()
+            if tv:
+                d[symbol] = tv
+            else:
+                d.pop(symbol, None)
+            atomic_write("tradingview.json", json.dumps(d, indent=1, ensure_ascii=False))
 
 
 class Cache:
@@ -815,7 +908,7 @@ class ConfigStore:
 # ============================ un bot ============================
 TRADE_COLS = ["n", "config", "simbolo", "tf", "lado", "apertura_utc", "cierre_utc", "apertura_ms", "cierre_ms",
               "entrada", "salida", "sl", "sl_final", "tp", "R", "resultado", "stop_pct", "duracion_min", "velas",
-              "parcial_pct", "parcial_precio", "ampliaciones", "trailing", "dia", "usd", "mfe_r", "mae_r"]
+              "parcial_pct", "parcial_precio", "ampliaciones", "trailing", "dia", "usd", "mfe_r", "mae_r", "estrategia"]
 EVENT_COLS = ["ts_vela_utc", "ms", "evento", "lado", "precio", "sl", "tp", "R", "detalle", "config"]
 CANDLE_COLS = ["ts_vela_utc", "ms", "open", "high", "low", "close", "posicion", "dia_bloqueado", "config",
                "estrategia", "indicadores"]
@@ -1051,6 +1144,7 @@ class Engine:
                                 "mfe": float(row["mfe_r"]) if row.get("mfe_r") else None,
                                 "mae": float(row["mae_r"]) if row.get("mae_r") else None,
                                 "usd": float(row["usd"]) if row.get("usd") else None,
+                                "estrategia": row.get("estrategia") or None,
                                 "day": d, "week": wkey(d)})
                 except (KeyError, ValueError):
                     continue
@@ -1076,8 +1170,62 @@ class Engine:
         os.replace(tmp, path)
 
     # ---------- arranque, recarga y recálculo ----------
+    def informe_estrategias(self):
+        """Rendimiento de cada estrategia del bot: en directo (sus operaciones) y en su backtest de puntuación."""
+        partes = K.partes_de(self.P)
+        pu = self.meta.get("puntuaciones") or {}
+        with self.lock:
+            trades = list(self.trades)
+            bloq = dict(self.cnt.get("bloqueadas") or {})
+        cfgs = {c["id"]: (c.get("params") or {}).get("estrategia") for c in self.store.history()}
+        de = lambda x: x.get("estrategia") or cfgs.get(x.get("cfg")) or self.P.get("estrategia")
+        ids = self.prioridad() + sorted({de(x) for x in trades} - set(partes))
+        out = []
+        for sid in ids:
+            tr = [x for x in trades if de(x) == sid]
+            m = K.metrics(tr)
+            usd = [x["usd"] for x in tr if x.get("usd") is not None]
+            cum, eq = 0.0, []
+            for x in tr:
+                cum += x["r"]
+                eq.append([x["t_close"], round(cum, 3)])
+            bt = (pu.get("por") or {}).get(sid) if sid in (pu.get("partes") or []) else None
+            out.append({"id": sid, "nombre": self.nombre_estrategia(sid), "activa": sid in partes, "tf": self.tf_estrategia(sid),
+                        "prioridad": self.prioridad().index(sid) + 1 if sid in partes else None,
+                        "vivo": {"n": m["n"], "winrate": round(m["winrate"], 1), "pf": round(m["pf"], 2) if m["pf"] else None,
+                                 "total_r": round(m["total_r"], 2), "avg_r": round(m["avg_r"], 3),
+                                 "max_dd": round(m["max_dd"], 2), "usd": round(sum(usd), 2) if usd else None,
+                                 "best": round(m["best"], 2), "worst": round(m["worst"], 2)},
+                        "equity": eq[-400:], "backtest": bt, "bloqueadas": bloq.get(sid, 0)})
+        return {"ok": True, "combinada": bool(self.P.get("combinar")), "estrategias": out, "puntuado": pu.get("t"),
+                "dias": pu.get("dias", PUNT_DIAS), "min_ops": PUNT_MIN_OPS,
+                "calculando": self.hub.puntuando == self.id, "riesgo_usd": self.P.get("risk_usd")}
+
+    def prioridad(self):
+        """Orden de las estrategias combinadas: mejor puntuación primero (las que no tienen, al final)."""
+        partes = K.partes_de(self.P)
+        pu = (self.meta.get("puntuaciones") or {}).get("por") or {}
+        val = lambda sid: (pu.get(sid) or {}).get("puntuacion")
+        return sorted(partes, key=lambda sid: (val(sid) is None, -(val(sid) or 0), partes.index(sid)))
+
+    def tf_estrategia(self, sid):
+        """Temporalidad con la que trabaja una de las estrategias del bot (texto, p. ej. «30m»)."""
+        partes = K.partes_de(self.P)
+        if sid not in partes:
+            return None
+        ms = K.tf_de(self.P, sid, sid == partes[0])
+        return next((k for k, v in K.TF_MS.items() if v == ms), self.P["timeframe"])
+
+    def nombre_estrategia(self, sid):
+        try:
+            return K.plugin_for(sid).nombre
+        except K.StrategyError:
+            return sid or "?"
+
     def _new_strat(self, candles, htf):
         st = K.Motor(self.P, self.hour_fn, self.instr_cost(self.P))
+        if hasattr(st.S, "ordenar"):
+            st.S.ordenar(self.prioridad())
         st.en_vivo = True                    # el bot «Plan manual» solo actúa en directo, nunca en backtests
         if htf and candles:
             st.seed_htf(htf, candles[0][0])
@@ -1095,7 +1243,8 @@ class Engine:
             last = s.get("last_t") or 0
             resume = (carry is None and bool(last) and s.get("market") == market["market_id"]
                       and s.get("tf") == self.P["timeframe"] and s.get("strat")
-                      and (s["strat"].get("estrategia_id") or K.DEFAULT_STRATEGY) == self.P["estrategia"])
+                      and (s["strat"].get("estrategia_id") or K.DEFAULT_STRATEGY) == self.P["estrategia"]
+                      and (s["strat"].get("partes") or [self.P["estrategia"]]) == K.partes_de(self.P))
             warm = [c for c in candles if c[0] <= last] if resume else candles
             if resume and len(warm) < 200:
                 resume = False
@@ -1221,8 +1370,13 @@ class Engine:
                 if t - self.last_t > self.tf_ms * 3:
                     self.cnt["gaps"] += 1
             self._guard_autoresume(t)
+            b0 = dict(getattr(st.S, "bloqueadas", None) or {})
             try:
                 evs = st.on_candle(c)
+                bq = self.cnt.setdefault("bloqueadas", {})
+                for k, v in (getattr(st.S, "bloqueadas", None) or {}).items():
+                    if v > b0.get(k, 0):
+                        bq[k] = bq.get(k, 0) + v - b0.get(k, 0)
                 if self.strat_err:
                     self.strat_err = None
                     self.log("La estrategia vuelve a funcionar.")
@@ -1300,6 +1454,10 @@ class Engine:
         D = self.decimals()
         px = lambda v: A.fpx(v, D) if v is not None else "–"
         nm, line = A.esc(self.name), A.esc(self.info_line())
+        if self.P.get("combinar") and self.st:
+            ori = (extra or {}).get("estrategia") if kind == "exit" else (self.st.pending or self.st.pos or {}).get("origen")
+            if ori:
+                nm += " · 🧩 {} ({})".format(A.esc(self.nombre_estrategia(ori)), self.tf_estrategia(ori) or self.P["timeframe"])
         risk = self.P["risk_usd"]
         pct = lambda a, b: A.fpx(100 * a / b, 2) + " %" if b else "–"
         if kind == "signal":
@@ -1466,7 +1624,8 @@ class Engine:
                 x["entry"], x["exit"], x["sl"], x["sl_final"], x["tp"] if x["tp"] is not None else "", x["r"], x["why"],
                 x["stop_pct"], x["dur"], x["bars"], x["part_pct"], x["part_px"] if x["part_px"] is not None else "",
                 x.get("ext_n", 0), 1 if x.get("trail") else 0, day_label(d), usd,
-                x["mfe"] if x.get("mfe") is not None else "", x["mae"] if x.get("mae") is not None else ""])
+                x["mfe"] if x.get("mfe") is not None else "", x["mae"] if x.get("mae") is not None else "",
+                x.get("estrategia") or self.P.get("estrategia", "")])
             if ctx:
                 try:
                     CX.escribir(self.p(CX.ARCHIVO), CX.fila(dict(x, ctx=ctx), self.name, self.P.get("estrategia", "")))
@@ -2068,6 +2227,84 @@ class Engine:
             return out
 
 
+DESG_MAX_SENALES = 6000
+
+
+def desglose_estrategias(P, trades, info, hour_fn):
+    """Detalle de una prueba por estrategia (ventana «Desglose» y script del portátil): métricas por lado, curva,
+    horas, días, motivos de salida, qué pasó con cada señal (entra, la bloquea otra operación, filtro, límite del
+    día) y la línea de tiempo de señales y operaciones."""
+    reg = info.get("registro") or []
+    partes = info.get("orden") or K.partes_de(P)
+    partes = [x for x in partes if x] or [P.get("estrategia")]
+    for sid in [x for x in K.partes_de(P) if x not in partes]:
+        partes.append(sid)
+    ix = {sid: k for k, sid in enumerate(partes)}
+
+    def nombre(sid):
+        try:
+            return K.plugin_for(sid).nombre
+        except Exception:
+            return sid
+
+    def tf(sid):
+        ms = K.tf_de(P, sid, sid == P.get("estrategia"))
+        return next((k for k, v in K.TF_MS.items() if v == ms), P["timeframe"])
+
+    out = []
+    for sid in partes:
+        tr = [x for x in trades if (x.get("estrategia") or P.get("estrategia")) == sid]
+        rs = [x for x in reg if x[1] == sid]
+        sen = {"total": len(rs), "largos": sum(1 for x in rs if x[2] == 1), "cortos": sum(1 for x in rs if x[2] == -1),
+               "entra": 0, "ocupada": 0, "propia": 0, "limite": 0, "filtro": {}}
+        ocupada_por, bloquea_a = {}, {}
+        for x in rs:
+            if x[3] == "ocupada":
+                if x[4] == sid:
+                    sen["propia"] += 1
+                else:
+                    sen["ocupada"] += 1
+                    ocupada_por[x[4]] = ocupada_por.get(x[4], 0) + 1
+            elif x[3] == "filtro":
+                sen["filtro"][x[4]] = sen["filtro"].get(x[4], 0) + 1
+            else:
+                sen[x[3]] = sen.get(x[3], 0) + 1
+        for x in reg:
+            if x[3] == "ocupada" and x[4] == sid and x[1] != sid:
+                bloquea_a[x[1]] = bloquea_a.get(x[1], 0) + 1
+        horas = [[0, 0.0] for _ in range(24)]
+        dias = [[0, 0.0] for _ in range(7)]
+        for x in tr:
+            h, wd = hour_fn(x["t_open"])
+            horas[h][0] += 1
+            horas[h][1] = round(horas[h][1] + x["r"], 3)
+            dias[wd][0] += 1
+            dias[wd][1] = round(dias[wd][1] + x["r"], 3)
+        cum, curva = 0.0, []
+        for x in tr:
+            cum += x["r"]
+            curva.append([x["t_close"], round(cum, 3)])
+        out.append({"id": sid, "nombre": nombre(sid), "tf": tf(sid), "prioridad": ix[sid] + 1,
+                    "direccion": K.direccion_de(P, sid), "metrics": K.metrics(tr),
+                    "lados": {s: K.metrics([x for x in tr if x["side"] == v]) for s, v in (("LONG", 1), ("SHORT", -1))},
+                    "curva": curva, "horas": horas, "dias": dias, "senales": sen,
+                    "ocupada_por": ocupada_por, "bloquea_a": bloquea_a})
+    # señales de dos estrategias en la misma vela: mismo lado o lados contrarios
+    por_vela = {}
+    for x in reg:
+        por_vela.setdefault(x[0], {})[x[1]] = x[2]
+    coinciden = {"mismo": 0, "contrario": 0}
+    for v in por_vela.values():
+        if len(v) > 1:
+            coinciden["mismo" if len(set(v.values())) == 1 else "contrario"] += 1
+    lin = [[x[0], ix.get(x[1], 0), x[2], x[3], x[4] if x[3] != "ocupada" else ix.get(x[4], -1)]
+           for x in reg[-DESG_MAX_SENALES:]]
+    ops = [[x["t_open"], x["t_close"], ix.get(x.get("estrategia") or P.get("estrategia"), 0), x["side"], round(x["r"], 3)]
+           for x in trades]
+    return {"estrategias": out, "coinciden": coinciden, "senales": lin, "recortadas": max(0, len(reg) - DESG_MAX_SENALES),
+            "operaciones": ops}
+
+
 def equity_curve(tr):
     out, cum = [], 0.0
     for x in tr:
@@ -2126,6 +2363,8 @@ class Hub:
         self.feed = None
         self.order = []
         self.deep_fetch = {}
+        self._punt_lock = threading.Lock()
+        self.puntuando = None
         self.proc_start = now_ms()
         self.req_reconnects = 0
         self.avisos = None
@@ -2376,9 +2615,9 @@ class Hub:
     def strategy_users(self):
         used = {}
         for b in self.bots.values():
-            sid = b.P.get("estrategia")
-            u = used.setdefault(sid, {"active": [], "archived": []})
-            u["archived" if b.meta.get("archived") else "active"].append(b.name)
+            for sid in K.partes_de(b.P):
+                u = used.setdefault(sid, {"active": [], "archived": []})
+                u["archived" if b.meta.get("archived") else "active"].append(b.name)
         return used
 
     def strategies(self):
@@ -2397,7 +2636,7 @@ class Hub:
         """Aplica una estrategia instalada o actualizada a los bots que la usan (sin reiniciar el programa)."""
         n = 0
         for b in list(self.bots.values()):
-            if b.P.get("estrategia") != sid or b.meta.get("archived"):
+            if sid not in K.partes_de(b.P) or b.meta.get("archived"):
                 continue
             P2, errs = K.validate(b.P)
             try:
@@ -2535,8 +2774,18 @@ class Hub:
         except (OSError, ValueError, IndexError):
             return None
 
-    def backtest(self, raw, days):
+    def backtest(self, raw, days, orden=None, variante=None):
+        """variante (para comparar, la usa analizar_estrategias.py): {"sola": id} prueba una estrategia del bot ella
+        sola, con sus ajustes, su temporalidad y su dirección; {"sin": id}, el bot sin esa estrategia."""
         P, errs = K.validate(raw)
+        if not errs and isinstance(variante, dict) and (variante.get("sola") or variante.get("sin")):
+            sid = str(variante.get("sola") or variante.get("sin"))
+            if sid not in K.partes_de(P):
+                return {"ok": False, "errors": ["«{}» no es una de las estrategias de este bot".format(sid)]}
+            try:
+                P, errs = K.validate(K.ajustes_de(P, sid) if variante.get("sola") else K.sin_estrategia(P, sid))
+            except K.StrategyError as e:
+                errs = [str(e)]
         if not errs and not self.markets.get(P["symbol"]):
             errs = ["{} no está en tu lista de instrumentos".format(P["symbol"])]
         if errs:
@@ -2547,8 +2796,9 @@ class Hub:
         cs, warm, htf = d["cs"], d["warm"], d["htf"]
         t0 = time.time()
         try:
+            orden = [str(x) for x in (orden or [])] if isinstance(orden, list) else None
             trades, info = K.backtest(cs, P, self.hour_fn, htf, warm=warm,
-                                      instrument_cost=self.markets.cost(P["symbol"]))
+                                      instrument_cost=self.markets.cost(P["symbol"]), orden=orden, registro=True)
         except Exception as e:
             import traceback
             tb = traceback.extract_tb(e.__traceback__)
@@ -2575,13 +2825,79 @@ class Hub:
         return {"ok": True, "params": P, "candles": len(cs) - warm, "dias_r": dias_r, "from": cs[warm][0], "to": cs[-1][0],
                 "filter_names": dict(K.FILTER_NAMES, **pl.filtros), "why_names": dict(WHY_ES, **pl.salidas),
                 "strategy": {"id": pl.id, "nombre": pl.nombre, "version": pl.version},
-                "secs": round(time.time() - t0, 2), "metrics": m, "info": info, "fuente": d.get("fuente"),
+                "secs": round(time.time() - t0, 2), "metrics": m, "info": {k: v for k, v in info.items() if k != "registro"}, "fuente": d.get("fuente"),
                 "sides": {s: K.metrics([x for x in trades if x["side"] == v]) for s, v in (("LONG", 1), ("SHORT", -1))},
+                "por_estrategia": [{"id": sid, "nombre": K.plugin_for(sid).nombre, "bloqueadas": info.get("bloqueadas", {}).get(sid, 0),
+                                    "tf": next((k for k, v in K.TF_MS.items() if v == K.tf_de(P, sid, sid == P["estrategia"])), P["timeframe"]),
+                                    "metrics": K.metrics([x for x in trades if x.get("estrategia") == sid])}
+                                   for sid in (info.get("orden") or [])] if P.get("combinar") else None,
+                "desglose": desglose_estrategias(P, trades, info, self.hour_fn),
                 "equity": equity_curve(trades),
                 "daily": [[day_label(d), len(v), round(sum(v), 2)] for d, v in sorted(days_tab.items())],
                 "hourly": hours, "lineas": pl.lineas, "n_trades": len(trades),
                 "bruto": round(sum(x.get("r_bruto", 0.0) for x in trades), 2),
                 "trades": [dict(x, n=k) for k, x in enumerate(trades, 1)][-1000:][::-1]}
+
+    def puntuar(self, b):
+        """Backtest de cada estrategia del bot por separado (últimos PUNT_DIAS días, ajustes comunes del bot). La
+        puntuación es el SQN (calidad del sistema: media de R / desviación × √operaciones, hasta 100 operaciones) y
+        decide qué estrategia manda si varias dan señal en la misma vela."""
+        if not self._punt_lock.acquire(blocking=False):
+            return False
+        self.puntuando = b.id
+        try:
+            partes, por, cache = K.partes_de(b.P), {}, {}
+            for sid in partes:
+                P1, errs = K.validate(K.ajustes_de(b.P, sid))
+                if errs:
+                    por[sid] = {"error": errs[0]}
+                    continue
+                try:
+                    d = self.bt_datos(P1, PUNT_DIAS, htf_cache=cache)
+                    if not d.get("ok"):
+                        por[sid] = {"error": (d.get("errors") or ["sin datos"])[0]}
+                        continue
+                    trades, _info = K.backtest(d["cs"], P1, self.hour_fn, d["htf"], warm=d["warm"],
+                                               instrument_cost=self.markets.cost(P1["symbol"]))
+                    m = K.metrics(trades)
+                    sqn = m["sqn"] * math.sqrt(min(m["n"], 100) / m["n"]) if m["sqn"] is not None and m["n"] else None
+                    por[sid] = {"puntuacion": round(sqn, 2) if sqn is not None and m["n"] >= PUNT_MIN_OPS else None,
+                                "n": m["n"], "winrate": round(m["winrate"], 1), "pf": round(m["pf"], 2) if m["pf"] else None,
+                                "total_r": round(m["total_r"], 2), "avg_r": round(m["avg_r"], 3),
+                                "max_dd": round(m["max_dd"], 2),
+                                "equity": [e[1] for e in equity_curve(trades)][-300:]}
+                except Exception as e:
+                    por[sid] = {"error": "{}: {}".format(type(e).__name__, e)[:200]}
+            b.meta["puntuaciones"] = {"t": now_ms(), "dias": PUNT_DIAS, "partes": partes, "cfg": b.cfg_id, "por": por}
+            self._save_meta()
+            with b.lock:
+                if b.st and hasattr(b.st.S, "ordenar"):
+                    b.st.S.ordenar(b.prioridad())
+            txt = ", ".join("{} ({}) {}".format(b.nombre_estrategia(sid), b.tf_estrategia(sid), "–" if (por.get(sid) or {}).get("puntuacion") is None
+                                           else por[sid]["puntuacion"]) for sid in b.prioridad())
+            b.log("Puntuación de las estrategias ({} días de backtest): {}. Prioridad en este orden.".format(PUNT_DIAS, txt))
+            return True
+        finally:
+            self.puntuando = None
+            self._punt_lock.release()
+
+    def puntuar_pendientes(self):
+        """Bots combinados sin puntuación, con estrategias o ajustes nuevos, o con la puntuación de hace más de un día."""
+        if self.req is None or self.puntuando:
+            return
+        for b in self.active_bots():
+            if not b.P.get("combinar") or not b.ready:
+                continue
+            pu = b.meta.get("puntuaciones") or {}
+            if pu.get("partes") != K.partes_de(b.P) or pu.get("cfg") != b.cfg_id or now_ms() - (pu.get("t") or 0) > PUNT_CADA_MS:
+                threading.Thread(target=self._puntuar_seguro, args=(b,), daemon=True, name="puntuacion").start()
+                return
+
+    def _puntuar_seguro(self, b):
+        try:
+            self.puntuar(b)
+        except Exception as e:
+            b.log("No se pudo calcular la puntuación de las estrategias: {}".format(e), "error")
 
     def backtest_chart(self, raw, t_open, t_close, before=80, after=40):
         """Velas y líneas de la estrategia alrededor de una operación del backtest (para verla en el panel)."""
@@ -2741,6 +3057,14 @@ class Hub:
             time.sleep(30)
             try:
                 self.riesgo.revisar()
+                self.puntuar_pendientes()
+                while self.markets.cambios:
+                    sym, viejo, nuevo = self.markets.cambios.pop(0)
+                    self.log("{}: MyFundedPerps ha cambiado su mercado de {} a {}. Actualizado solo; los bots de {} "
+                             "recargan el historial.".format(sym, viejo, nuevo, sym), "warn")
+                    if self.avisos and self.avisos.wants("problemas"):
+                        self.avisos.push("problemas", "🔁 <b>{}</b>: MyFundedPerps ha cambiado su mercado ({} → {}). "
+                                         "KaBor lo ha actualizado solo.".format(A.esc(sym), A.esc(viejo), A.esc(nuevo)))
                 av = self.avisos
                 if av.due_summary():
                     av.push("resumen", self.summary_text(daily=True))
@@ -3185,7 +3509,10 @@ def make_handler(hub, cfg, acc):
             return self._json({"ok": False, "errors": ["Operación desconocida"]}, 400)
 
         def _planes_payload(self):
-            bots = [{"name": b.name, "symbol": b.P["symbol"], "tf": b.P["timeframe"]} for b in hub.bots.values()
+            bots = [{"name": b.name, "symbol": b.P["symbol"], "tf": b.P["timeframe"],
+                     "riesgo": float(b.P.get("ex_riesgo_usd") or 0) if b.P.get("ex_riesgo_modo") == "importe fijo ($)"
+                     and getattr(b.ex, "activo", lambda: False)() else float(b.P.get("risk_usd") or 0)}
+                    for b in hub.bots.values()
                     if b.P.get("estrategia") == PL.ESTRATEGIA_ID and not b.meta.get("archived")]
             planes = PL.STORE.lista() if PL.STORE else []
             for p in planes:
@@ -3335,6 +3662,32 @@ def make_handler(hub, cfg, acc):
                 if u.path in ("/", "/index.html"):
                     with open(html_path, encoding="utf-8") as f:
                         return self._send(200, f.read(), "text/html; charset=utf-8")
+                if u.path.startswith("/ayuda/"):         # guía del panel (Ayuda): texto e imágenes de web/ayuda
+                    nombre = u.path[len("/ayuda/"):]
+                    m = re.match(r"^(?:img/(?:en/|fr/)?)?[a-z0-9_.-]{1,60}\.(html|jpg|png|webp)$", nombre)
+                    if m and ".." in nombre:
+                        m = None
+                    ruta = os.path.join(WEB_DIR, "ayuda", nombre)
+                    if not m or not os.path.isfile(ruta):
+                        return self._send(404, "No existe", "text/plain; charset=utf-8")
+                    tipo = {"html": "text/html; charset=utf-8", "jpg": "image/jpeg", "png": "image/png",
+                            "webp": "image/webp"}[m.group(1)]
+                    with open(ruta, "rb") as fh:
+                        return self._send(200, fh.read(), tipo, cache="no-cache" if m.group(1) == "html" else "public, max-age=86400")
+                if u.path == "/api/tradingview":
+                    return self._json({"ok": True, "instrumentos": hub.markets.tradingview()})
+                if u.path == "/api/velas":
+                    sim, tf = str(qs.get("simbolo", [""])[0]).upper(), qs.get("tf", ["15m"])[0]
+                    if tf not in K.TF_MS or not hub.markets.get(sim):
+                        return self._json({"ok": False, "errors": ["Instrumento o temporalidad no válidos"]}, 400)
+                    n = max(50, min(int(qs.get("n", ["500"])[0] or 500), 1500))
+                    cs = hub.req.candles(hub.markets.resolve(sim), tf, n)
+                    return self._json({"ok": True, "simbolo": sim, "tf": tf, "tf_ms": K.TF_MS[tf],
+                                       "velas": [list(c[:5]) for c in cs]})
+                if u.path == "/api/dibujos":
+                    sim = str(qs.get("simbolo", [""])[0]).upper()
+                    return self._json({"ok": True, "simbolo": sim, "objetos": PL.DIBUJOS.de(sim) if PL.DIBUJOS else [],
+                                       "roles_nivel": PL.ROLES_NIVEL, "roles_zona": PL.ROLES_ZONA})
                 if u.path == "/api/resumen":
                     return self._json(hub.overview())
                 if u.path == "/api/estadisticas":
@@ -3390,6 +3743,8 @@ def make_handler(hub, cfg, acc):
                         return self._json(b.snapshot(scope="cfg" if qs.get("ambito", [""])[0] == "cfg" else "all"))
                     if what == "config":
                         return self._json(self._config_payload(b))
+                    if what == "estrategias":
+                        return self._json(b.informe_estrategias())
                     if what == "informe.md":
                         with b.lock:
                             md = b.report_md("Informe completo · " + b.name, b.trades)
@@ -3464,7 +3819,7 @@ def make_handler(hub, cfg, acc):
                 if u.path == "/api/backtest":
                     if hub.req is None:
                         return self._json({"ok": False, "errors": ["El programa aún está arrancando"]}, 503)
-                    res = hub.backtest(body.get("params"), body.get("days"))
+                    res = hub.backtest(body.get("params"), body.get("days"), body.get("orden"), body.get("variante"))
                     return self._json(res, 200 if res.get("ok") else 400)
                 if u.path == "/api/riesgo":
                     if body.get("op") == "reactivar":
@@ -3542,6 +3897,15 @@ def make_handler(hub, cfg, acc):
                     else:
                         return self._json({"ok": False, "errors": ["Operación desconocida"]}, 400)
                     return self._json({"ok": True})
+                if u.path == "/api/dibujos":
+                    sim = str(body.get("simbolo", "")).upper()
+                    if not hub.markets.get(sim):
+                        return self._json({"ok": False, "errors": ["{} no está en tus instrumentos".format(sim)]}, 400)
+                    objs = PL.DIBUJOS.guardar(sim, body.get("objetos"), K.TF_MS)
+                    return self._json({"ok": True, "simbolo": sim, "objetos": objs})
+                if u.path == "/api/tradingview":
+                    hub.markets.set_tradingview(str(body.get("symbol", "")), body.get("tv"))
+                    return self._json({"ok": True, "instrumentos": hub.markets.tradingview()})
                 if u.path == "/api/instrumentos":
                     op = body.get("op")
                     if op == "add":
@@ -3652,6 +4016,13 @@ def make_handler(hub, cfg, acc):
                         c = b.apply_config(P, str(body.get("note", "")))
                         hub.feed_changed()
                         return self._json({"ok": True, "id": c["id"]})
+                    if action == "puntuar":
+                        if not b.P.get("combinar"):
+                            return self._json({"ok": False, "errors": ["Este bot tiene una sola estrategia"]}, 400)
+                        if hub.puntuando:
+                            return self._json({"ok": False, "errors": ["Ya se está calculando una puntuación; espera un momento"]}, 409)
+                        threading.Thread(target=hub._puntuar_seguro, args=(b,), daemon=True, name="puntuacion").start()
+                        return self._json({"ok": True, "msg": "Calculando la puntuación de cada estrategia ({} días de backtest)…".format(PUNT_DIAS)})
                     if action == "gestion":
                         ok, msg = b.gestion_manual(str(body.get("op", "")), body.get("valor"))
                         return self._json({"ok": ok, "msg": msg}, 200 if ok else 400)
@@ -3753,6 +4124,7 @@ def run(cfg, log):
         if hub.avisos:
             threading.Thread(target=lambda: _silencio(hub.avisos.send_now, texto), daemon=True).start()
     PL.STORE = PL.Planes(os.path.join(cfg.data_dir, "planes.json"), cfg.plan_espera, aviso_plan)
+    PL.DIBUJOS = PL.Dibujos(os.path.join(cfg.data_dir, "dibujos.json"))
     if cfg.mcp_token:
         log("Conector MCP para Claude activo en /mcp/<token> (solo crea planes pendientes)")
     if not cfg.login:

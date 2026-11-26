@@ -177,6 +177,8 @@ class Cuenta:
             return
         try:
             self.trader = E.MFPTrading(self.g.host, self.clave, self.g.timeout, "kcbot-pi/" + self.g.version)
+            # 9.4: el stream de la cuenta (uno por clave) da posiciones y órdenes sin consultar la API
+            self.trader.stream = E.stream_para(self.clave, self.g.host, "kcbot-pi/" + self.g.version)
         except ValueError as e:
             self.err = str(e)
 
@@ -302,7 +304,8 @@ class Cuenta:
                            "equity": r.get("equity"), "no_realizado": r.get("unrealized_pnl"),
                            "dd_queda": r.get("max_drawdown_room")} if a else None,
                 "dia": v, "bloqueo": self.bloqueo if b else None, "bloqueo_texto": self.texto_hasta() if b else "",
-                "ultimo_bloqueo": self.ultimo, "ordenes_pendientes": bool(self.pend), "bots": bots}
+                "ultimo_bloqueo": self.ultimo, "ordenes_pendientes": bool(self.pend), "bots": bots,
+                "api": E.estado_clave(self.clave) if self.clave else None}
 
 
 # ============================ el gestor ============================
@@ -316,7 +319,22 @@ class Gestor:
         self.orden = []
         self.ordenes = False
         self.migrada = None
+        self._avisos_api = {}
+        E.AL_AVISO = self._aviso_api
         self._cargar()
+        self.streams_al_dia()
+
+    def streams_al_dia(self):
+        """Cierra los streams de claves que ya no usa ninguna cuenta."""
+        E.streams_en_uso({c.clave for c in list(self.cuentas.values()) if c.clave})
+
+    def _aviso_api(self, fin, texto):
+        """Límite de lecturas de MyFundedPerps: al registro siempre; a Telegram, como mucho una vez por hora y clave."""
+        self.hub.log(texto, "warn")
+        t = time.time()
+        if t - self._avisos_api.get(fin, 0) > 3600:
+            self._avisos_api[fin] = t
+            self._avisar("problemas", "⚠️ <b>Límite de lecturas de MyFundedPerps</b>\n{}".format(_esc(texto)))
 
     # ---------- disco ----------
     def _cargar(self):
@@ -346,6 +364,7 @@ class Gestor:
         return d
 
     def guardar(self):
+        self.streams_al_dia()
         with self.lock:
             d = {"ordenes": self.ordenes, "cuentas": [self.cuentas[i].dump() for i in self.orden],
                  "estado": {i: self.cuentas[i].estado() for i in self.orden}}
@@ -630,7 +649,7 @@ class Gestor:
             return
         try:
             pos = {p.get("id"): p for p in (c.trader.data(c.trader.get("/v1/positions", account_id=c.account_id))
-                                            or [])}
+                                            or [])}     # con el resultado sin cerrar al día (el stream no lo trae)
         except E.ExecError:
             return                                   # se conserva el último valor
         tot = 0.0
@@ -789,6 +808,10 @@ class Gestor:
 
     # ---------- lectura periódica y límites automáticos ----------
     def leer(self, c):
+        with E.prioridad_baja():      # deja sitio a lo de operar si la clave va cargada
+            self._leer(c)
+
+    def _leer(self, c):
         if not c.trader:
             return
         acc = c.resolver()

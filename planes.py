@@ -17,15 +17,17 @@ Ciclo de vida:
 Freno contra las emociones: un plan activo no se puede editar. Cancelarlo pide una espera (FP_PLAN_ESPERA_MIN,
 5 minutos por defecto) y vuelve a pedir confirmación. El stop y el objetivo nunca se tocan desde aquí.
 
-El conector MCP solo puede LEER contexto y velas, CREAR planes pendientes y cancelar planes pendientes. No puede
+El conector MCP solo puede LEER contexto, velas y los dibujos del gráfico, CREAR planes pendientes y cancelar planes pendientes. No puede
 confirmar planes, operar ni cambiar ajustes.
 """
 import hmac
 import json
 import os
+import re
 import secrets
 import threading
 import time
+import uuid
 from datetime import datetime
 
 TF_MS = {"1m": 60_000, "3m": 180_000, "5m": 300_000, "15m": 900_000, "30m": 1_800_000, "1h": 3_600_000,
@@ -45,6 +47,7 @@ MAX_PLANES = 300
 ESTRATEGIA_ID = "plan_manual"
 
 STORE = None          # lo crea kcbot.py al arrancar; en backtests y simulaciones queda en None
+DIBUJOS = None        # análisis dibujado en el gráfico de Planes (niveles, zonas, tendencias)
 
 
 def ahora():
@@ -242,6 +245,107 @@ def validar(d, instrumentos, precio=None, t=None):
     return plan, errs, avisos
 
 
+ROLES_NIVEL = {"entrada": "Entrada", "stop": "Stop", "tp1": "TP1", "tp": "TP final", "invalidacion": "Invalidación",
+               "nivel": "Nivel"}
+ROLES_ZONA = {"fvg_alcista": "FVG alcista", "fvg_bajista": "FVG bajista", "ob_alcista": "Order block alcista",
+              "ob_bajista": "Order block bajista", "liquidez": "Liquidez", "zona": "Zona"}
+MAX_DIBUJOS = 80
+
+
+def _limpiar_dibujo(o, tfs):
+    """Normaliza un objeto dibujado. Devuelve (dict, error)."""
+    if not isinstance(o, dict):
+        return None, "Objeto no válido"
+    tipo = o.get("tipo")
+    out = {"id": re.sub(r"[^A-Za-z0-9_-]", "", str(o.get("id") or ""))[:24] or uuid.uuid4().hex[:8],
+           "tipo": tipo, "texto": str(o.get("texto") or "").strip()[:120],
+           "tf": str(o.get("tf") or "") if str(o.get("tf") or "") in tfs else None, "auto": bool(o.get("auto"))}
+
+    def num(k, req=True):
+        v = o.get(k)
+        if v in (None, "") and not req:
+            return None
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            raise ValueError("{}: falta {}".format(tipo, k))
+        if v != v or abs(v) > 1e15:
+            raise ValueError("{}: {} no válido".format(tipo, k))
+        return v
+    try:
+        if tipo == "nivel":
+            out["rol"] = o.get("rol") if o.get("rol") in ROLES_NIVEL else "nivel"
+            out["precio"] = num("precio")
+            out["t"] = num("t", False)
+        elif tipo == "zona":
+            out["rol"] = o.get("rol") if o.get("rol") in ROLES_ZONA else "zona"
+            a, b = num("p1"), num("p2")
+            out["p1"], out["p2"] = max(a, b), min(a, b)
+            t1, t2 = num("t1"), num("t2", False)
+            out["t1"], out["t2"] = (min(t1, t2), max(t1, t2)) if t2 is not None else (t1, None)
+        elif tipo == "tendencia":
+            for k in ("t1", "p1", "t2", "p2"):
+                out[k] = num(k)
+        elif tipo == "posicion":
+            out["lado"] = "corto" if o.get("lado") == "corto" else "largo"
+            for k in ("entrada", "stop", "tp", "t1", "t2"):
+                out[k] = num(k)
+            out["tp1"], out["riesgo"], out["tamano"] = num("tp1", False), num("riesgo", False), num("tamano", False)
+            for k in ("riesgo", "tamano"):
+                if out[k] is not None and out[k] <= 0:
+                    out[k] = None
+        else:
+            return None, "Tipo de dibujo desconocido: {}".format(tipo)
+    except ValueError as e:
+        return None, str(e)
+    return out, None
+
+
+class Dibujos:
+    """Análisis dibujado por el usuario en el gráfico de Planes, por instrumento (dibujos.json)."""
+
+    def __init__(self, path):
+        self.path, self.lock = path, threading.Lock()
+        try:
+            with open(path, encoding="utf-8") as f:
+                d = json.load(f)
+            self.d = d if isinstance(d, dict) else {}
+        except (OSError, ValueError):
+            self.d = {}
+
+    def de(self, simbolo):
+        with self.lock:
+            return [dict(o) for o in self.d.get(simbolo, {}).get("objetos", [])]
+
+    def actualizado(self, simbolo):
+        return self.d.get(simbolo, {}).get("t")
+
+    def guardar(self, simbolo, objetos, tfs):
+        if not isinstance(objetos, list):
+            raise ValueError("Lista de dibujos no válida")
+        if len(objetos) > MAX_DIBUJOS:
+            raise ValueError("Demasiados dibujos en {} (máximo {})".format(simbolo, MAX_DIBUJOS))
+        limpios, vistos = [], set()
+        for o in objetos:
+            c, err = _limpiar_dibujo(o, tfs)
+            if err:
+                raise ValueError(err)
+            while c["id"] in vistos:
+                c["id"] = uuid.uuid4().hex[:8]
+            vistos.add(c["id"])
+            limpios.append(c)
+        with self.lock:
+            if limpios:
+                self.d[simbolo] = {"t": ahora(), "objetos": limpios}
+            else:
+                self.d.pop(simbolo, None)
+            tmp = self.path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(self.d, f, ensure_ascii=False, indent=1)
+            os.replace(tmp, self.path)
+        return limpios
+
+
 class Planes:
     """Almacén de planes (planes.json en la carpeta de datos). Seguro entre hilos."""
 
@@ -387,6 +491,7 @@ INSTRUCCIONES = (
     "opcional, un TP1 (tp1) donde se vende tp1_pct % y, si tp1_be, el stop pasa a break-even; también en la cuenta. "
     "Tamaño: por defecto el bot dimensiona por su riesgo (contratos = riesgo / distancia al stop); si el usuario quiere "
     "unos contratos concretos usa tamano, y dile el riesgo que resulta (tamano_y_riesgo en la respuesta). "
+    "Si el usuario ha marcado su análisis en el gráfico de Planes (niveles de entrada, stop, TP, invalidación, zonas FVG u order blocks, tendencias), kabor_dibujos los lee con el estado de cada zona respecto al precio: úsalos como base del plan, compruébalos con kabor_velas y señala lo que no cuadre antes de proponerlo. "
     "Para revisar resultados tienes kabor_bots, kabor_operaciones y kabor_estadisticas (solo lectura): da al usuario una "
     "opinión honesta y concreta, con números, separando la calidad de su análisis de la de su ejecución, y sin "
     "sacar conclusiones fuertes con pocas operaciones. "
@@ -440,6 +545,12 @@ HERRAMIENTAS = [
            "notas_verificacion": {"type": "array", "items": {"type": "string"},
                                   "description": "Lo que comprobaste y lo que no cuadraba"}},
           ["simbolo", "temporalidad", "lado", "condicion", "sl", "tp", "expira_ms", "analisis"]),
+    _tool("kabor_dibujos", "Análisis que el usuario ha dibujado en el gráfico de Planes de un instrumento: niveles con "
+                           "su papel (entrada, stop, tp1, tp, invalidación, nivel), posiciones largas o cortas "
+                           "(entrada, stop, TP1, TP, riesgo), zonas (FVG, order blocks, liquidez) "
+                           "con su estado respecto al precio (sin tocar, tocada, rellenada) y líneas de tendencia. Las "
+                           "horas van en UTC. Sin símbolo, dice qué instrumentos tienen dibujos.",
+          {"simbolo": {"type": "string"}}, []),
     _tool("kabor_planes", "Lista de planes (opcional: filtrar por estado).",
           {"estado": {"type": "string", "enum": list(ESTADOS)}}, []),
     _tool("kabor_cancelar_pendiente", "Cancela un plan PENDIENTE (los activos solo desde el panel).",
@@ -543,6 +654,8 @@ class ConectorMCP:
             return self._ok({"creado": True, "id": p["id"], "estado": "pendiente", "resumen": describir(p),
                              "tamano_y_riesgo": tamano_info(h, p),
                              "avisos": avisos, "siguiente_paso": "El usuario tiene que confirmarlo en el panel → Planes."})
+        if nombre == "kabor_dibujos":
+            return self._ok(self._dibujos(str(a.get("simbolo") or "").upper()))
         if nombre == "kabor_planes":
             return self._ok([dict({"id": p["id"], "estado": p["estado"], "resumen": describir(p),
                                    "historial": p.get("historial", [])[-6:],
@@ -559,6 +672,79 @@ class ConectorMCP:
             p, _ = STORE.cancelar(str(a.get("id", "")), desde_panel=False)
             return self._ok({"id": p["id"], "estado": p["estado"]})
         raise ValueError("Herramienta desconocida: {}".format(nombre))
+
+    # ---------- dibujos del gráfico (9.0) ----------
+    def _dibujos(self, sim):
+        h = self.hub
+        if DIBUJOS is None:
+            raise ValueError("Los dibujos no están disponibles")
+        if not sim:
+            return {"instrumentos_con_dibujos": {k: len(v.get("objetos", [])) for k, v in DIBUJOS.d.items()},
+                    "siguiente_paso": "Llama a kabor_dibujos con uno de esos símbolos."}
+        objs = DIBUJOS.de(sim)
+        if not objs:
+            return {"simbolo": sim, "objetos": [], "aviso": "No hay nada dibujado en {}.".format(sim)}
+        hora = lambda t: time.strftime("%Y-%m-%d %H:%M", time.gmtime(t / 1000)) if t else None
+        velas, precio = {}, None
+        try:
+            mk = h.markets.resolve(sim)
+            for tf in {o.get("tf") or "15m" for o in objs if o["tipo"] == "zona"} | {"1m"}:
+                velas[tf] = h.req.candles(mk, tf, 300)
+            precio = velas["1m"][-1][4] if velas.get("1m") else None
+        except Exception:
+            pass
+        out = []
+        for o in objs:
+            d = {"id": o["id"], "tipo": o["tipo"], "texto": o.get("texto") or None, "tf_dibujado": o.get("tf"),
+                 "automatico": o.get("auto") or None}
+            if o["tipo"] == "nivel":
+                d.update(papel=ROLES_NIVEL.get(o["rol"], o["rol"]), precio=o["precio"])
+                if precio:
+                    d["distancia_pct"] = round((o["precio"] - precio) / precio * 100, 3)
+            elif o["tipo"] == "zona":
+                d.update(papel=ROLES_ZONA.get(o["rol"], o["rol"]), arriba=o["p1"], abajo=o["p2"],
+                         desde=hora(o["t1"]), hasta=hora(o["t2"]) if o.get("t2") else "se extiende hasta ahora")
+                ztf = o.get("tf") or "15m"
+                desde = o["t2"] if o.get("t2") else o["t1"] + TF_MS.get(ztf, 0)   # sin la vela que forma el hueco
+                cs = [c for c in velas.get(ztf, []) if c[0] > desde]
+                if cs:
+                    alc = o["rol"] in ("fvg_alcista", "ob_alcista")
+                    baj = o["rol"] in ("fvg_bajista", "ob_bajista")
+                    toca = any(c[3] <= o["p1"] and c[2] >= o["p2"] for c in cs)
+                    rell = any(c[3] <= o["p2"] for c in cs) if alc else any(c[2] >= o["p1"] for c in cs) if baj else False
+                    d["estado"] = "rellenada" if rell else "tocada" if toca else "sin tocar"
+                    d["velas_comprobadas"] = "{} de {}".format(len(cs), o.get("tf") or "15m")
+                if precio:
+                    d["precio_actual_respecto"] = "dentro" if o["p2"] <= precio <= o["p1"] else \
+                        "por encima" if precio > o["p1"] else "por debajo"
+            elif o["tipo"] == "posicion":
+                s = 1 if o["lado"] == "largo" else -1
+                dist = abs(o["entrada"] - o["stop"])
+                d.update(lado=o["lado"], entrada=o["entrada"], stop=o["stop"], tp1=o.get("tp1"), tp=o["tp"],
+                         rr=round((o["tp"] - o["entrada"]) * s / dist, 2) if dist else None,
+                         riesgo_usd=o.get("riesgo"), contratos=o.get("tamano"), desde=hora(o["t1"]))
+                if (o["entrada"] - o["stop"]) * s <= 0 or (o["tp"] - o["entrada"]) * s <= 0:
+                    d["aviso"] = "Stop u objetivo al lado equivocado de la entrada"
+            else:
+                d.update(desde=[hora(o["t1"]), o["p1"]], hasta=[hora(o["t2"]), o["p2"]])
+            out.append(d)
+        roles = {o["rol"]: o["precio"] for o in objs if o["tipo"] == "nivel"}
+        pos = [o for o in objs if o["tipo"] == "posicion"]
+        if pos:   # la herramienta Posición manda sobre los niveles sueltos
+            o = pos[-1]
+            roles.update(entrada=o["entrada"], stop=o["stop"], tp=o["tp"])
+            if o.get("tp1") is not None:
+                roles["tp1"] = o["tp1"]
+        res = {"simbolo": sim, "precio_actual": precio, "actualizado": hora(DIBUJOS.actualizado(sim)), "objetos": out}
+        if {"entrada", "stop", "tp"} <= set(roles):
+            s = 1 if roles["tp"] > roles["entrada"] else -1
+            riesgo = (roles["entrada"] - roles["stop"]) * s
+            res["propuesta_desde_niveles"] = {
+                "lado": "largo" if s == 1 else "corto", "entrada": roles["entrada"], "stop": roles["stop"],
+                "tp": roles["tp"], "tp1": roles.get("tp1"), "invalidacion": roles.get("invalidacion"),
+                "rr": round((roles["tp"] - roles["entrada"]) * s / riesgo, 2) if riesgo > 0 else None,
+                "aviso": None if riesgo > 0 else "El stop está al lado equivocado de la entrada"}
+        return res
 
     # ---------- lectura de resultados (7.8) ----------
     def _hora(self, ms):

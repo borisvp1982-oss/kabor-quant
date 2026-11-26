@@ -5,8 +5,9 @@
 **Contents**
 
 - [Overview](#overview)
+- [Big update: what's new in 9.x](#big-update-whats-new-in-9x)
 - [Architecture](#architecture)
-- [Installation on a Raspberry Pi](#installation-on-a-raspberry-pi)
+- [Installation](#installation)
 - [Connecting a MyFundedPerps sandbox account](#connecting-a-myfundedperps-sandbox-account)
 - [Panel and Telegram alerts](#panel-and-telegram-alerts)
 - [Example strategy: Keltner Breakout](#example-strategy-keltner-breakout)
@@ -18,9 +19,9 @@
 
 ## Overview
 
-KaBor Quant is a self-hosted trading-bot platform for MyFundedPerps (MFP). It runs many strategy bots at once on a Raspberry Pi, trades them on paper or in MFP sandbox accounts through the REST API, and lets Claude read the bots and propose trades through its own MCP server, called SMT.
+KaBor Quant is a self-hosted trading-bot platform for MyFundedPerps (MFP). It runs many strategy bots at once on a Raspberry Pi or any Linux machine. It trades them on paper or in MFP sandbox accounts through the API, and Claude can read the bots and propose trades through KaBor's own MCP server, called SMT.
 
-**Modular trading system for MyFundedPerps · Powered by Claude via MCP.** Version 8.9 runs 24/7 on a Raspberry Pi, with 8 bots on BTC, ETH, XAU, NAS100 and CRWV and 15 strategies installed.
+**Modular trading system for MyFundedPerps · Powered by Claude via MCP.** Version 9.4 runs 24/7 on a Raspberry Pi with 9 bots on BTC, ETH, XAU, NAS100 and CRWV. A single bot can now run several strategies at once.
 
 *Independent project, not affiliated with or endorsed by MyFundedPerps. Sandbox only. Nothing here is financial advice or a promise of profits or challenge passes; backtest and paper results do not guarantee future results.*
 
@@ -32,19 +33,64 @@ KaBor Quant is a self-hosted trading-bot platform for MyFundedPerps (MFP). It ru
 
 - **Pluggable strategies.** A strategy is a single `.py` file that only decides when to enter and where the stop goes. Everything else is shared: entries, filters, trade management, limits and stats.
 
+- **Several strategies per bot.** A bot trades one instrument with up to five strategies, each with its own timeframe, settings and direction. It takes one trade at a time, and when two strategies signal on the same candle, a backtest score decides which one goes first.
+
 - **Paper → sandbox with one switch.** The same signals, stops and targets become real orders in one or more MFP sandbox accounts, each with its own API key and risk multiplier.
 
 - **Prop-firm risk layer.** Before every order it checks the trading policy and the remaining daily loss. It adds account lockouts, global daily and weekly limits, and a guard on idempotency keys so a retry never duplicates an order.
 
-- **Web panel.** Login, HTTPS, statistics, backtester, Monte Carlo and prop-challenge simulator, walk-forward optimizer, and UI languages.
+- **Web panel.** The panel includes:
+  - login and HTTPS;
+  - statistics and the backtester, with a per-strategy breakdown;
+  - a Monte Carlo prop-challenge simulator and a walk-forward optimizer;
+  - an analysis chart for drawing levels, FVG zones and positions;
+  - TradingView charts;
+  - built-in help;
+  - Spanish, English and French.
 
 - **Telegram alerts** with a rendered chart for every signal, entry and exit, plus commands such as `/cuentas` and `/bloquear`.
 
-- **SMT, the MCP connector.** Claude can read bots, trades and stats, check candles, and draft manual trade plans. The trader confirms each plan in the panel before anything runs.
+- **SMT, the MCP connector.** Claude can read bots, trades and stats, check candles and the trader's chart drawings, and draft manual trade plans. The trader confirms each plan in the panel before anything runs.
 
-**MFP surfaces used:** REST API (accounts, trading policy, markets, quotes, orders, positions, exit orders, close-all, cancel-all) in **sandbox only**. Keys must start with `fp_test_`, and any host other than `sandbox.myfundedperpetuals.com` is refused.
+**MFP surfaces used**, in **sandbox only**:
+
+- **Market data WebSocket**, for candles and live prices.
+- **Account stream**, `wss://account-stream…/v1/sandbox/stream`, for orders, fills, positions and balance.
+- **REST API**, for accounts, trading policy, markets, quotes, orders, positions, exit orders, close-all and cancel-all.
+
+Keys must start with `fp_test_`, and any host other than `sandbox.myfundedperpetuals.com` is refused.
 
 **Who it is for:** funded traders who have a rule-based edge but lose it in execution. KaBor turns the rules into code, runs them without emotion, and enforces the prop firm's limits before the firm has to.
+
+## Big update: what's new in 9.x
+
+Version 9 is the biggest change since 8.x. The main new feature is that **a bot can run several strategies at once**. Every 9.x feature in one table:
+
+| Area | What's new |
+|---|---|
+| **Several strategies per bot** (9.1) | One instrument, up to 5 strategies, **one trade at a time**. The first valid signal opens the trade and blocks the others until it closes (TP, SL, the strategy's own exit, or manual). Opposite signals never close or flip it. The strategy that opened the trade manages it. |
+| **Automatic priority** (9.1) | Each strategy is scored with the SQN of its own 90-day backtest. When two strategies signal on the same candle, the better score wins. Scores are recalculated daily and after every settings change. |
+| **Own timeframe and settings** (9.2) | Each strategy has its own tab and its own timeframe. A 5m bot can run a 5m ORB, a 30m Keltner breakout and a 4h Supertrend; the bot builds each strategy's candles from its own. |
+| **Own direction** (9.3) | Each strategy can be set to both sides, longs only or shorts only, without touching the others. |
+| **Per-strategy performance** (9.1) | Live and backtest R by strategy, an equity curve for each, and the number of signals each one lost to the one-trade rule. |
+| **Backtest breakdown** (9.3) | A floating window shows the strategies side by side and a timeline of every signal: entered, blocked by another strategy's trade, filtered, or stopped by a daily limit. It also shows who blocks whom, plus longs vs shorts, hours, weekdays and exit reasons for each strategy. |
+| **Laptop analysis script** (9.3) | `herramientas/analizar_estrategias.py` asks the Pi for many backtests of one bot and writes an HTML report. It tests each strategy alone, the bot without each one, every direction and every priority order. It also shows **what the blocked signals would have made**. Standard library only. |
+| **Analysis chart and plans** (9.0) | Draw levels, FVG and order-block zones, trend lines and a TradingView-style long/short position tool on real MFP candles, then turn them into a manual plan with one click. Claude reads the drawings through the new SMT tool `kabor_dibujos`. |
+| **TradingView page** (9.0) | The full TradingView chart of the same market MFP uses (Binance perps, Hyperliquid for the Nasdaq), with automatic symbol mapping. |
+| **Account stream** (9.4) | Orders, fills and positions come from the MFP account stream instead of REST polling. An entry now costs 1–3 REST reads instead of about 12, and a close costs none. A per-key limiter stays under MFP's 30 GETs per minute, and MFP rate-limit warnings are logged and sent to Telegram. |
+| **Help and languages** (9.2.1–9.4.2) | A built-in guide in Spanish, English and French with screenshots in each language. Bot and strategy settings are in separate tabs, and the strategies' own settings and notes are translated. |
+
+![A bot running three strategies: live and backtest R per strategy, an equity curve for each, and one card per strategy with its priority, score, trades and blocked signals](img/strategy-performance.jpg)
+
+*The screenshots in this guide come from KaBor Quant 9.4 running against a simulated MFP feed with random-walk prices, so they show what the panel looks like, not trading performance.*
+
+![Bot settings in tabs: the «Bot» tab plus one tab per strategy, here «RSI by levels» with its own 30m timeframe and direction](img/strategy-tab.jpg)
+
+![Backtest breakdown window: strategies compared side by side and the curve of each one](img/backtest-breakdown.jpg)
+
+![Signal timeline: one row per strategy with every long/short signal and what happened to it, the trades as bars, and a tooltip showing a signal blocked by another strategy's trade](img/signal-timeline.jpg)
+
+**Versioning.** Significant changes raise the minor number (9.3 → 9.4); small fixes add a patch number (9.4 → 9.4.1).
 
 ## Architecture
 
@@ -52,9 +98,29 @@ KaBor is one Python process with seven modules. Strategies never touch the netwo
 
 ![KaBor Quant architecture: web panel, Claude and Telegram talk to the hub on the Raspberry Pi; strategies decide, ejecucion.py sends orders to the MyFundedPerps sandbox](img/architecture.png)
 
-Each closed candle flows top to bottom: the hub hands it to every bot's engine, the strategy decides, the engine manages the paper trade, and the executor mirrors it in each sandbox account after the account and risk checks pass.
+Each closed candle flows top to bottom:
 
-## Installation on a Raspberry Pi
+1. The hub hands it to every bot's engine.
+2. The strategies decide.
+3. The engine manages the paper trade.
+4. The executor mirrors the trade in each sandbox account, once the account and risk checks pass.
+
+The account stream keeps the executor's view of orders and positions up to date without polling.
+
+## Installation
+
+**Why a Raspberry Pi?** KaBor Quant runs 24/7, so the machine matters. A Raspberry Pi:
+
+- costs a fraction of a PC;
+- draws only a few watts;
+- is silent and has no moving parts;
+- has more than enough power for many bots at once.
+
+That makes it the cheapest way to keep the system always on.
+
+**Other machines.** Any Linux computer with **Python 3.9 or newer** works the same way: a PC or mini PC, a home server, a VPS, or WSL on Windows. `install.sh` sets everything up on Debian, Ubuntu and their derivatives. On other distributions, install the dependencies (`websocket-client`, `pillow`) and the service by hand. macOS can run it manually.
+
+**Run only one copy.** Never run two KaBor instances with the same accounts enabled. Each copy would send its own orders, and both would share the same API read limit. To move to another machine, stop the old one first and copy the `data/` folder.
 
 KaBor Quant installs in about five minutes on any Raspberry Pi 3 or newer running Raspberry Pi OS. It needs only Python 3, `websocket-client` and `pillow`, and runs as a system service that restarts by itself.
 
@@ -81,6 +147,13 @@ KaBor Quant installs in about five minutes on any Raspberry Pi 3 or newer runnin
 
 **Remote access.** Never open the panel port on your router. Use Tailscale instead: `sudo tailscale serve --bg <port>` gives a clean `https://<name>.<tailnet>.ts.net` address with no browser warning.
 
+**Updating with a backup.** Keep the release zip in your home folder (`~`), not inside the install folder:
+
+    cd ~/kcbot2 && ./bot.sh parar
+    cd ~ && tar czf kcbot2_backup_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+    unzip -o ~/kabor_X.Y_raspberry.zip -d ~/kcbot2
+    cd ~/kcbot2 && ./bot.sh arrancar
+
 **Daily commands**
 
 | Command                    | What it does                                                         |
@@ -103,7 +176,7 @@ One `fp_test_` key is enough to connect every sandbox account you own; each bot 
 
 3.  **Turn on "Enviar órdenes"** (Send orders). This is the global switch.
 
-4.  **Point a bot at it.** Bot → Configuration → Sandbox execution → Mode `sandbox`, tick its accounts, set risk per trade (start at 0.25 % or a fixed \$ amount) and save.
+4.  **Point a bot at it.** Bot → Settings → «Bot» tab → Sandbox execution → Mode `sandbox`, tick its accounts, set risk per trade (start at 0.25 % or a fixed \$ amount) and save.
 
 5.  **Check.** `./bot.sh comprobar` reads every account and its trading policy without sending orders.
 
@@ -113,11 +186,11 @@ A bot trades for real only when **both** switches are on: "Send orders" in Accou
 
 | The strategy model…                                             | KaBor calls                                                                                                                                                                    |
 |-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| gives a signal                                                  | `GET trading-policy` + `GET account` (daily-loss room), then `POST /v1/orders` market order with `stop_loss_price` (and `take_profit_price` if fixed) and an `Idempotency-Key` |
+| gives a signal                                                  | `GET account` for the daily-loss room (the trading policy is cached for 10 minutes and the price comes from the market feed), then `POST /v1/orders` market order with `stop_loss_price` (and `take_profit_price` if fixed) and an `Idempotency-Key`; the fill and the new position arrive on the account stream |
 | moves the stop or target (break-even, trailing, dynamic target) | `PUT /v1/positions/{id}/exit-orders` with `expected_position_size` and `expected_orders`; a 409 rereads and retries once                                                       |
 | takes a partial                                                 | `POST /v1/positions/{id}/close` with a `size`                                                                                                                                  |
 | exits at a candle close                                         | `POST /v1/positions/{id}/close`, market                                                                                                                                        |
-| — the account hits SL/TP on its own                             | `GET /v1/positions?status=closed` to log the real P&L in `ejecuciones.csv`                                                                                                     |
+| — the account hits SL/TP on its own                             | the account stream's `position closed` event logs the real P&L in `ejecuciones.csv` (REST `GET /v1/positions?status=closed` only if the stream is down) |
 | account lock with "close everything"                            | `POST close-all-positions` + `cancel-all-orders`                                                                                                                               |
 
 Order IDs follow `kc<bot>-<account>-<candle>-<side>`, so one signal sent to two accounts never collides, and a retry never doubles an order.
@@ -130,28 +203,31 @@ The panel is where every bot is created, tuned and watched, and Telegram is wher
 
 The panel is available in Spanish, English and French (Settings → Language).
 
-*The panel screenshots below come from KaBor Quant 8.9 running against a simulated MFP feed with random-walk prices, so they show what the panel looks like, not trading performance.*
-
 ![Overview: one card per bot with today, week and total R, trades, win rate, profit factor and an equity sparkline, plus a live price strip for GOLD, BTC, NAS100 and ETH](img/overview.jpg)
 
 The **Overview** shows every bot at a glance, grouped into algorithmic and manual-plan bots, with a live price strip on top.
 
 ![A bot's dashboard: today and week P&L against its limits, a live candle chart with the Keltner channel lines, the strategy's status sentence and the simulated trade panel](img/bot-dashboard.jpg)
 
-Each **bot dashboard** draws the strategy's own lines on a live chart and states in one sentence what the strategy is waiting for.
+Each **bot dashboard** draws the strategies' lines on a live chart and says in one sentence what each strategy is waiting for.
 
 **Panel sections**
 
 | Section                          | What you do there                                                                                                                         |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | Summary                          | Totals of all bots, one card per bot, live feed status, accounts, Raspberry Pi health, ZIP report                                         |
-| Bot (Panel / Configuration)      | Live chart with the strategy's lines, open trade, activity log; every strategy and common setting in one form                             |
+| Bot (Dashboard / Settings)       | Live chart with the strategies' lines, open trade, per-strategy performance, activity log; settings in tabs: the bot's own, then one per strategy |
 | New bot                          | Any installed strategy, or a "Manual plan" bot for SMT plans                                                                              |
 | Statistics                       | Filterable stats across bots, by period, side and unit (R or \$)                                                                          |
-| Accounts                         | Each sandbox account: today's P&L, MFP daily-loss bar with the auto-lock mark, balance, equity, drawdown room, bots using it, lock button |
+| Analysis                         | TradingView chart of the same market MFP uses, with automatic symbol mapping                                                              |
+| Plans                            | Analysis chart with drawings and the position tool; manual plans created by you or by Claude                                             |
+| Journal, Monitor, Portfolio      | Notes and tags per trade; drift monitor against each bot's backtest; several bots combined as one account                                 |
+| Payouts and expenses             | Payouts, costs and refunds in euros with receipts, for tax reporting                                                                      |
+| Accounts                         | Each sandbox account: today's P&L, MFP daily-loss bar with the auto-lock mark, balance, equity, drawdown room, account-stream status, API reads per minute, bots using it, lock button |
 | Strategies                       | Installed files, which bots use them, upload, download, remove                                                                            |
 | Global risk, Instruments, Alerts | Cross-bot limits; MFP markets; Telegram setup and which alerts to send                                                                    |
-| Settings                         | Password, open sessions per device, UI language, system log, restart                                                                      |
+| Settings                         | Password, two-step verification, open sessions per device, UI language, themes, mobile app, system log                                     |
+| Help                             | The full user guide in Spanish, English and French, with a settings reference generated from the code                                    |
 
 **Telegram setup:** create a bot with @BotFather, paste its token in Alerts → Check, send `/start` to it, then "Detect my chat" and "Send test message". Commands include `/estado` (status), `/cuentas` (accounts) and `/bloquear <account> [hours]` (lock an account).
 
@@ -383,6 +459,19 @@ Every strategy goes through the same three stages on the same MFP prices, so a r
 
 ![Statistics page: result, profit factor, win rate, expectancy, max drawdown, recovery factor, streaks and best/worst trade, above a linked equity curve and drawdown chart (simulated data)](img/statistics.jpg)
 
+**Analysing strategies from a laptop.** `herramientas/analizar_estrategias.py` needs only Python 3, with nothing to install. It runs a set of backtest variants on the Pi and writes an HTML report with CSVs:
+
+- each strategy alone;
+- the bot without each strategy;
+- every direction of each strategy;
+- every priority order.
+
+The report also includes the blocked-signal cost, conflicts with the open trade, a 14-day signal timeline and signals by hour.
+
+    python analizar_estrategias.py --pi https://YOUR-PANEL:8083 --usuario YOUR_USER --bot 3 --dias 90
+
+Testing many variants and keeping the best one overfits. Change something only if it also improves on another period.
+
 ## SMT: the MCP connector for Claude
 
 SMT is an MCP server built into KaBor that lets Claude act as an analyst for the trader: it reads live bots and results, checks the trader's levels against real MFP candles, and drafts trade plans. Claude can never confirm, trade or cancel an active plan; the trader approves every plan in the panel.
@@ -395,6 +484,7 @@ It solves a common problem for funded traders: good analysis, poor execution. Th
 |----------------------------|-----------------|----------------------------------------------------------------------------------------------------------------|
 | `kabor_contexto`           | read            | Instruments, timeframes, manual-plan bots, live plans, server time                                             |
 | `kabor_velas`              | read            | Candles for a symbol and timeframe, to verify FVGs, highs and lows                                             |
+| `kabor_dibujos`            | read            | What the trader drew on the analysis chart: levels, zones (untouched, touched or filled), positions and trend lines |
 | `kabor_bots`               | read            | Every bot: status, open position, R today/week/total, win rate, profit factor, drawdown, accounts, global risk |
 | `kabor_operaciones`        | read            | Trade history                                                                                                  |
 | `kabor_estadisticas`       | read            | Performance statistics                                                                                         |
@@ -408,13 +498,22 @@ It solves a common problem for funded traders: good analysis, poor execution. Th
 
 This plan was created through the connector's `kabor_crear_plan` tool. It waits as **Pending** until the trader presses *Confirm and activate*.
 
+![Plans page: analysis chart on real MFP candles with bearish and bullish FVG zones, a long position drawn with the position tool (entry, stop, TP1, TP and R:R) and the editable list of drawings](img/analysis-chart.jpg)
+
+**Plans from the chart.** The trader marks the analysis on the Plans chart:
+
+- levels and FVG zones (or «Mark FVGs» to find the open gaps);
+- a long or short position with entry, stop, TP1 and TP.
+
+Then «Create plan from chart» fills the plan form. Claude can read the same drawings through `kabor_dibujos` and check them against the candles before proposing a plan.
+
 **Connecting it.** `./bot.sh conector` creates a secret token and prints the path `/mcp/<token>`. Publish only that path over public HTTPS, for example `sudo tailscale funnel --bg --https=8443 --set-path=/mcp http://127.0.0.1:8083/mcp`, so the panel itself stays private. Then add `https://<machine>.<tailnet>.ts.net:8443/mcp/<token>` as a custom connector in Claude (Settings → Connectors). It uses your Claude plan, with no separate API key. The token is the password: never share the URL.
 
 **Typical session:**
 
 1.  The trader shares a chart and the idea.
 
-2.  Claude calls `kabor_contexto`, then `kabor_velas`, and flags problems: stop on the wrong side, low RR, ambiguous trigger, levels that don't match the candles.
+2.  Claude calls `kabor_contexto`, `kabor_dibujos` and `kabor_velas`, and flags problems: stop on the wrong side, low RR, ambiguous trigger, levels that don't match the candles.
 
 3.  After the trader agrees in chat, Claude calls `kabor_crear_plan`.
 
@@ -438,6 +537,8 @@ More safeguards:
 
 - **Idempotent orders.** Only GET requests and writes with an `Idempotency-Key` are retried, so a network retry never doubles an order.
 
+- **API read budget.** Each key stays under 24 GET requests per minute (MFP's sandbox limit is 30). Periodic panel reads yield to trading, and a 429 makes every read on that key wait the full `Retry-After`.
+
 - **Trader Lockout aware.** If the MFP web lockout is on, KaBor detects the first rejection, locks the account until the same time and stops touching it.
 
 - **Foreign positions are left alone.** If a market already holds a position the bot did not open, it neither manages it nor opens another.
@@ -450,32 +551,32 @@ More safeguards:
 
 ### Compliance with the Builders Program rules
 
-KaBor already follows MFP's rules for bots and automation, with one gap that is on the roadmap.
+KaBor follows MFP's rules for bots and automation.
 
 | MFP rule                                                          | KaBor today                                                                                                                                                                                                   |
 |-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Build and test with an `fp_test_` sandbox key                     | Enforced in code: `fp_live_` keys and any non-sandbox host are refused                                                                                                                                        |
 | Send an idempotency key when creating orders, reuse it on retries | Every order and close carries a fixed `Idempotency-Key` per bot, account and signal                                                                                                                           |
-| Back off on 429 / 503 and honour Retry-After                      | Retries wait the `Retry-After` value (capped at 30 s); only reads and idempotent writes are retried                                                                                                           |
+| Back off on 429 / 503 and honour Retry-After                      | A 429 waits the full `Retry-After` (up to 120 s) and pauses every read on that key; 503 retries back off; only reads and idempotent writes are retried; `X-RateLimit-Warning` headers are logged |
 | Keep API keys out of browser code, URLs, logs and commits         | Keys live in `data/cuentas.json` (owner-only); the panel shows the last 4 characters; the public package excludes `data/` and a scanner blocks any key before zipping                                         |
 | Use read-only access for watch-only tools                         | The SMT connector cannot trade; it only creates plans the trader must confirm                                                                                                                                 |
 | Don't exploit simulated fills, price feeds or latency             | Signals use closed candles only; entries go at market at the next open with the real fill logged                                                                                                              |
-| Use the WebSocket stream instead of polling                       | **Partly.** Market data uses the WebSocket stream; account and position state is still read over REST (every 60 s and on each closed candle). Moving it to the account stream is the next item on the roadmap |
+| Use the WebSocket stream instead of polling                       | **Yes.** Market data uses the market WebSocket. Orders, fills and positions come from the account stream (`/v1/sandbox/stream`, one connection per key, with resume). REST is only a fallback while the stream reconnects. |
 
 ## Roadmap
 
-KaBor Quant fits the MyFundedPerps Builders Program **Starter** tier today: a working prototype on the MFP REST API, running daily in sandbox. The roadmap aims at **Builder**: a public release used by other MFP traders.
+KaBor Quant is public on GitHub and runs daily in sandbox on the MFP API and streams. The roadmap aims at the Builders Program **Builder** tier: a public release used by other MFP traders.
 
 **Roadmap**
 
-| Next                                                                                                   | Why                                                                                                                                                                                                         |
-|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Move position and order tracking to MFP **WebSocket streams**                                          | Replace the REST polling of accounts and positions with `wss://account-stream.myfundedperpetuals.com/v1/stream`: instant fills and SL/TP events, and compliance with MFP's "stream instead of polling" rule |
-| Network resilience: cached DNS, longer backoff on transient errors, retry of lost partials and entries | Removes the intermittent "name resolution" failures seen on home networks                                                                                                                                   |
-| Public repo with installer, English docs and a demo video                                              | Lets other MFP traders install it in minutes                                                                                                                                                                |
-| Strategy gallery: Keltner Breakout, EMA bounce, NY-open ORB, FVG inversion                             | Ready-to-test examples for new users                                                                                                                                                                        |
-| Optional integration with the MFP MCP server and CLI                                                   | Account actions from Claude alongside SMT                                                                                                                                                                   |
-| Live keys (`fp_live_`)                                                                                 | Only after the strategies prove robust on enough sandbox trades                                                                                                                                             |
+| Next | Why |
+|---|---|
+| Network resilience: cached DNS, longer backoff on transient errors, retry of lost partials and entries | Removes the intermittent "name resolution" failures seen on home networks |
+| Installer for any Linux machine and a demo video | Lets other MFP traders install it in minutes outside a Raspberry Pi |
+| Strategy gallery with documented backtests | Ready-to-test examples for new users |
+| English and French Telegram alerts and system log | The panel and the help are already translated |
+| Optional integration with the MFP MCP server and CLI | Account actions from Claude alongside SMT |
+| Live keys (`fp_live_`) | Only after the strategies prove robust on enough sandbox trades |
 
 **License.** Copyright 2026 Borislav Vladimirov Petrakiev. KaBor Quant is released under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0): anyone may use, modify and redistribute it, commercially too, as long as they keep the `NOTICE` file and the copyright notices and mark their changes. The "KaBor Quant" name and logo are not licensed for other products, so forks must use their own.
 

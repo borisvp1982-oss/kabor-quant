@@ -1,0 +1,335 @@
+<!-- SPDX-License-Identifier: Apache-2.0 · Copyright 2026 Borislav Vladimirov Petrakiev -->
+<!-- Guía de KaBor Quant (Ayuda del panel). Se carga dentro del panel: solo el contenido, sin <html> ni <body>. -->
+<section id="inicio">
+  <h2>Qué es KaBor Quant</h2>
+  <p>KaBor Quant es tu <b>sistema modular de trading</b> para MyFundedPerps (MFP). Funciona en la Raspberry Pi las 24 horas: cada <b>bot</b> vigila un instrumento, ejecuta una o varias <b>estrategias</b> y opera <b>en papel</b> o en tus <b>cuentas sandbox</b> de MFP. Desde este panel lo controlas todo, y con el conector <b>SMT</b> Claude puede leer tus bots, revisar tu análisis y preparar planes que tú confirmas.</p>
+  <figure><img src="/ayuda/img/arquitectura.png" alt="Arquitectura: el panel, Claude y Telegram hablan con la Raspberry; las estrategias deciden y la ejecución envía las órdenes a MyFundedPerps"><figcaption>Cómo encaja todo: las estrategias deciden; el núcleo gestiona el riesgo, las órdenes y los avisos.</figcaption></figure>
+  <div class="ay-cajas">
+    <div><b>Bot</b><span>Un instrumento (BTC, XAU, NAS100…), una temporalidad base y sus límites de riesgo.</span></div>
+    <div><b>Estrategia</b><span>Un archivo <code>.py</code> que decide cuándo entrar y dónde va el stop. Un bot puede llevar hasta 5.</span></div>
+    <div><b>Plan manual</b><span>Tu análisis convertido en reglas: el bot lo ejecuta cuando se cumplen las condiciones.</span></div>
+    <div><b>SMT</b><span>El conector con Claude: lee bots, velas y tus dibujos, y propone planes. Nunca opera solo.</span></div>
+  </div>
+  <p class="ay-nota"><b>Solo sandbox.</b> KaBor rechaza las claves <code>fp_live_</code> y cualquier servidor que no sea el sandbox de MFP. Nada de lo que hace es asesoramiento financiero: los resultados del backtest y del papel no garantizan resultados futuros.</p>
+</section>
+
+<section id="primeros-pasos">
+  <h2>Primeros pasos</h2>
+  <h3>Entrar al panel</h3>
+  <p>Abre la dirección que da <code>./bot.sh panel</code> (por ejemplo <code>https://IP-de-tu-Raspberry:8083</code>) y entra con tu usuario. «Mantener la sesión» la conserva 30 días en ese dispositivo; si no, se cierra tras 12 horas sin uso. En <b>Ajustes</b> puedes activar la <b>verificación en dos pasos</b> con una app de códigos.</p>
+  <figure><img src="/ayuda/img/acceso.jpg" alt="Pantalla de acceso"><figcaption>Pantalla de acceso.</figcaption></figure>
+  <h3>El menú</h3>
+  <ul>
+    <li><b>Resumen</b>: todos los bots de un vistazo.</li>
+    <li><b>Herramientas</b>: Estadísticas, Análisis, Diario, Planes, Retiros y gastos, Cartera y Vigilante.</li>
+    <li><b>Bots</b>: cada bot, agrupado por carpetas, con su resultado y su estado (punto verde: en marcha).</li>
+    <li><b>Configuración</b>: Cuentas, Estrategias, Riesgo global, Noticias, Instrumentos y Avisos.</li>
+    <li><b>Sistema</b>: Ajustes y esta Ayuda.</li>
+  </ul>
+  <p>Arriba está la <b>cinta de precios</b> de tus instrumentos (▲/▼ si hay una posición abierta). En el escritorio, el menú se puede plegar; en el móvil se abre con ☰. El panel se puede instalar como app en el móvil (Ajustes → App en el móvil) si entras con un certificado válido, por ejemplo por Tailscale.</p>
+  <h3>Resumen</h3>
+  <p>Arriba, el resultado de hoy, de la semana y el total en R, y las operaciones abiertas. Debajo, una tarjeta por bot con su estrategia, su precio, su minicurva y su estado. Al final: el feed en directo, la Raspberry, los avisos, las cuentas, los bots archivados, el registro y el <b>informe ZIP</b> de todos los bots.</p>
+  <figure><img src="/ayuda/img/resumen.jpg" alt="Resumen del panel"><figcaption>Resumen: totales y una tarjeta por bot.</figcaption></figure>
+  <p class="ay-nota"><b>R</b> es la unidad de todo el panel: 1 R es lo que arriesgas en una operación (de la entrada al stop). Ganar 2 R es ganar el doble de lo arriesgado. Si el bot tiene «Riesgo por operación ($)», también verás dólares.</p>
+</section>
+
+<section id="bots">
+  <h2>Bots</h2>
+  <h3>Crear un bot</h3>
+  <p>Menú → <b>Nuevo bot</b>. Ponle nombre, elige estrategia, símbolo y temporalidad, pruébalo en el histórico y pulsa «Lanzar». «Partir de los ajustes de» copia los de otro bot. Desde <b>Estrategias</b>, «Nuevo bot con esta» lo abre ya con esa estrategia.</p>
+  <figure><img src="/ayuda/img/nuevo.jpg" alt="Bot nuevo"><figcaption>Bot nuevo: los mismos ajustes y la misma prueba que un bot en marcha.</figcaption></figure>
+  <h3>El panel del bot</h3>
+  <p>Cada bot tiene dos pestañas: <b>Panel</b> (seguimiento) y <b>Configuración</b> (ajustes). En el panel verás:</p>
+  <ul>
+    <li><b>Hoy y esta semana</b>, con la barra de sus límites diarios.</li>
+    <li><b>Precio y estrategia</b>: gráfico en directo con las líneas de la estrategia, la operación abierta y el enlace «TradingView ↗».</li>
+    <li><b>Operación simulada</b> y, si opera en cuenta, la tarjeta <b>Cuentas</b> con la posición real.</li>
+    <li><b>Gestión manual</b> de la operación abierta: stop a break-even, mover stop u objetivo, venta parcial (5–90 %) o cerrar ahora. Se aplica al modelo y a la cuenta al momento.</li>
+    <li><b>Vigilante de deriva</b>, <b>Rendimiento por estrategia</b> (si combina estrategias), estadísticas, operaciones por lado, la tabla de operaciones (toca una para ver su gráfico) y la actividad.</li>
+  </ul>
+  <figure><img src="/ayuda/img/bot-panel.jpg" alt="Panel de un bot"><figcaption>Panel de un bot.</figcaption></figure>
+  <h3>Control del bot</h3>
+  <ul>
+    <li><b>Pausar entradas</b>: no abre operaciones nuevas; la abierta sigue con su stop y su objetivo.</li>
+    <li><b>Archivar</b>: deja de funcionar y se guarda con todo su historial. Se reactiva desde el Resumen.</li>
+    <li>Estados: «Buscando señales», «Operación abierta», «Cargando historial», «Pausado», «Detenido por el guardián», «Error en la estrategia».</li>
+  </ul>
+</section>
+
+<section id="configuracion">
+  <h2>Configurar un bot</h2>
+  <p>La configuración está separada en <b>pestañas</b>: la pestaña <b>Bot</b> tiene lo que es del bot (mercado, riesgo, límites, filtros, ejecución) y hay <b>una pestaña por cada estrategia</b> con sus ajustes propios. El número en cada pestaña son los cambios sin guardar que hay en ella.</p>
+  <figure><img src="/ayuda/img/config-bot.jpg" alt="Configuración en pestañas"><figcaption>Pestaña «Bot» y, al lado, una pestaña por estrategia.</figcaption></figure>
+  <ul>
+    <li>Los cambios se marcan en el formulario y se aplican al pulsar <b>Guardar y aplicar</b>, sin reiniciar el programa. Cada guardado es una configuración numerada que puedes volver a cargar («Configuraciones guardadas»).</li>
+    <li>Cambiar la estrategia, el símbolo, la temporalidad o el filtro de tendencia recarga el historial del bot (y cierra su operación si cambia el mercado).</li>
+    <li>«Deshacer cambios» vuelve a lo guardado; «Valores por defecto», a los de la estrategia.</li>
+  </ul>
+  <h3>Referencia de los ajustes del bot</h3>
+  <p>Todos los ajustes comunes, con su explicación y su valor por defecto. Se generan desde el propio programa, así que siempre están al día.</p>
+  <div data-ayuda="ajustes"></div>
+</section>
+
+<section id="probar">
+  <h2>Probar, simular y optimizar</h2>
+  <h3>Probar en el histórico</h3>
+  <p>En la configuración, la tarjeta de la derecha prueba los valores del formulario <b>sin guardarlos</b> (7, 14, 30, 90 días o todo el historial) con las velas reales de MFP, las comisiones y las mismas reglas que en directo. El bot en marcha no se toca.</p>
+  <ul>
+    <li>Resultado: operaciones, acierto, R total, profit factor, drawdown, SQN, curva y operaciones por lado.</li>
+    <li>La <b>lista de operaciones</b>: toca una para verla dibujada con su stop, su objetivo y su recorrido.</li>
+    <li>En un bot con varias estrategias, el desglose <b>por estrategia</b> con sus señales bloqueadas.</li>
+    <li><b>Desglose detallado</b>: una ventana con lo que hizo cada estrategia, cuándo dio señal y qué pasó con cada señal (ver «Varias estrategias en un bot»).</li>
+    <li>«Pruebas de esta sesión» guarda las últimas para comparar.</li>
+  </ul>
+  <figure><img src="/ayuda/img/backtest.jpg" alt="Resultado de una prueba en el histórico" class="ay-alta"><figcaption>Prueba en el histórico con desglose por estrategia.</figcaption></figure>
+  <h3>Simulador de prop firm (Monte Carlo)</h3>
+  <p>Debajo de la prueba: baraja miles de veces los días del backtest y aplica las reglas de un challenge (pérdida diaria, máxima, objetivo, días mínimos, plazo). Te dice la probabilidad de pasar, de romper la cuenta, los días típicos y <b>qué riesgo por operación conviene</b>. «Barajar en bloques de 5 días» es más exigente y realista.</p>
+  <h3>Optimizar ajustes (walk-forward)</h3>
+  <p>Prueba combinaciones de uno o dos ajustes y comprueba con <b>walk-forward</b> si lo que sale bien aguanta con datos que no ha visto. Carga la <b>zona robusta</b> (recuadro dorado), no la estrella aislada. Si el veredicto es «sobreajustada», no cambies nada: la estrategia no mejora tocando números.</p>
+  <p class="ay-nota">Con menos de 30 operaciones, un backtest dice poco. Prueba siempre en periodos largos y distintos.</p>
+</section>
+
+<section id="estrategias">
+  <h2>Estrategias</h2>
+  <p>Una estrategia es un archivo <code>.py</code> en la carpeta <code>estrategias/</code>. En <b>Estrategias</b> ves las instaladas, qué bots usa cada una, puedes descargarlas, subir una nueva o una versión nueva (los bots que la usan la recargan solos) y quitarlas si ningún bot las usa. Las versiones sustituidas se guardan en <code>estrategias/anteriores/</code>.</p>
+  <figure><img src="/ayuda/img/estrategias.jpg" alt="Página de estrategias"><figcaption>Estrategias instaladas.</figcaption></figure>
+  <h3>Tus estrategias instaladas</h3>
+  <div data-ayuda="estrategias"></div>
+  <h3>Probar un archivo sin instalarlo</h3>
+  <pre><code>./bot.sh probar estrategias/cruce_emas.py --simbolo BTC --tf 15m --dias 60
+./bot.sh probar estrategias/cruce_emas.py --simbolo XAU --tf 5m --dias 30 --ajuste ce_rr=1.5</code></pre>
+  <h3>Escribir una estrategia</h3>
+  <p>Solo hace falta la función <code>senales()</code>: devuelve el lado (1 largo, −1 corto) y el precio del stop. El objetivo, el break-even, el trailing, los límites y la ejecución los pone el núcleo. Tienes la explicación completa en <code>ESTRATEGIAS.md</code> y un ejemplo comentado en <code>estrategias/cruce_emas.py</code>. También puedes pedírmela a mí (Claude) describiendo la idea.</p>
+  <p class="ay-nota"><b>Un archivo de estrategia es código que se ejecuta en la Raspberry.</b> Sube solo archivos tuyos o de confianza.</p>
+</section>
+
+<section id="combinadas">
+  <h2>Varias estrategias en un bot</h2>
+  <p>Un bot puede llevar <b>hasta 4 estrategias además de la principal</b>, sobre el mismo instrumento. Se eligen en la pestaña Bot → Mercado → «Más estrategias en este bot». Cada estrategia añadida tiene su propia pestaña con sus ajustes y su temporalidad.</p>
+  <figure><img src="/ayuda/img/config-combinar.jpg" alt="Elegir más estrategias" class="ay-peq"><figcaption>Más estrategias en este bot.</figcaption></figure>
+  <h3>Una operación a la vez</h3>
+  <ul>
+    <li>Todas las estrategias vigilan a la vez. La <b>primera señal válida</b> abre la operación y <b>bloquea al resto</b> hasta que se cierra (TP, stop, la salida de esa estrategia o a mano). Las señales contrarias no cierran ni abren nada: se cuentan como <b>bloqueadas</b>.</li>
+    <li>La estrategia que abrió es la <b>dueña</b> de la operación: su objetivo, su break-even y su salida.</li>
+    <li>El riesgo, los límites, el horario, los filtros y la ejecución son los del bot (pestaña Bot).</li>
+  </ul>
+  <h3>Cada estrategia con su temporalidad y su dirección</h3>
+  <p>Pon el bot en la <b>temporalidad más pequeña</b> y a cada estrategia la suya (igual o mayor y múltiplo): por ejemplo, bot de 5m con un ORB en 5m, una Ruptura de Keltner en 30m y un Supertrend en 4h. El bot construye las velas de cada estrategia con las suyas; cada una ve solo sus velas cerradas, con su ATR. Las señales entran en la apertura de la siguiente vela del bot, y el stop y el objetivo se vigilan en cada vela del bot.</p>
+  <figure><img src="/ayuda/img/config-estrategia.jpg" alt="Pestaña de una estrategia añadida"><figcaption>Pestaña de una estrategia añadida: su temporalidad, su dirección y sus ajustes.</figcaption></figure>
+    <p><b>Dirección:</b> cada estrategia tiene la suya en su pestaña («ambos», «solo largos» o «solo cortos»), también la principal. Si una funciona mejor solo en ventas, déjala solo en cortos sin tocar a las demás. Las señales del otro lado se cuentan como filtradas por «dirección». Las configuraciones guardadas antes de la 9.3 conservan lo que tenían: la dirección que era del bot pasa a todas sus estrategias.</p>
+  <h3>Prioridad por puntuación</h3>
+  <p>Si varias dan señal en la misma vela, entra la de <b>mejor puntuación</b>. La puntuación es el <b>SQN</b> del backtest de cada estrategia sola, en su temporalidad, con los ajustes del bot y los últimos 90 días: media de R ÷ desviación × √operaciones (hasta 100). Orientativo: más de 1,6 bueno, más de 2,5 muy bueno; por debajo de 0, pierde. Con menos de 10 operaciones no tiene puntuación y va la última. Se recalcula al guardar la configuración, cada día y con «Recalcular puntuación».</p>
+  <h3>Rendimiento por estrategia</h3>
+  <p>En el panel del bot: barras del R de cada estrategia en directo y en su backtest, la curva de cada una, y una ficha por estrategia con su prioridad, su puntuación, operaciones, acierto, profit factor, drawdown, dólares y <b>señales bloqueadas</b> (las oportunidades que se perdieron por la regla de una operación a la vez).</p>
+  <figure><img src="/ayuda/img/bot-rendimiento.jpg" alt="Rendimiento por estrategia"><figcaption>Rendimiento por estrategia.</figcaption></figure>
+  <h3>Desglose detallado de una prueba</h3>
+  <p>Al probar en el histórico, el botón <b>Desglose detallado</b> abre una ventana con todo lo que hizo cada estrategia en esa prueba (también en un bot con una sola):</p>
+  <ul>
+    <li><b>Comparación</b> de las estrategias: temporalidad, dirección, operaciones, acierto, PF, R, R medio, drawdown, SQN, señales, bloqueadas y filtradas; y la <b>curva</b> de cada una.</li>
+    <li><b>Cuándo da señal cada estrategia</b>: una fila por estrategia con cada señal (▲ largo, ▼ corto) y sus operaciones. Relleno: entra; gris: bloqueada por la operación de otra; naranja: filtrada; rojo: límite del día. Toca o pasa el ratón por una marca para ver qué pasó. Arrastra para moverte y usa la rueda para el zoom.</li>
+    <li><b>Cómo se pisan</b>: qué estrategia bloqueó a cuál y cuántas veces.</li>
+    <li>Una ficha por estrategia: <b>largos frente a cortos</b>, qué pasó con sus señales, quién la bloqueó, qué filtros le quitan señales, operaciones por hora y por día de la semana y motivos de salida, con <b>ideas para probar</b> (por ejemplo, dejarla solo en cortos si gana en cortos y pierde en largos).</li>
+  </ul>
+  <figure><img src="/ayuda/img/desglose.jpg" alt="Ventana de desglose por estrategia"><figcaption>Desglose: comparación y curvas.</figcaption></figure>
+  <figure><img src="/ayuda/img/desglose-tiempo.jpg" alt="Línea de tiempo de señales"><figcaption>Cuándo da señal cada estrategia y qué pasó con cada señal.</figcaption></figure>
+  <figure><img src="/ayuda/img/desglose-fichas.jpg" alt="Fichas por estrategia"><figcaption>Una ficha por estrategia.</figcaption></figure>
+  <p>«Descargar datos» guarda la prueba en un archivo JSON para el script del portátil.</p>
+  <h3>Analizar las estrategias desde el portátil</h3>
+  <p><code>herramientas/analizar_estrategias.py</code> pide a la Raspberry muchas pruebas del mismo bot y escribe un informe HTML con lo que conviene probar. Solo necesita Python 3 en el portátil (Windows, macOS o Linux), sin instalar nada más. Copia el archivo al portátil y ejecútalo:</p>
+  <pre><code>python analizar_estrategias.py --pi https://DIRECCIÓN-DE-TU-PANEL --usuario TU_USUARIO --bot 3
+python analizar_estrategias.py --pi https://... --usuario TU_USUARIO --bot 3 --dias 180 --rapido
+python analizar_estrategias.py --archivo desglose_BTC_15m_2026-11-25.json</code></pre>
+  <ul>
+    <li>Pide la contraseña (y el código de la verificación en dos pasos, si la tienes) al ejecutarlo; no la guarda.</li>
+    <li>Prueba la configuración actual, <b>cada estrategia sola</b>, <b>el bot sin cada una</b>, <b>cada dirección</b> de cada estrategia y <b>cada orden de prioridad</b> (<code>--rapido</code> se salta los órdenes). Las pruebas se hacen en la Raspberry, con sus velas; los bots siguen funcionando.</li>
+    <li>El informe compara las variantes con la actual (Δ R), cuenta las señales que cada estrategia bloqueó a otra y <b>lo que habrían dado</b> (según la prueba de esa estrategia sola), las señales contrarias a la operación abierta, la línea de tiempo de los últimos 14 días y las señales por hora. Junto al informe quedan <code>senales.csv</code>, <code>operaciones.csv</code> y <code>variantes.csv</code> para Excel.</li>
+    <li>Con el certificado propio de la Raspberry: copia <code>data/tls/cert.pem</code> al portátil y añade <code>--certificado cert.pem</code>, entra por Tailscale o, solo en tu red de casa, usa <code>--sin-verificar</code>.</li>
+    <li><code>--archivo</code> analiza un JSON de «Descargar datos» sin conectar (sin variantes).</li>
+  </ul>
+  <figure><img src="/ayuda/img/informe-portatil.jpg" alt="Informe del script del portátil"><figcaption>Informe de analizar_estrategias.py.</figcaption></figure>
+  <p class="ay-nota">Probar muchas variantes y quedarse con la mejor sobreajusta. Cambia algo solo si mejora con bastantes operaciones y en <b>otro periodo</b> también (por ejemplo, <code>--dias 90</code> y <code>--dias 180</code>).</p>
+  <p class="ay-nota">El «Plan manual» va siempre en su propio bot: no se combina con otras estrategias.</p>
+</section>
+
+<section id="planes">
+  <h2>Planes manuales y gráfico de análisis</h2>
+  <p>Un <b>plan</b> es tu análisis convertido en reglas: instrumento, lado, condición de entrada, stop, TP1 opcional, objetivo, invalidación y caducidad. Lo ejecuta un bot con la estrategia <b>«Plan manual»</b> del mismo instrumento y temporalidad. Un plan nuevo queda <b>pendiente</b> hasta que lo confirmas.</p>
+  <figure><img src="/ayuda/img/planes.jpg" alt="Página de planes"><figcaption>Planes: cómo funcionan, el gráfico de análisis y la lista.</figcaption></figure>
+  <h3>Condiciones de entrada</h3>
+  <ul>
+    <li><b>Orden límite en</b> un precio: se llena al tocarlo, sin esperar al cierre. En la cuenta, KaBor vigila el precio en vivo y entra a mercado al tocarlo. Se retira sola si el precio llega antes al objetivo, si se cumple la invalidación o si caduca.</li>
+    <li><b>Una vela cierra por encima/por debajo de</b> un nivel (con N cierres seguidos).</li>
+    <li><b>El precio sube/baja y toca</b> un nivel.</li>
+  </ul>
+  <p><b>TP1:</b> vende un porcentaje y, si quieres, mueve el stop a break-even. <b>Tamaño:</b> por defecto, el del riesgo del bot (contratos = riesgo ÷ distancia al stop); o unos contratos fijos. Un plan activo se cancela con unos minutos de espera, por seguridad.</p>
+  <h3>Gráfico de análisis</h3>
+  <p>Con las velas reales de MFP. Herramientas:</p>
+  <ul>
+    <li><b>Mover</b>: selecciona y arrastra lo dibujado.</li>
+    <li><b>Nivel</b>: entrada, stop, TP1, TP final, invalidación o nivel libre.</li>
+    <li><b>Zona</b>: FVG alcista o bajista, order block, liquidez o zona libre (arrastrando o tocando dos esquinas; puede llegar «hasta ahora»).</li>
+    <li><b>Tendencia</b>: línea entre dos puntos.</li>
+    <li><b>▲ Largo / ▼ Corto</b>: la herramienta de posición, como en TradingView. Caja verde hasta el objetivo y roja hasta el stop; arrastras cada línea, la caja o su borde derecho. Las etiquetas dicen precio, %, $ y R:R, con los contratos según el riesgo del bot (o el riesgo y los contratos que escribas en la lista).</li>
+    <li><b>Marcar FVG</b>: marca los 6 huecos de tres velas abiertos más cercanos al precio. El mismo botón los quita.</li>
+    <li><b>Crear plan desde el gráfico</b> (o «Crear plan» en una posición): rellena «Plan a mano» con tus niveles y un resumen de tus zonas. Lo revisas y lo creas como pendiente.</li>
+  </ul>
+  <figure><img src="/ayuda/img/planes-grafico.jpg" alt="Gráfico de análisis con una posición y FVG" class="ay-alta"><figcaption>Posición larga y FVG marcados en el gráfico de análisis.</figcaption></figure>
+  <figure><img src="/ayuda/img/planes-formulario.jpg" alt="Formulario del plan rellenado desde el gráfico"><figcaption>El plan, rellenado desde el gráfico.</figcaption></figure>
+  <p>Los dibujos se guardan en la Raspberry por instrumento; los planes vivos se ven en línea discontinua. En el móvil se dibuja con el dedo.</p>
+</section>
+
+<section id="smt">
+  <h2>SMT: Claude con tus bots</h2>
+  <p>SMT es un conector MCP que deja a Claude <b>leer</b> tu sistema y <b>proponer planes</b>. Claude nunca confirma, opera ni cancela un plan activo: eso lo haces tú en el panel.</p>
+  <h3>Conectarlo</h3>
+  <ol>
+    <li>En la Raspberry: <code>./bot.sh conector</code> te da la dirección privada del conector.</li>
+    <li>En Claude: Ajustes → Conectores → Añadir conector personalizado → pega la dirección.</li>
+    <li>Si KaBor añade herramientas nuevas, desconecta y vuelve a conectar, y abre un chat nuevo.</li>
+  </ol>
+  <h3>Herramientas</h3>
+  <table class="ay-tabla">
+    <tr><th>Herramienta</th><th>Qué hace</th></tr>
+    <tr><td><code>kabor_contexto</code></td><td>Instrumentos, bots «Plan manual», planes vivos y la hora del servidor.</td></tr>
+    <tr><td><code>kabor_velas</code></td><td>Velas reales cerradas de un instrumento y temporalidad.</td></tr>
+    <tr><td><code>kabor_dibujos</code></td><td>Lo que has marcado en el gráfico de análisis: niveles, zonas (sin tocar, tocada, rellenada), posiciones y tendencias.</td></tr>
+    <tr><td><code>kabor_crear_plan</code></td><td>Crea un plan <b>pendiente</b> (solo si lo apruebas en el chat).</td></tr>
+    <tr><td><code>kabor_planes</code> / <code>kabor_cancelar_pendiente</code></td><td>Lista los planes y cancela uno pendiente.</td></tr>
+    <tr><td><code>kabor_bots</code>, <code>kabor_operaciones</code>, <code>kabor_estadisticas</code></td><td>Estado y resultados de los bots, para revisarlos (solo lectura).</td></tr>
+  </table>
+  <h3>Ejemplos de lo que puedes pedir</h3>
+  <ul class="ay-prompts">
+    <li>«Revisa lo que he marcado en BTC 15m y prepárame el plan.»</li>
+    <li>«Mira esta captura del Nasdaq: quiero vender en el FVG de 1h con stop sobre el máximo. ¿Cuadra con las velas reales?»</li>
+    <li>«¿Cómo van mis bots esta semana? Separa mi análisis de mi ejecución.»</li>
+    <li>«Escríbeme una estrategia para KaBor que compre el rebote en la EMA 50 con tendencia de 4h a favor.»</li>
+  </ul>
+</section>
+
+<section id="analisis">
+  <h2>Análisis (TradingView)</h2>
+  <p>El gráfico completo de TradingView (indicadores, dibujos, varias temporalidades) del <b>mismo mercado que usa MFP</b>. KaBor elige el símbolo solo: Binance → <code>BINANCE:BTCUSDT.P</code>, Hyperliquid (Trade[XYZ]) → <code>HIP3XYZ:XYZ100USDC.P</code>. Junto al símbolo pone «MISMO MERCADO» o «APROXIMADO» (el forex y algunos índices no existen tal cual en TradingView). Si alguno no carga, escribe otro en «Símbolos en TradingView».</p>
+  <figure><img src="/ayuda/img/analisis-simbolos.jpg" alt="Símbolos de TradingView" class="ay-peq"><figcaption>Símbolos de TradingView de cada instrumento.</figcaption></figure>
+  <p>Puede haber pequeñas diferencias con el precio de MFP: los bots operan siempre con las velas de MFP. Lo que dibujas en TradingView no lo puede leer Claude; para eso está el gráfico de análisis de Planes.</p>
+</section>
+
+<section id="seguimiento">
+  <h2>Seguimiento</h2>
+  <h3>Estadísticas</h3>
+  <p>El rendimiento de todos tus bots juntos o de cada uno: R, acierto, profit factor, curva, drawdown, calendario, meses, horas, días, duración, motivos de salida y recorrido a favor y en contra (MFE/MAE).</p>
+  <figure><img src="/ayuda/img/estadisticas.jpg" alt="Estadísticas"></figure>
+  <h3>Diario</h3>
+  <p>Todas las operaciones por días. Toca una para escribir una <b>nota</b>, ponerle <b>etiquetas</b> y marcar si fue <b>según el plan</b>. Puedes apuntar operaciones hechas a mano. Arriba ves cuánto te cuesta saltarte el plan.</p>
+  <figure><img src="/ayuda/img/diario.jpg" alt="Diario"></figure>
+  <h3>Vigilante de deriva</h3>
+  <p>Compara lo real de cada bot con miles de rachas posibles de su backtest: «como en el backtest», «a vigilar», «en deriva» o «pocas operaciones». Avisa por Telegram y puede pausar el bot al entrar en deriva.</p>
+  <figure><img src="/ayuda/img/vigilante.jpg" alt="Vigilante de deriva"></figure>
+  <h3>Cartera</h3>
+  <p>Junta varios bots como si fueran una sola cuenta: drawdown conjunto, correlación, riesgo abierto a la vez y el simulador de prop firm con todos juntos.</p>
+  <figure><img src="/ayuda/img/cartera.jpg" alt="Cartera"></figure>
+  <h3>Retiros y gastos</h3>
+  <p>Tus payouts, gastos y reembolsos en euros (cambio del BCE si hace falta), con justificantes, resúmenes por año y trimestre, CSV e informe para imprimir. Solo en el panel; nunca por el conector. Haz copia de <code>data/fiscal</code>.</p>
+  <figure><img src="/ayuda/img/fiscal.jpg" alt="Retiros y gastos"></figure>
+</section>
+
+<section id="cuentas">
+  <h2>Cuentas sandbox y riesgo</h2>
+  <h3>Operar en las cuentas sandbox</h3>
+  <ol>
+    <li>En MFP → Ajustes → API Keys, crea una clave <b>Test (Sandbox)</b> con nivel <b>Read And Trade</b> (empieza por <code>fp_test_</code>).</li>
+    <li>Panel → <b>Cuentas</b> → «Añadir cuenta»: nombre, clave, «Buscar las cuentas de esta clave», elige la cuenta y activa «Enviar órdenes».</li>
+    <li>En el bot → pestaña Bot → <b>Ejecución en sandbox</b>: modo <code>sandbox</code>, sus cuentas y el riesgo por operación (empieza bajo).</li>
+  </ol>
+  <figure><img src="/ayuda/img/cuentas.jpg" alt="Cuentas"></figure>
+  <p>Antes de cada orden se comprueba la cuenta, su trading policy, el <b>daily loss</b> que quedaría tras el stop, que el precio no haya pasado el stop, el coste, el tamaño mínimo, el nominal y el apalancamiento. Cada orden lleva una clave de idempotencia (nunca se duplica) y los reintentos respetan los límites de la API. Las claves solo se ven por sus 4 últimos caracteres.</p>
+  <h3>Stream de la cuenta y límite de lecturas</h3>
+  <p>MyFundedPerps limita las lecturas (GET) a <b>30 por minuto y clave</b> en sandbox; enviar, cambiar o cerrar órdenes no cuenta. Desde la 9.4, KaBor abre un <b>stream de la cuenta</b> por clave: MFP le envía al momento cada cambio de órdenes, llenados, posiciones y saldo, así que ya no consulta la posición en cada vela ni la orden hasta que se llena. Una entrada pasa de unas 12 lecturas a 1–3, y un cierre, a ninguna.</p>
+  <ul>
+    <li>En cada cuenta ves «Stream de la cuenta» (conectado o reconectando) y «Lecturas por minuto» (ahora, máximo de la última hora y de 24 horas).</li>
+    <li>KaBor no pasa de 24 lecturas por minuto por clave y deja sitio a lo de operar: la lectura periódica del panel espera si la clave va cargada.</li>
+    <li>Si el stream se corta, se reconecta solo y, mientras tanto, KaBor pregunta a la API como antes.</li>
+    <li>Si MFP avisa de que la clave va por encima de su límite, o la frena con un 429, queda en el registro y te llega un aviso de «problemas» por Telegram (como mucho uno por hora); KaBor espera lo que pida MFP antes de volver a leer.</li>
+  </ul>
+  <h3>Riesgo global</h3>
+  <p>Límites por encima de los de cada bot: pérdida y ganancia diaria y semanal del conjunto y operaciones abiertas a la vez. Al alcanzarlos, para las entradas de todos los bots.</p>
+  <figure><img src="/ayuda/img/riesgo.jpg" alt="Riesgo global"></figure>
+  <h3>Noticias</h3>
+  <p>Sin entradas alrededor de las noticias del calendario económico (Forex Factory): por divisa e impacto, con ventanas más amplias para las grandes (FOMC, NFP, CPI…). Las operaciones abiertas no se tocan. Viene desactivado.</p>
+  <figure><img src="/ayuda/img/noticias.jpg" alt="Noticias"></figure>
+</section>
+
+<section id="sistema">
+  <h2>Instrumentos, avisos y ajustes</h2>
+  <h3>Instrumentos</h3>
+  <p>Los mercados de MFP que usan tus bots y su comisión. Busca y añade más desde el catálogo. Si MFP cambia un mercado de sitio (como el Nasdaq, que pasó a <code>composite|XYZ100</code>), KaBor lo encuentra por su nombre, se actualiza solo y te avisa.</p>
+  <figure><img src="/ayuda/img/instrumentos.jpg" alt="Instrumentos"></figure>
+  <h3>Avisos de Telegram</h3>
+  <ol>
+    <li>En Telegram, habla con <b>@BotFather</b>, escribe <code>/newbot</code> y copia el token.</li>
+    <li>Panel → <b>Avisos</b>: pega el token, «Comprobar», escribe <code>/start</code> a tu bot y «Detectar mi chat».</li>
+    <li>Elige qué avisar (señal, apertura, cierre, límites, problemas, resumen diario…) y envía un mensaje de prueba.</li>
+  </ol>
+  <figure><img src="/ayuda/img/telegram.png" alt="Aviso de Telegram con gráfico" class="ay-peq"><figcaption>Aviso de apertura con su gráfico.</figcaption></figure>
+  <p>Los bots trabajan con velas cerradas: la señal se avisa al cerrar la vela que la da. Tras un reinicio, los avisos de las velas recuperadas llegan marcados «con retraso».</p>
+  <h3>Ajustes</h3>
+  <p>Tu contraseña, la verificación en dos pasos, las sesiones abiertas, el idioma (español, inglés o francés), la cinta de precios, los temas y la app en el móvil.</p>
+  <figure><img src="/ayuda/img/ajustes.jpg" alt="Ajustes"></figure>
+</section>
+
+<section id="mantenimiento">
+  <h2>Mantenimiento en la Raspberry</h2>
+  <h3>Comandos</h3>
+  <table class="ay-tabla">
+    <tr><th>Comando</th><th>Qué hace</th></tr>
+    <tr><td><code>./bot.sh panel</code></td><td>Dirección del panel</td></tr>
+    <tr><td><code>./bot.sh estado</code> / <code>logs</code></td><td>Si el servicio está en marcha / registro en directo (Ctrl+C para salir)</td></tr>
+    <tr><td><code>./bot.sh reiniciar</code> · <code>parar</code> · <code>arrancar</code></td><td>Control del servicio (todos los bots)</td></tr>
+    <tr><td><code>./bot.sh comprobar</code></td><td>Conexión, velas de cada bot, estrategias y cuentas (no envía órdenes)</td></tr>
+    <tr><td><code>./bot.sh probar ARCHIVO</code></td><td>Backtest de una estrategia con velas reales, sin instalarla</td></tr>
+    <tr><td><code>./bot.sh usuario</code> · <code>cerrar-sesiones</code> · <code>quitar-2fa USUARIO</code></td><td>Usuarios, sesiones y verificación en dos pasos</td></tr>
+    <tr><td><code>./bot.sh configurar</code> · <code>certificado</code></td><td>Puerto, HTTPS y certificado (luego <code>reiniciar</code>)</td></tr>
+    <tr><td><code>./bot.sh conector</code></td><td>Dirección del conector SMT para Claude</td></tr>
+    <tr><td><code>./bot.sh informe</code></td><td>ZIP con los informes de todos los bots</td></tr>
+  </table>
+  <h3>Actualizar con copia de seguridad</h3>
+  <p>Deja el zip de la versión nueva en tu carpeta personal (<code>~</code>), no dentro de <code>~/kcbot2</code>:</p>
+  <pre><code>cd ~/kcbot2 &amp;&amp; ./bot.sh parar
+cd ~ &amp;&amp; tar czf kcbot2_copia_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+unzip -o ~/kabor_X.Y_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 &amp;&amp; ./bot.sh arrancar</code></pre>
+  <p>Después recarga el panel con Ctrl+F5. Para <b>volver atrás</b>:</p>
+  <pre><code>cd ~/kcbot2 &amp;&amp; ./bot.sh parar
+cd ~ &amp;&amp; mv kcbot2 kcbot2_descartada
+tar xzf kcbot2_copia_AAAAMMDD_HHMM.tgz
+mv kcbot2_descartada/venv kcbot2/
+cd ~/kcbot2 &amp;&amp; ./bot.sh arrancar</code></pre>
+  <h3>Dónde se guarda todo</h3>
+  <ul>
+    <li><code>estrategias/</code>: los archivos de estrategia.</li>
+    <li><code>data/bots.json</code> y <code>data/bots/&lt;nº&gt;/</code>: cada bot con su configuración, estado, <code>operaciones.csv</code>, <code>ejecuciones.csv</code>, eventos, velas e informes.</li>
+    <li><code>data/cuentas.json</code> (claves), <code>data/usuarios.json</code>, <code>data/sesiones.json</code> y <code>data/tls/</code>: privados, solo legibles por tu usuario. <b>No los compartas.</b></li>
+    <li><code>data/dibujos.json</code>, <code>data/planes.json</code>, <code>data/diario.json</code>, <code>data/fiscal/</code>, <code>data/avisos.json</code>, <code>data/instrumentos.json</code>.</li>
+  </ul>
+</section>
+
+<section id="problemas">
+  <h2>Problemas frecuentes</h2>
+  <dl class="ay-faq">
+    <dt>Aviso «Límite de lecturas de MyFundedPerps»</dt>
+    <dd>Una clave ha superado las 30 lecturas por minuto. Mira en Cuentas si el stream está conectado; si no, revisa <code>./bot.sh logs</code>. Usa cada clave solo en KaBor: otro programa con la misma clave suma lecturas al mismo límite.</dd>
+    <dt>Un bot se queda en «Cargando historial»</dt>
+    <dd>Mira <code>./bot.sh logs</code>. Si dice que el mercado ya no aparece en el catálogo, MFP lo ha movido: desde la 9.1 KaBor lo busca solo; si no lo encuentra, revisa el instrumento en Instrumentos. Si el error es de red, espera: el bot reintenta solo.</dd>
+    <dt>Avisos de «problemas» por DNS o red (Errno -3)</dt>
+    <dd>La Raspberry se ha quedado sin red o sin DNS un momento. Si son frecuentes, revisa la WiFi o pon un DNS fijo en el router (1.1.1.1 o 8.8.8.8).</dd>
+    <dt>«Error en la estrategia»</dt>
+    <dd>El registro dice la línea del archivo que falla. El bot sigue con la vela siguiente. Corrige el archivo y súbelo otra vez en Estrategias.</dd>
+    <dt>El navegador avisa de que la conexión no es privada</dt>
+    <dd>Es el certificado propio de la Raspberry: la conexión sí va cifrada. Acepta el aviso una vez, o entra por Tailscale para tener un certificado válido.</dd>
+    <dt>No puedo combinar dos estrategias</dt>
+    <dd>El «Plan manual» no se combina. Las demás sí (hasta 4 además de la principal); su temporalidad tiene que ser igual o mayor que la del bot y múltiplo de ella.</dd>
+    <dt>Claude no ve una herramienta nueva de SMT</dt>
+    <dd>En Claude, desconecta y vuelve a conectar el conector y abre un chat nuevo.</dd>
+    <dt>Algo sale en español con el panel en inglés o francés</dt>
+    <dd>Falta esa frase en el diccionario: manda una captura y se añade.</dd>
+  </dl>
+</section>

@@ -81,7 +81,17 @@ AUTO_COST = {"BTC": 0.06}
 SYMBOL_RE = re.compile(r"^[A-Z0-9][A-Z0-9._:-]{0,39}$")
 ID_RE = re.compile(r"^[a-z][a-z0-9_]{1,39}$")
 DEFAULT_STRATEGY = "keltner_rsi"
-TYPES = ("bool", "int", "float", "select", "symbol", "strategy", "cuentas")
+TYPES = ("bool", "int", "float", "select", "symbol", "strategy", "cuentas", "combinar")
+MAX_COMBINADAS = 4         # estrategias extra en un mismo bot
+TF_DEL_BOT = "la del bot"
+DIRECCIONES = ("ambos", "solo largos", "solo cortos")
+DIR_AYUDA = ("Lados que opera esta estrategia: si funciona mejor solo en compras o solo en ventas, déjala en ese lado. Con señales invertidas, cuenta el lado que se opera.")
+GRUPO_TFDIR = "Temporalidad y dirección"   # grupo de la pestaña de cada estrategia con su temporalidad y su dirección
+TF_ESTR = [TF_DEL_BOT, "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d"]   # temporalidad propia de una estrategia
+TF_AYUDA = ("Velas que mira esta estrategia. Tiene que ser igual o mayor que la del bot y múltiplo de ella (bot de 5m: "
+            "15m, 30m, 1h, 4h…). El bot construye estas velas con las suyas; las señales entran en la apertura de la "
+            "siguiente vela del bot y el stop y el objetivo se vigilan en cada vela del bot.")
+NO_COMBINABLES = ("plan_manual",)   # planes de SMT: siempre en su propio bot
 CUENTA_RE = re.compile(r"^c[0-9]{1,4}$")
 MAX_CUENTAS_BOT = 5
 
@@ -176,13 +186,19 @@ PRINCIPIO = [
     F("estrategia", "Mercado", "Estrategia", "strategy", DEFAULT_STRATEGY,
       "Las estrategias son archivos de la carpeta estrategias (pestaña «Estrategias»). Cambiarla recarga el "
       "historial y cierra la operación abierta."),
+    F("combinar", "Mercado", "Más estrategias en este bot", "combinar", [],
+      "Estrategias que vigilan el mismo instrumento a la vez. Una sola operación abierta: la primera señal válida "
+      "abre y bloquea al resto hasta que se cierra (TP, stop o salida de esa estrategia, o a mano). Si dan señal "
+      "en la misma vela, manda la de mejor puntuación en su backtest. Cada una gestiona la salida de sus "
+      "operaciones con sus propios ajustes."),
+    F("tf_principal", "Mercado", "Temporalidad de la estrategia principal", "select", "la del bot", TF_AYUDA,
+      options=["la del bot", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d"]),
     F("symbol", "Mercado", "Símbolo", "symbol", "GOLD",
       "Uno de tus instrumentos (se añaden en «Instrumentos»). Al cambiarlo se recarga el historial y se cierra la "
       "operación abierta.", env="SYMBOL"),
     F("timeframe", "Mercado", "Temporalidad", "select", "5m", "Igual que el símbolo: recarga el historial.",
       options=TF_BOT, env="TIMEFRAME"),
-    F("direction", "Mercado", "Operar", "select", "ambos", "Con señales invertidas, cuenta el lado que se opera.",
-      options=["ambos", "solo largos", "solo cortos"]),
+    F("direction", "Mercado", "Dirección", "select", "ambos", DIR_AYUDA, options=list(DIRECCIONES)),
     F("inv", "Mercado", "Invertir señales", "select", "no",
       "Para probar si una señal que falla tiene valor al revés. Espejo exacto: lado contrario, el stop donde estaría "
       "el objetivo y el objetivo donde estaría el stop, sin break-even, trailing, ampliación ni salidas de la "
@@ -335,7 +351,7 @@ RESTO = [
 ]
 COMMON = PRINCIPIO + RESTO
 COMMON_BY_KEY = {f["key"]: f for f in COMMON}
-COMMON_RELOAD = ("estrategia", "symbol", "timeframe") + TREND_KEYS        # la tendencia recarga su historial
+COMMON_RELOAD = ("estrategia", "combinar", "tf_principal", "symbol", "timeframe") + TREND_KEYS        # la tendencia recarga su historial
 MARKET_KEYS = ("estrategia", "symbol", "timeframe")          # cambiarlos cierra la operación abierta
 FILTER_NAMES = {"direction": "dirección", "cooldown": "espera tras cerrar", "hours": "horario",
                 "trend": "tendencia en contra", "trend_neutral": "tendencia: zona neutra",
@@ -804,7 +820,7 @@ def _check_field(f, where):
     for k in ("key", "group", "label", "type"):
         if k not in f:
             raise StrategyError("{}: a un ajuste le falta «{}»".format(where, k))
-    if f["type"] not in TYPES or f["type"] in ("symbol", "strategy", "cuentas"):
+    if f["type"] not in TYPES or f["type"] in ("symbol", "strategy", "cuentas", "combinar"):
         raise StrategyError("{}: tipo «{}» no válido en {}".format(where, f["type"], f["key"]))
     if f["type"] == "select" and (not f.get("options") or f["default"] not in f["options"]):
         raise StrategyError("{}: {} necesita opciones y un valor por defecto que esté entre ellas".format(where, f["key"]))
@@ -1047,9 +1063,365 @@ class Registry:
 REGISTRY = None            # lo fija el programa al arrancar (Registry de la carpeta estrategias)
 
 
+class VistaTF:
+    """Lo que ve una estrategia que trabaja en una temporalidad mayor que la del bot: sus propias velas (hechas con
+    las del bot), su ATR, su vela anterior y su contador. La operación, la orden pendiente y el resto, los del motor."""
+
+    def __init__(self, motor, tf_ms):
+        self._m, self.tf_ms = motor, tf_ms
+        self._atr = RMA(motor.P["atr_len"])
+        self.atr = self.prev = self.vela = self.cur = None
+        self.i = -1
+
+    def __getattr__(self, k):            # pos, pending, hora, P, htf, ctx… del motor
+        return getattr(self._m, k)
+
+    def alimentar(self, c):
+        """Añade una vela del bot. Devuelve las velas propias que se cierran con ella (normalmente 0 o 1)."""
+        t, o, h, l, cl = c
+        b, out = inicio_vela(t, self.tf_ms), []
+        if self.cur is not None and self.cur[0] != b:      # faltan velas del bot: la anterior se cierra tal cual
+            out.append(tuple(self.cur))
+            self.cur = None
+        if self.cur is None:
+            self.cur = [b, o, h, l, cl]
+        else:
+            self.cur[2], self.cur[3], self.cur[4] = max(self.cur[2], h), min(self.cur[3], l), cl
+        if t + self._m.tf_ms >= b + self.tf_ms:
+            out.append(tuple(self.cur))
+            self.cur = None
+        return out
+
+    def cerrar(self, v):
+        """Una vela propia cerrada: ATR y contador (antes de que la estrategia la vea)."""
+        _t, _o, h, l, _c = v
+        pv = self.vela
+        tr = h - l if pv is None else max(h - l, abs(h - pv[4]), abs(l - pv[4]))
+        self.prev, self.vela = pv, v
+        self.atr = self._atr.update(tr)
+        self.i += 1
+
+
+def tf_de(P, sid, principal):
+    """Temporalidad (ms) con la que trabaja una de las estrategias de un bot."""
+    v = P.get("tf_principal") if principal else P.get(clave_sub(sid, "tf_estr"))
+    return TF_MS.get(v) if v and v != TF_DEL_BOT else TF_MS[P["timeframe"]]
+
+
+class Compuesta:
+    """Varias estrategias en un mismo bot (un solo instrumento, una operación a la vez).
+
+    Todas actualizan sus indicadores y miran señales en cada vela. El motor abre con la primera señal válida en el
+    orden de prioridad (puntuación) y, mientras esa operación o su orden siga viva, ignora las demás: se cuentan
+    como bloqueadas. La estrategia que abrió (la «dueña») decide objetivo, break-even y salida de su operación."""
+
+    def __init__(self, P, motor, partes, mapas=None):
+        self.P, self.m = P, motor
+        self.ids = [p.id for p in partes]
+        self.nombres = {p.id: p.nombre for p in partes}
+        mapas = mapas or {}
+        base_ms = TF_MS[P["timeframe"]]
+        self.vistas, self.tfs = {}, {}
+        for k, p in enumerate(partes):
+            ms = tf_de(P, p.id, k == 0)
+            self.tfs[p.id] = ms
+            if ms != base_ms:
+                self.vistas[p.id] = VistaTF(motor, ms)
+        self.toca = {sid: sid not in self.vistas for sid in self.ids}   # estrategias con vela propia cerrada ahora
+        self.subs = {p.id: p.mod.Estrategia(ajustes_sub(P, mapas.get(p.id)), self.vistas.get(p.id, motor))
+                     for p in partes}
+        self.lmap = {sid: (mapas.get("_lineas") or {}).get(sid, {}) for sid in self.ids}
+        self.orden = list(self.ids)
+        self.activa = None
+        self.bloqueadas = {}
+        self._vela_bloq = {}
+
+    # --- prioridad (la fija el programa con las puntuaciones) ---
+    def ordenar(self, ids):
+        ids = [x for x in (ids or []) if x in self.subs]
+        self.orden = ids + [x for x in self.ids if x not in ids]
+
+    def usar(self, sid):
+        if sid in self.subs:
+            self.activa = sid
+
+    def duena(self, pos=None):
+        sid = (pos or self.m.pos or self.m.pending or {}).get("origen") or self.activa or self.ids[0]
+        return self.subs.get(sid) or self.subs[self.ids[0]]
+
+    def bloquear(self, sid):
+        """Una señal de `sid` ignorada porque ya hay una operación u orden de otra estrategia (una por vela)."""
+        if sid in self.subs and self._vela_bloq.get(sid) != self.m.i:
+            self._vela_bloq[sid] = self.m.i
+            self.bloqueadas[sid] = self.bloqueadas.get(sid, 0) + 1
+
+    # --- interfaz de Estrategia ---
+    def actualizar(self, vela):
+        for sid in self.ids:
+            v = self.vistas.get(sid)
+            if v is None:
+                self.subs[sid].actualizar(vela)
+                continue
+            cerradas = v.alimentar(vela)
+            self.toca[sid] = bool(cerradas)
+            for k, c in enumerate(cerradas):
+                v.cerrar(c)
+                self.subs[sid].actualizar(c)
+                if k < len(cerradas) - 1:      # vela atrasada (faltaban velas del bot): se ve pero no da señales
+                    self.subs[sid].senales()
+
+    def senales(self):
+        out = []
+        for sid in self.orden:
+            if not self.toca.get(sid):
+                continue
+            for sig in self.subs[sid].senales() or ():
+                if isinstance(sig, dict):
+                    out.append(dict(sig, origen=sid))
+        return out
+
+    def rr(self):
+        return self.duena().rr()
+
+    def objetivo(self, pos):
+        return self.duena(pos).objetivo(pos)
+
+    def gestion_be(self, pos):
+        d = self.duena(pos)
+        return d.gestion_be(pos) if hasattr(d, "gestion_be") else None
+
+    def nivel_be(self, pos):
+        return self.duena(pos).nivel_be(pos)
+
+    def salida(self, pos):
+        sid = (pos or {}).get("origen") or self.activa or self.ids[0]
+        if not self.toca.get(sid, True):        # su salida se mira al cierre de sus propias velas
+            return None
+        return self.duena(pos).salida(pos)
+
+    def lineas(self):
+        out = {}
+        for sid in self.ids:
+            ren = self.lmap.get(sid) or {}
+            for k, v in (self.subs[sid].lineas() or {}).items():
+                out[ren.get(k, k)] = v
+        return out
+
+    def texto(self):
+        if self.m.pos:
+            sid = self.m.pos.get("origen") or self.ids[0]
+            return "{}: {}".format(self.nombres[sid], self.subs[sid].texto() or "gestionando la operación")
+        partes = ["{}: {}".format(self.nombres[sid], self.subs[sid].texto()) for sid in self.orden if self.subs[sid].texto()]
+        return " · ".join(partes)
+
+    def indicadores(self):
+        return " | ".join(x for x in (self.subs[sid].indicadores() for sid in self.ids) if x)
+
+    def guardar(self):
+        return {"_compuesta": {sid: self.subs[sid].guardar() for sid in self.ids}, "_bloqueadas": dict(self.bloqueadas),
+                "_activa": self.activa, "_tfs": {sid: self.tfs[sid] for sid in self.ids}}
+
+    def cargar(self, s):
+        s = s or {}
+        if "_compuesta" in s:
+            tfs = s.get("_tfs") or {}
+            for sid, st in (s.get("_compuesta") or {}).items():
+                if sid in tfs and tfs[sid] != self.tfs.get(sid):
+                    continue                    # le han cambiado la temporalidad: empieza con lo que ve el historial
+                if sid in self.subs and st is not None:
+                    self.subs[sid].cargar(st)
+            self.bloqueadas = {k: int(v) for k, v in (s.get("_bloqueadas") or {}).items() if k in self.subs}
+            self.activa = s.get("_activa") if s.get("_activa") in self.subs else None
+        else:                                   # estado de cuando el bot tenía una sola estrategia
+            self.subs[self.ids[0]].cargar(s)
+
+    def reiniciar(self):
+        for sid in self.ids:
+            self.subs[sid].reiniciar()
+        self.bloqueadas, self._vela_bloq, self.activa = {}, {}, None
+
+
+class PluginCompuesto:
+    """Se comporta como el Plugin de la estrategia principal, con los ajustes, filtros, salidas y líneas de todas."""
+
+    def __init__(self, base, extras):
+        self.partes = [base] + list(extras)
+        self.path, self.file, self.id = base.path, base.file, base.id
+        self.nombre = " + ".join(p.nombre for p in self.partes)[:120]
+        self.version, self.autor, self.error = base.version, base.autor, None
+        self.descripcion = base.descripcion
+        self.sha = hashlib.sha256("".join(p.sha for p in self.partes).encode()).hexdigest()
+        self.loaded_at = max(p.loaded_at for p in self.partes)
+        schema, claves = [dict(f) for f in base.schema], {f["key"] for f in base.schema}
+        lineas, lkeys = list(base.lineas), {str(x.get("key")) for x in base.lineas if isinstance(x, dict)}
+        self.filtros, self.salidas, self.legacy = dict(base.filtros), dict(base.salidas), dict(base.legacy)
+        defaults = dict(base.defaults)
+        self.mapas = {"_lineas": {}}
+        for ex in extras:
+            # los ajustes propios de cada estrategia añadida llevan su id delante (así nunca chocan con los de otra);
+            # al crearla se le pasan con su nombre original (ajustes_sub)
+            mapa = {f["key"]: clave_sub(ex.id, f["key"]) for f in ex.schema if not f.get("common")}
+            self.mapas[ex.id] = mapa
+            ktf, kdir = clave_sub(ex.id, "tf_estr"), clave_sub(ex.id, "direction")
+            gtd = "{} · {}".format(ex.nombre, GRUPO_TFDIR)
+            schema.append({"key": ktf, "group": gtd, "label": "Temporalidad",
+                           "type": "select", "default": TF_DEL_BOT, "options": list(TF_ESTR), "help": TF_AYUDA,
+                           "estrategia": ex.id})
+            schema.append({"key": kdir, "group": gtd, "label": "Dirección", "type": "select", "default": "ambos",
+                           "options": list(DIRECCIONES), "help": DIR_AYUDA, "estrategia": ex.id})
+            defaults[ktf], defaults[kdir] = TF_DEL_BOT, "ambos"
+            claves.update((ktf, kdir))
+            for f in ex.schema:
+                if f.get("common"):
+                    continue
+                g = dict(f, key=mapa[f["key"]], group="{} · {}".format(ex.nombre, f["group"]), estrategia=ex.id)
+                if f.get("show_if"):
+                    g["show_if"] = {mapa.get(k, k): v for k, v in f["show_if"].items()}
+                claves.add(g["key"])
+                schema.append(g)
+                defaults[g["key"]] = ex.defaults[f["key"]]
+            for ln in ex.lineas:
+                if not isinstance(ln, dict):
+                    continue
+                k = str(ln.get("key"))
+                if k in lkeys:              # misma línea en dos estrategias: la de la añadida cambia de nombre
+                    nk = clave_sub(ex.id, k)
+                    self.mapas["_lineas"].setdefault(ex.id, {})[k] = nk
+                    ln = dict(ln, key=nk)
+                    k = nk
+                lineas.append(ln)
+                lkeys.add(k)
+            self.filtros.update(ex.filtros)
+            self.salidas.update(ex.salidas)
+            self.legacy.update(ex.legacy)
+        self.schema, self.lineas, self.defaults = schema, lineas, defaults
+        self.by_key = {f["key"]: f for f in schema}
+        self.reload_keys = tuple(dict.fromkeys(
+            [self.mapas.get(p.id, {}).get(k, k) for p in self.partes for k in p.reload_keys]
+            + [clave_sub(p.id, "tf_estr") for p in extras]))
+        partes, mapas = self.partes, self.mapas
+
+        class _Mod:
+            NOMBRE = self.nombre
+
+            @staticmethod
+            def Estrategia(P, motor):
+                return Compuesta(P, motor, partes, mapas)
+
+            @staticmethod
+            def calentamiento(P):
+                base = TF_MS[P["timeframe"]]
+                return max(max(int(getattr(p.mod, "calentamiento", lambda _P: 200)(ajustes_sub(P, mapas.get(p.id)))),
+                               4 * P["atr_len"]) * tf_de(P, p.id, k == 0) // base for k, p in enumerate(partes))
+
+            @staticmethod
+            def validar(P):
+                errs = []
+                base = TF_MS[P["timeframe"]]
+                for k, p in enumerate(partes):
+                    ms = tf_de(P, p.id, k == 0)
+                    if ms < base or ms % base:
+                        errs.append("{}: su temporalidad tiene que ser igual o mayor que la del bot ({}) y múltiplo "
+                                    "de ella".format(p.nombre, P["timeframe"]))
+                for p in partes:
+                    fn = getattr(p.mod, "validar", None)
+                    if fn:
+                        errs += ["{}: {}".format(p.nombre, e) for e in (fn(ajustes_sub(P, mapas.get(p.id))) or [])]
+                return errs
+        self.mod = _Mod
+
+    def info(self, used=0):
+        return {"id": self.id, "nombre": self.nombre, "version": self.version, "descripcion": self.descripcion,
+                "autor": self.autor, "archivo": self.file, "sha": self.sha[:10], "error": None,
+                "cargada": self.loaded_at, "bots": used, "lineas": self.lineas}
+
+
+_COMPUESTOS = {}
+
+
+def clave_sub(sid, key):
+    """Nombre interno de un ajuste propio de una estrategia añadida a un bot (p. ej. supertrend__ema_on)."""
+    return "{}__{}".format(sid, key)
+
+
+def ajustes_sub(P, mapa):
+    """Los ajustes del bot tal como los ve una estrategia añadida: sus ajustes propios con su nombre original."""
+    if not mapa:
+        return P
+    Q = dict(P)
+    for k, pk in mapa.items():
+        if pk in P:
+            Q[k] = P[pk]
+    return Q
+
+
+def ajustes_de(P, sid):
+    """Ajustes para probar una de las estrategias de un bot combinado ella sola (puntuación), en su temporalidad."""
+    if sid == P.get("estrategia") or not P.get("combinar"):
+        return dict(P, estrategia=sid, combinar=[])
+    pl = plugin_for(P)
+    Q = ajustes_sub(P, getattr(pl, "mapas", {}).get(sid))
+    return dict(Q, estrategia=sid, combinar=[], tf_principal=P.get(clave_sub(sid, "tf_estr")) or TF_DEL_BOT,
+                direction=P.get(clave_sub(sid, "direction")) or "ambos")
+
+
+def sin_estrategia(P, sid):
+    """Los ajustes del bot sin una de sus estrategias (para comparar). Si se quita la principal, la primera añadida
+    pasa a principal con sus ajustes, su temporalidad y su dirección."""
+    partes = partes_de(P)
+    if sid not in partes or len(partes) < 2:
+        return dict(P)
+    if sid != partes[0]:
+        Q = {k: v for k, v in P.items() if not k.startswith(sid + "__")}
+        Q["combinar"] = [x for x in partes[1:] if x != sid]
+        return Q
+    nueva, resto = partes[1], partes[2:]
+    Q = ajustes_de(P, nueva)
+    Q = {k: v for k, v in Q.items() if not k.startswith(nueva + "__")}
+    Q["combinar"] = list(resto)
+    return Q
+
+
+def direccion_de(P, sid):
+    """Lados que opera una de las estrategias del bot (la principal usa «direction»)."""
+    if not sid or sid == P.get("estrategia"):
+        return P.get("direction") or "ambos"
+    return P.get(clave_sub(sid, "direction")) or P.get("direction") or "ambos"
+
+
+def _compuesto(sid, extras):
+    base = plugin_for(sid)
+    if sid in NO_COMBINABLES:
+        raise StrategyError("«{}» va siempre en su propio bot: no se combina con otras estrategias".format(base.nombre))
+    ps = []
+    for x in extras:
+        if x == sid:
+            continue
+        if x in NO_COMBINABLES:
+            raise StrategyError("«{}» no se puede combinar con otras estrategias".format(x))
+        ps.append(plugin_for(x))
+    key = tuple((p.id, p.sha) for p in [base] + ps)
+    if key not in _COMPUESTOS:
+        if len(_COMPUESTOS) > 50:
+            _COMPUESTOS.clear()
+        _COMPUESTOS[key] = PluginCompuesto(base, ps)
+    return _COMPUESTOS[key]
+
+
+def partes_de(P):
+    """Ids de las estrategias de un bot (la principal primero)."""
+    return [P.get("estrategia") or DEFAULT_STRATEGY] + [x for x in (P.get("combinar") or []) if x != P.get("estrategia")]
+
+
+def usa_compuesta(P):
+    return bool(P.get("combinar")) or (P.get("tf_principal") or TF_DEL_BOT) != TF_DEL_BOT
+
+
 def plugin_for(P_or_id, plugin=None):
     if plugin is not None:
         return plugin
+    if isinstance(P_or_id, dict) and usa_compuesta(P_or_id):
+        return _compuesto(P_or_id.get("estrategia") or DEFAULT_STRATEGY, list(P_or_id.get("combinar") or []))
     sid = P_or_id if isinstance(P_or_id, str) else (P_or_id or {}).get("estrategia") or DEFAULT_STRATEGY
     p = REGISTRY.get(sid) if REGISTRY else None
     if p is None:
@@ -1079,6 +1451,21 @@ def _coerce(f, v, legacy):
         return v
     if t == "strategy":
         return str(v)
+    if t == "combinar":
+        if isinstance(v, str):
+            v = [x.strip() for x in v.split(",") if x.strip()]
+        if not isinstance(v, (list, tuple)):
+            raise ValueError
+        out = []
+        for x in v:
+            x = str(x)
+            if not ID_RE.match(x):
+                raise ValueError
+            if x not in out:
+                out.append(x)
+        if len(out) > MAX_COMBINADAS:
+            raise ValueError
+        return out
     if t == "cuentas":
         if isinstance(v, str):
             v = [x.strip() for x in v.split(",") if x.strip()]
@@ -1132,6 +1519,8 @@ def _validate_with(p, raw):
         errs.append("Para límites en USD indica el riesgo por operación")
     if P["hr_on"] and P["hr_from"] == P["hr_to"] % 24:
         errs.append("El horario no puede empezar y terminar a la misma hora")
+    if P.get("combinar"):
+        P["combinar"] = [x for x in P["combinar"] if x != P.get("estrategia")]
     fn = getattr(p.mod, "validar", None) if p.mod else None
     if fn:
         try:
@@ -1147,7 +1536,21 @@ def validate(raw):
     raw = dict(raw or {})
     sid = str(raw.get("estrategia") or DEFAULT_STRATEGY)
     try:
-        p = plugin_for(sid)
+        comb = raw.get("combinar")
+        if isinstance(comb, str):
+            comb = [x.strip() for x in comb.split(",") if x.strip()]
+        p = _compuesto(sid, [str(x) for x in (comb or [])][:MAX_COMBINADAS + 1]) if comb or usa_compuesta(raw) \
+            else plugin_for(sid)
+        base_own = {f["key"] for f in plugin_for(sid).schema}
+        for x, mapa in (getattr(p, "mapas", None) or {}).items():
+            if x == "_lineas":
+                continue
+            for k, pk in mapa.items():          # ajustes guardados por la 9.1 antes de los nombres internos
+                if pk not in raw and k in raw and k not in base_own:
+                    raw[pk] = raw[k]
+            kd = clave_sub(x, "direction")       # hasta la 9.2 la dirección era del bot y valía para todas
+            if kd not in raw and clave_sub(x, "tf_estr") in raw and raw.get("direction") in DIRECCIONES:
+                raw[kd] = raw["direction"]
     except StrategyError as e:
         P = dict(raw)
         P["estrategia"] = sid
@@ -1215,6 +1618,7 @@ class Motor:
         self.prev = None
         self.vela = None
         self.pending = None
+        self.registro = None      # lista en el backtest: (t, estrategia, lado, resultado, detalle)
         self.pos = None
         self.i = -1
         self.cool = 0
@@ -1242,7 +1646,7 @@ class Motor:
     def dump(self):
         return {"pos": self.pos, "pending": self.pending, "day": self.day, "dtrades": self.dtrades,
                 "dconsec": self.dconsec, "dr": self.dr, "blocked": self.blocked, "cool": self.cool,
-                "estrategia": self.S.guardar(), "estrategia_id": self.plugin.id}
+                "estrategia": self.S.guardar(), "estrategia_id": self.plugin.id, "partes": partes_de(self.P)}
 
     def load(self, s, strategy_state=True):
         self.pos, self.pending = s.get("pos"), s.get("pending")
@@ -1291,9 +1695,10 @@ class Motor:
         elif P["max_trades"] and self.dtrades >= P["max_trades"]:
             self._block(t, "máx. operaciones", "{} operaciones del día".format(self.dtrades), ev)
 
-    def _filter(self, t, side, cl, sl, atr, own):
+    def _filter(self, t, side, cl, sl, atr, own, origen=None):
         P = self.P
-        if P["direction"] == "solo largos" and side == -1 or P["direction"] == "solo cortos" and side == 1:
+        d = direccion_de(P, origen)
+        if d == "solo largos" and side == -1 or d == "solo cortos" and side == 1:
             return "direction"
         if self.cool > 0:
             return "cooldown"
@@ -1380,7 +1785,8 @@ class Motor:
             "ext_n": p.get("ext_n", 0), "trail": bool(p.get("trail")),
             "mfe": round(max(p.get("mfe", 0.0), xr), 3), "mae": round(min(p.get("mae", 0.0), xr), 3),
             "path": list(p.get("path") or []), "trend": p.get("trend"), "inv": p.get("inv"),
-            "r_bruto": round(self._gross(p, px) / p["dist"], 4) if p.get("dist") else 0.0, "ctx": p.get("ctx")}))
+            "r_bruto": round(self._gross(p, px) / p["dist"], 4) if p.get("dist") else 0.0, "ctx": p.get("ctx"),
+            "estrategia": p.get("origen") or self.plugin.id}))
         self.pos = None
         self.ctx.operacion_cerrada(r)
         self.dr += r
@@ -1447,6 +1853,8 @@ class Motor:
                     ev.append(("limit_cancel", t, s_l, "objetivo"))
         if entrar:
             pend = self.pending
+            if hasattr(S, "usar"):
+                S.usar(pend.get("origen"))          # estrategias combinadas: la que dio la señal manda en esta operación
             side, sl = pend["side"], pend["sl"]
             self.pending = None
             o_real, o = o, px0                       # precio de entrada: la apertura o el límite
@@ -1475,7 +1883,7 @@ class Motor:
                             "t_open": t, "bars": 0, "be": False, "part": None, "ext": 0.0, "ext_n": 0,
                             "trail": False, "no_tp": False, "sl_moved": False, "modo_tp": modo,
                             "trend": self.htf.texto_corto() if self.htf else None,
-                            "inv": pend.get("inv"), "espejo": bool(esp)}
+                            "inv": pend.get("inv"), "espejo": bool(esp), "origen": pend.get("origen")}
                 if pend.get("ctx") is not None:
                     self.pos["ctx"] = Contexto.al_abrir(pend["ctx"], o, pend.get("cl", o), pend.get("atr"), cost_r, side)
                 if modo == "dinamico":
@@ -1553,14 +1961,23 @@ class Motor:
                     del pa[1]
 
         # 4) señales de la estrategia
+        reg, tcl = self.registro, t + self.tf_ms
         for sig in S.senales() or ():
             side, sl = sig.get("side"), sig.get("sl")
             if side not in (1, -1) or sl is None:
                 continue
+            org = sig.get("origen") or self.plugin.id
             if self.pos or self.pending:
+                due = (self.pos or self.pending or {}).get("origen")
+                if sig.get("origen") and sig["origen"] != due and hasattr(S, "bloquear"):
+                    S.bloquear(sig["origen"])
+                if reg is not None:
+                    reg.append((tcl, org, side, "ocupada", due or self.plugin.id))
                 continue
             self._check_limits(t, ev)
             if self.blocked:
+                if reg is not None:
+                    reg.append((tcl, org, side, "limite", self.blocked))
                 continue
             inv, tp_sig, esp = P.get("inv", "no"), sig.get("tp"), None
             if inv != "no":
@@ -1575,12 +1992,17 @@ class Motor:
                     if tp0 is None:
                         self.filtered["espejo_sin_objetivo"] = self.filtered.get("espejo_sin_objetivo", 0) + 1
                         ev.append(("filtered", t, side, "espejo_sin_objetivo"))
+                        if reg is not None:
+                            reg.append((tcl, org, side, "filtro", "espejo_sin_objetivo"))
                         continue
                     sl = tp0                                  # el stop, donde estaría el objetivo
                 elif tp_sig is not None:
                     tp_sig = cl - (float(tp_sig) - cl)
             lim = sig.get("limite") if inv == "no" else None      # orden límite (solo sin señales invertidas)
-            why = self._filter(t, side, float(lim) if lim is not None else cl, sl, atr, sig.get("rechazo"))
+            why = self._filter(t, side, float(lim) if lim is not None else cl, sl, atr, sig.get("rechazo"),
+                               sig.get("origen"))
+            if reg is not None:
+                reg.append((tcl, org, side, "filtro" if why else "entra", why or ("limite" if lim is not None else "")))
             if why:
                 self.filtered[why] = self.filtered.get(why, 0) + 1
                 ev.append(("filtered", t, side, why))
@@ -1602,6 +2024,8 @@ class Motor:
                     self.pending["limite"] = float(lim)
                 if sig.get("tamano"):
                     self.pending["tamano"] = float(sig["tamano"])     # tamaño fijo para la cuenta (planes manuales)
+                if sig.get("origen"):
+                    self.pending["origen"] = sig["origen"]
                 ev.append(("signal", t, side, cl, sl))
         self.prev = c
         return ev
@@ -1652,10 +2076,15 @@ def metrics(trades):
     return m
 
 
-def backtest(cs, P, hour_fn=None, htf_seed=None, warm=0, instrument_cost=None, plugin=None, contexto=False):
+def backtest(cs, P, hour_fn=None, htf_seed=None, warm=0, instrument_cost=None, plugin=None, contexto=False, orden=None,
+             registro=False):
     """cs: velas (t, o, h, l, c). Las primeras `warm` solo calientan indicadores. Con contexto=True cada operación
     conserva su foto de contexto en "ctx" (para exportarla); si no, se quita para no cargar el panel."""
     st = Motor(P, hour_fn, instrument_cost, plugin=plugin)
+    if registro:
+        st.registro = []
+    if orden and hasattr(st.S, "ordenar"):
+        st.S.ordenar(orden)
     if htf_seed:
         st.seed_htf(htf_seed, cs[0][0] if cs else None)
     tf = TF_MS[P["timeframe"]]
@@ -1676,5 +2105,11 @@ def backtest(cs, P, hour_fn=None, htf_seed=None, warm=0, instrument_cost=None, p
             st.reset_setups()
             st.reset_day_state()
             st.block_days, st.filtered, st.skipped = {}, {}, 0
-    return trades, {"signals": signals, "filtered": dict(st.filtered), "skipped_cost": st.skipped,
-                    "block_days": dict(st.block_days), "days": st.days_seen}
+            if st.registro is not None:
+                st.registro = []
+            if hasattr(st.S, "bloqueadas"):
+                st.S.bloqueadas = {}
+    return trades, {"signals": signals, "registro": st.registro or [], "filtered": dict(st.filtered), "skipped_cost": st.skipped,
+                    "block_days": dict(st.block_days), "days": st.days_seen,
+                    "bloqueadas": dict(getattr(st.S, "bloqueadas", {}) or {}),
+                    "orden": list(getattr(st.S, "orden", []) or [])}

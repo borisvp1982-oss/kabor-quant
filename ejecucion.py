@@ -27,10 +27,12 @@ import math
 import os
 import random
 import re
+import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import OrderedDict, deque
 from http.client import HTTPException
 
 SANDBOX_HOST = "https://sandbox.myfundedperpetuals.com"
@@ -125,8 +127,459 @@ def host_permitido(host):
     return host.rstrip("/") == SANDBOX_HOST or u.hostname in ("localhost", "127.0.0.1")
 
 
+# ============================ límite de lecturas por clave (desde la 9.4) ============================
+# MyFundedPerps limita las GET a /v1/* por clave: 30 por minuto con claves de sandbox (las órdenes, cierres y
+# cambios de stop no cuentan). KaBor se queda por debajo con su propio límite, deja sitio a lo de operar, respeta
+# el Retry-After de un 429 y anota el aviso X-RateLimit-Warning del periodo de gracia.
+GET_LIMITE_MFP = 30
+GET_TOPE = {"alta": 24, "baja": 14}   # «baja»: lecturas del panel y la lectura periódica de las cuentas
+_PRIORIDAD = threading.local()
+
+
+class prioridad_baja:
+    """with prioridad_baja(): las GET de dentro esperan si la clave va cargada, dejando sitio a lo de operar."""
+
+    def __enter__(self):
+        self.antes = getattr(_PRIORIDAD, "v", "alta")
+        _PRIORIDAD.v = "baja"
+
+    def __exit__(self, *a):
+        _PRIORIDAD.v = self.antes
+
+
+class Limitador:
+    def __init__(self, fin):
+        self.fin = fin                      # últimos 4 caracteres de la clave, para los registros
+        self.t = deque()                    # GET del último minuto
+        self.lock = threading.Lock()
+        self.hasta = 0.0                    # MFP pidió esperar (429) hasta esta hora
+        self.picos = deque()                # (minuto, máximo de GET en 60 s) de las últimas 24 h
+        self.avisos = deque()               # horas de los X-RateLimit-Warning (24 h)
+        self.r429 = deque()                 # horas de los 429 (24 h)
+        self.esperas = deque()              # veces que KaBor esperó por su propio límite (24 h)
+        self.ultimo_aviso = None            # (hora, ruta) del último aviso de MFP
+        self.total = 0
+
+    def _purgar(self, now):
+        while self.t and now - self.t[0] >= 60:
+            self.t.popleft()
+        for d in (self.avisos, self.r429, self.esperas):
+            while d and now - (d[0][0] if isinstance(d[0], tuple) else d[0]) > 86400:
+                d.popleft()
+        while self.picos and now - self.picos[0][0] * 60 > 86400:
+            self.picos.popleft()
+
+    def pedir(self, espera_max=75):
+        """Espera hasta que haya sitio para una GET. Devuelve False si tendría que esperar más de espera_max."""
+        prio = getattr(_PRIORIDAD, "v", "alta")
+        tope = GET_TOPE.get(prio, GET_TOPE["alta"])
+        t0, espero = time.time(), False
+        while True:
+            with self.lock:
+                now = time.time()
+                self._purgar(now)
+                if now >= self.hasta and len(self.t) < tope:
+                    self.t.append(now)
+                    self.total += 1
+                    m = int(now // 60)
+                    if self.picos and self.picos[-1][0] == m:
+                        self.picos[-1] = (m, max(self.picos[-1][1], len(self.t)))
+                    else:
+                        self.picos.append((m, len(self.t)))
+                    if espero:
+                        self.esperas.append(now)
+                    return True
+                wait = max(self.hasta - now, (self.t[0] + 60 - now) if len(self.t) >= tope else 0, 0.05)
+            if time.time() - t0 + wait > espera_max:
+                return False
+            espero = True
+            time.sleep(min(wait, 5) + random.random() * 0.2)
+
+    def frenar(self, segundos):
+        with self.lock:
+            now = time.time()
+            self.hasta = max(self.hasta, now + segundos)
+            self.r429.append(now)
+
+    def aviso(self, ruta):
+        """MFP marcó una GET con X-RateLimit-Warning. Devuelve True si es el primero de la última hora."""
+        with self.lock:
+            now = time.time()
+            nuevo = not self.avisos or now - self.avisos[-1] > 3600
+            self.avisos.append(now)
+            self.ultimo_aviso = (int(now * 1000), ruta)
+            return nuevo
+
+    def public(self):
+        with self.lock:
+            now = time.time()
+            self._purgar(now)
+            hora = [c for m, c in self.picos if now - m * 60 <= 3600]
+            return {"minuto": len(self.t), "max_hora": max(hora) if hora else 0,
+                    "max_dia": max((c for m, c in self.picos), default=0), "limite_mfp": GET_LIMITE_MFP,
+                    "tope": GET_TOPE["alta"], "avisos_dia": len(self.avisos), "r429_dia": len(self.r429),
+                    "esperas_dia": len(self.esperas), "frenado_hasta": int(self.hasta * 1000) if self.hasta > now else None,
+                    "ultimo_aviso": self.ultimo_aviso, "total": self.total}
+
+
+_LIMITADORES = {}
+_LIM_LOCK = threading.Lock()
+AL_AVISO = None        # función(fin de clave, texto) que pone el gestor de cuentas: registro y Telegram
+
+
+def limitador(key):
+    with _LIM_LOCK:
+        if key not in _LIMITADORES:
+            _LIMITADORES[key] = Limitador(str(key)[-4:])
+        return _LIMITADORES[key]
+
+
+def _avisar(lim, texto):
+    if AL_AVISO:
+        try:
+            AL_AVISO(lim.fin, texto)
+        except Exception:
+            pass
+
+
+# ============================ stream de la cuenta (desde la 9.4) ============================
+# Un WebSocket por clave con las cuentas que ve: instantánea al conectar y luego cada cambio de órdenes, llenados,
+# posiciones y saldo. Con él, KaBor ya no consulta por REST la posición en cada vela, el estado de una orden hasta
+# que se llena ni las órdenes de salida. Si el stream no está al día, se usa la API REST como antes.
+STREAM_SANDBOX = "wss://account-stream.myfundedperpetuals.com/v1/sandbox/stream"
+STREAM_PRUEBAS = None    # solo pruebas en local: ws://127.0.0.1:PUERTO/v1/sandbox/stream
+NO = object()            # el stream no puede responder: hay que preguntar a la API
+TERMINALES = {"filled", "canceled", "cancelled", "rejected", "expired"}
+VIVAS = ("filled", "cancelled", "canceled", "rejected", "expired")
+
+
+def url_stream(host):
+    if (host or "").rstrip("/") == SANDBOX_HOST:
+        return STREAM_SANDBOX
+    if STREAM_PRUEBAS and urllib.parse.urlparse(host or "").hostname in ("localhost", "127.0.0.1"):
+        return STREAM_PRUEBAS
+    return None
+
+
+class StreamCuenta:
+    SILENCIO = 45        # sin nada en 45 s: conexión muerta (lo indica MFP)
+    PING = 20
+
+    def __init__(self, key, url, ua="kcbot-pi"):
+        self.key, self.url, self.ua = key, url, ua
+        self.fin = str(key)[-4:]
+        self.cv = threading.Condition()
+        self.cuentas = {}            # id -> {"account", "ordenes": {id: orden}, "posiciones": {id: posición}}
+        self.terminadas = OrderedDict()   # órdenes terminadas recientes (para esperar una orden)
+        self.cerradas = OrderedDict()     # posiciones cerradas recientes
+        self.pend = {}               # (cuenta, mercado) -> hora de un llenado aún sin su evento de posición
+        self.listo = False
+        self.upstream = True
+        self.ultimo = 0.0
+        self.seq = self.t_seq = self.stream_id = None
+        self.estado, self.err, self.desde = "conectando", None, None
+        self.conexiones, self.eventos, self.reanudadas = 0, 0, 0
+        self.parar = False
+        self.ws = None
+        self.hilo = threading.Thread(target=self._bucle, name="stream-cuenta-" + self.fin, daemon=True)
+        self.hilo.start()
+
+    # ---------- consultas (las usa MFPTrading) ----------
+    def al_dia(self):
+        return self.listo and self.upstream and time.time() - self.ultimo < self.SILENCIO
+
+    def posicion(self, acc, market_id, espera=3.0):
+        fin = time.time() + espera
+        with self.cv:
+            while True:
+                if not self.al_dia() or acc not in self.cuentas:
+                    return NO
+                t = self.pend.get((acc, market_id))
+                if t is None or time.time() - t > 4:
+                    self.pend.pop((acc, market_id), None)
+                    break
+                if time.time() >= fin:
+                    return NO        # llenado sin su posición: mejor preguntar a la API
+                self.cv.wait(0.25)
+            return next((dict(p) for p in self.cuentas[acc]["posiciones"].values()
+                         if p.get("market_id") == market_id and p.get("status", "open") == "open"), None)
+
+    def ordenes(self, acc):
+        with self.cv:
+            if not self.al_dia() or acc not in self.cuentas:
+                return NO
+            return [dict(o) for o in self.cuentas[acc]["ordenes"].values()]
+
+    def orden(self, oid):
+        with self.cv:
+            o = self.terminadas.get(oid)
+            if o is None:
+                for c in self.cuentas.values():
+                    if oid in c["ordenes"]:
+                        o = c["ordenes"][oid]
+                        break
+            return dict(o) if o else None
+
+    def esperar_orden(self, oid, max_s):
+        """La orden ya resuelta (llena, rechazada…) según el stream, o None si no se sabe en max_s segundos."""
+        fin = time.time() + max_s
+        with self.cv:
+            while time.time() < fin and self.al_dia():
+                o = self.terminadas.get(oid)
+                if o is not None:
+                    return dict(o)
+                self.cv.wait(min(0.5, max(0.05, fin - time.time())))
+        return None
+
+    def cerrada(self, pid, espera=0.0):
+        """La posición cerrada según el stream (espera unos segundos a su evento si se acaba de cerrar)."""
+        fin = time.time() + espera
+        with self.cv:
+            while True:
+                p = self.cerradas.get(pid)
+                if p or time.time() >= fin or not self.al_dia():
+                    return dict(p) if p else None
+                self.cv.wait(0.25)
+
+    def bloqueada(self, acc):
+        with self.cv:
+            c = self.cuentas.get(acc)
+            return bool(c and c.get("locked_out"))
+
+    def public(self):
+        return {"estado": self.estado, "al_dia": self.al_dia(), "desde": self.desde, "error": self.err,
+                "conexiones": self.conexiones, "eventos": self.eventos, "cuentas": len(self.cuentas),
+                "silencio_s": round(time.time() - self.ultimo, 1) if self.ultimo else None}
+
+    def cerrar(self):
+        self.parar = True
+        try:
+            if self.ws:
+                self.ws.close()
+        except Exception:
+            pass
+
+    # ---------- conexión ----------
+    def _bucle(self):
+        try:
+            import websocket
+        except ImportError:
+            self.estado, self.err = "sin websocket-client", "falta el paquete websocket-client"
+            return
+        espera = 2
+        while not self.parar:
+            url = self.url
+            if self.stream_id and self.seq:
+                url += "?" + urllib.parse.urlencode({"resume": self.stream_id, "last_seq": self.seq,
+                                                     "since": self.t_seq or int((time.time() - 60) * 1000)})
+            retry = None
+            try:
+                self.estado = "conectando"
+                self.ws = websocket.create_connection(url, timeout=20, header=[
+                    "Authorization: Bearer " + self.key, "User-Agent: " + self.ua])
+                self.ws.settimeout(5)
+                self.conexiones += 1
+                self.ultimo = time.time()
+                espera = 2
+                self._leer()
+            except websocket.WebSocketBadStatusException as e:
+                code = getattr(e, "status_code", None)
+                h = getattr(e, "resp_headers", None) or {}
+                ra = h.get("retry-after") or h.get("Retry-After")
+                if code == 401:
+                    self.err, retry = "la clave no vale para el stream (401)", 300
+                elif code == 403:
+                    self.err, retry = "sin acceso al sandbox (403: hace más de 90 días sin comprar un challenge)", 900
+                elif code in (429, 503):
+                    self.err = "MyFundedPerps pide esperar ({})".format(code)
+                    retry = float(ra) if ra and str(ra).replace(".", "", 1).isdigit() else 30
+                else:
+                    self.err = "HTTP {}".format(code)
+                self.stream_id = None if code in (401, 403) else self.stream_id
+            except Exception as e:
+                if not self.parar:
+                    self.err = "{}: {}".format(type(e).__name__, e)[:200]
+            finally:
+                with self.cv:
+                    self.listo = False
+                    self.cv.notify_all()
+                try:
+                    if self.ws:
+                        self.ws.close()
+                except Exception:
+                    pass
+                self.ws = None
+            if self.parar:
+                break
+            self.estado = "reconectando"
+            time.sleep((retry if retry is not None else espera) + random.random() * 2)
+            espera = min(espera * 2, 60)
+
+    def _leer(self):
+        import websocket
+        ping_t, n = time.time(), 0
+        while not self.parar:
+            if time.time() - self.ultimo > self.SILENCIO:
+                raise RuntimeError("{} s sin noticias del stream".format(self.SILENCIO))
+            if time.time() - ping_t > self.PING:
+                n += 1
+                self.ws.send(json.dumps({"op": "ping", "id": n}))
+                ping_t = time.time()
+            try:
+                raw = self.ws.recv()
+            except websocket.WebSocketTimeoutException:
+                continue
+            if raw is None or raw == "":
+                raise RuntimeError("el stream se ha cerrado")
+            self.ultimo = time.time()
+            try:
+                fr = json.loads(raw)
+            except ValueError:
+                continue
+            if self._frame(fr) == "reconectar":
+                return
+
+    # ---------- mensajes ----------
+    def _cuenta(self, acc):
+        return self.cuentas.setdefault(acc, {"account": {}, "ordenes": {}, "posiciones": {}, "locked_out": False})
+
+    @staticmethod
+    def _lista(fr, *claves):
+        for k in claves:
+            v = fr.get(k)
+            if isinstance(v, list):
+                return v
+        return []
+
+    def _frame(self, fr):
+        tipo = fr.get("type")
+        with self.cv:
+            if fr.get("seq") is not None:
+                self.seq = fr["seq"]
+            if fr.get("time") is not None and fr.get("seq") is not None:
+                self.t_seq = fr["time"]
+            if tipo == "hello":
+                if not fr.get("resumed"):
+                    self.cuentas, self.pend = {}, {}
+                else:
+                    self.reanudadas += 1
+                self.stream_id = fr.get("stream_id") or self.stream_id
+                self.listo = bool(fr.get("resumed"))
+                self.estado = "al día" if self.listo else "recibiendo la instantánea"
+            elif tipo == "snapshot":
+                acc = fr.get("account_id") or (fr.get("account") or {}).get("id")
+                if acc:
+                    c = {"account": fr.get("account") or {}, "ordenes": {}, "posiciones": {},
+                         "locked_out": bool((fr.get("account") or {}).get("locked_out") or fr.get("locked_out"))}
+                    for o in self._lista(fr, "orders", "working_orders"):
+                        if o.get("id"):
+                            c["ordenes"][o["id"]] = o
+                    for p in self._lista(fr, "positions", "open_positions"):
+                        if p.get("id"):
+                            c["posiciones"][p["id"]] = p
+                    self.cuentas[acc] = c
+                    for k in [k for k in self.pend if k[0] == acc]:
+                        self.pend.pop(k, None)
+            elif tipo == "snapshot_end":
+                self.listo, self.err = True, None
+                self.estado = "al día"
+                if not self.desde:
+                    self.desde = int(time.time() * 1000)
+            elif tipo == "heartbeat":
+                self.upstream = fr.get("upstream_connected") is not False
+            elif tipo == "order":
+                o = dict(fr.get("order") or {})
+                acc = fr.get("account_id") or o.get("account_id")
+                ev = fr.get("event")
+                if o.get("id") and acc:
+                    for k in ("cancel_reason", "reject_reason", "reject_rule_id"):
+                        if fr.get(k) is not None and o.get(k) is None:
+                            o[k] = fr[k]
+                    if ev in TERMINALES:
+                        o["status"] = "canceled" if ev == "cancelled" else ev if o.get("status") not in TERMINALES \
+                            else o["status"]
+                    c = self._cuenta(acc)
+                    if ev in TERMINALES or o.get("status") in TERMINALES:
+                        c["ordenes"].pop(o["id"], None)
+                        self.terminadas[o["id"]] = o
+                        while len(self.terminadas) > 500:
+                            self.terminadas.popitem(last=False)
+                    else:
+                        c["ordenes"][o["id"]] = o
+                self.eventos += 1
+            elif tipo == "fill":
+                f = fr.get("fill") or {}
+                acc = fr.get("account_id")
+                if acc and f.get("market_id") and not fr.get("replay"):
+                    self.pend[(acc, f["market_id"])] = time.time()
+                self.eventos += 1
+            elif tipo == "position":
+                p = dict(fr.get("position") or {})
+                acc = fr.get("account_id") or p.get("account_id")
+                if p.get("id") and acc:
+                    c = self._cuenta(acc)
+                    if fr.get("event") == "closed" or p.get("status") == "closed":
+                        if fr.get("close_reason") and not p.get("close_reason"):
+                            p["close_reason"] = fr["close_reason"]
+                        p["status"] = "closed"
+                        c["posiciones"].pop(p["id"], None)
+                        self.cerradas[p["id"]] = p
+                        while len(self.cerradas) > 300:
+                            self.cerradas.popitem(last=False)
+                    else:
+                        c["posiciones"][p["id"]] = p
+                    if p.get("market_id"):
+                        self.pend.pop((acc, p["market_id"]), None)
+                self.eventos += 1
+            elif tipo == "account":
+                acc = fr.get("account_id")
+                if acc and fr.get("event") == "removed":
+                    self.cuentas.pop(acc, None)
+                elif acc:
+                    c = self._cuenta(acc)
+                    if fr.get("account"):
+                        c["account"] = fr["account"]
+                    if fr.get("locked_out") is not None:
+                        c["locked_out"] = bool(fr["locked_out"])
+                self.eventos += 1
+            elif tipo == "reconnect":
+                return "reconectar"
+            elif tipo in ("error", "notice"):
+                self.err = "{}: {}".format(fr.get("code") or tipo, fr.get("message") or "")[:200]
+            self.cv.notify_all()
+        return None
+
+
+_STREAMS = {}
+
+
+def stream_para(key, host, ua="kcbot-pi"):
+    """El stream de una clave (uno por clave, aunque varias cuentas la compartan). None si no hay stream."""
+    url = url_stream(host)
+    if not url or not key:
+        return None
+    with _LIM_LOCK:
+        s = _STREAMS.get(key)
+        if s is None or s.parar or s.url != url:
+            s = _STREAMS[key] = StreamCuenta(key, url, ua)
+        return s
+
+
+def streams_en_uso(claves):
+    """Cierra los streams de las claves que ya no usa ninguna cuenta."""
+    with _LIM_LOCK:
+        for k in [k for k in _STREAMS if k not in claves]:
+            _STREAMS.pop(k).cerrar()
+
+
+def estado_clave(key):
+    s = _STREAMS.get(key)
+    return {"lecturas": limitador(key).public(), "stream": s.public() if s else None}
+
+
 class MFPTrading:
-    """Cliente REST de la cuenta sandbox con escritura (órdenes, cierres y stops)."""
+    """Cliente REST de la cuenta sandbox con escritura (órdenes, cierres y stops). Desde la 9.4 lee del stream de
+    la cuenta lo que puede (posiciones, órdenes) y pasa sus GET por el límite de la clave."""
 
     def __init__(self, host, key, timeout=20, user_agent="kcbot-pi"):
         if not host_permitido(host):
@@ -134,6 +587,9 @@ class MFPTrading:
         if not str(key).startswith("fp_test_"):
             raise ValueError("Para operar hace falta una clave de sandbox (fp_test_)")
         self.host, self.key, self.timeout, self.ua = host.rstrip("/"), key, timeout, user_agent
+        self.lim = limitador(key)
+        self.stream = None          # StreamCuenta, si la cuenta lo usa (lo pone cuentas.Cuenta)
+        self.pol_cache = {}         # cuenta -> (trading policy, hora): cambia muy poco
 
     def _call(self, method, path, body=None, idem=None, params=None):
         url = self.host + path
@@ -143,6 +599,8 @@ class MFPTrading:
         # Solo se reintenta lo que no puede duplicar nada: lecturas y escrituras con clave de idempotencia.
         tries = 3 if method == "GET" or idem else 1
         for i in range(tries):
+            if method == "GET" and not self.lim.pedir():
+                raise ExecError(429, "kabor_limite", "demasiadas lecturas seguidas en esta clave: se deja para luego")
             req = urllib.request.Request(url, data=data, method=method)
             req.add_header("Accept", "application/json")
             req.add_header("User-Agent", self.ua)
@@ -154,6 +612,10 @@ class MFPTrading:
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as r:
                     raw = r.read()
+                    if method == "GET" and r.headers.get("X-RateLimit-Warning"):
+                        if self.lim.aviso(path):
+                            _avisar(self.lim, "MyFundedPerps avisa de que la clave …{} supera su límite de lecturas "
+                                    "(GET {}).".format(self.lim.fin, path))
                     return json.loads(raw) if raw else {}
             except urllib.error.HTTPError as e:
                 text = e.read().decode(errors="replace")[:8000]
@@ -165,7 +627,18 @@ class MFPTrading:
                 except Exception:
                     if es_cloudflare(text):
                         code = "cloudflare"
-                if e.code in (429, 500, 502, 503, 504) and i < tries - 1:
+                if e.code == 429:
+                    wait = e.headers.get("Retry-After") or "60"
+                    wait = min(float(wait) if wait.replace(".", "", 1).isdigit() else 60, 120)
+                    if method == "GET" or e.headers.get("X-RateLimit-Scope") == "api_key":
+                        self.lim.frenar(wait)       # todas las lecturas de la clave esperan
+                        _avisar(self.lim, "MyFundedPerps ha frenado la clave …{} ({} {}): se espera {:.0f} s.".format(
+                            self.lim.fin, method, path, wait))
+                    if i < tries - 1:
+                        if method != "GET":
+                            time.sleep(wait + random.random())
+                        continue
+                if e.code in (500, 502, 503, 504) and i < tries - 1:
                     wait = e.headers.get("Retry-After") or str(2 * (i + 1))
                     time.sleep(min(float(wait) if wait.replace(".", "", 1).isdigit() else 5, 30) + random.random())
                     continue
@@ -194,8 +667,13 @@ class MFPTrading:
     def account(self, acc):
         return self.data(self.get("/v1/accounts/" + acc))
 
-    def policy(self, acc):
-        return self.data(self.get("/v1/accounts/{}/trading-policy".format(acc)))
+    def policy(self, acc, max_s=600):
+        c = self.pol_cache.get(acc)
+        if c and time.time() - c[1] < max_s:
+            return c[0]
+        pol = self.data(self.get("/v1/accounts/{}/trading-policy".format(acc)))
+        self.pol_cache[acc] = (pol, time.time())
+        return pol
 
     def market(self, market_id):
         return self.data(self.get("/v1/markets/" + urllib.parse.quote(market_id, safe="")))
@@ -204,17 +682,47 @@ class MFPTrading:
         q = self.data(self.get("/v1/markets/{}/quote".format(urllib.parse.quote(market_id, safe=""))))
         return float(q["mid"])
 
+    def _st(self):
+        s = self.stream
+        return s if s is not None and s.al_dia() else None
+
     def position(self, acc, market_id):
+        s = self._st()
+        if s:
+            p = s.posicion(acc, market_id)
+            if p is not NO:
+                return p
         pos = self.data(self.get("/v1/positions", account_id=acc)) or []
         return next((p for p in pos if p.get("market_id") == market_id), None)
 
+    def positions(self, acc):
+        """Posiciones abiertas de la cuenta (todas)."""
+        s = self._st()
+        if s:
+            with s.cv:
+                if acc in s.cuentas:
+                    return [dict(p) for p in s.cuentas[acc]["posiciones"].values()]
+        return self.data(self.get("/v1/positions", account_id=acc)) or []
+
     def closed_position(self, acc, position_id):
+        s = self.stream
+        if s is not None:
+            p = s.cerrada(position_id, espera=3.0 if s.al_dia() else 0.0)
+            if p is not None:
+                return p
         res = self.data(self.get("/v1/positions", account_id=acc, status="closed", limit=50)) or []
         return next((p for p in res if p.get("id") == position_id), None)
 
+    def _working(self, acc):
+        s = self._st()
+        if s:
+            r = s.ordenes(acc)
+            if r is not NO:
+                return r
+        return self.data(self.get("/v1/orders", account_id=acc, status="working")) or []
+
     def working_exits(self, acc, market_id):
-        res = self.data(self.get("/v1/orders", account_id=acc, status="working")) or []
-        return [o for o in res if o.get("market_id") == market_id and o.get("reduce_only")
+        return [o for o in self._working(acc) if o.get("market_id") == market_id and o.get("reduce_only")
                 and o.get("status") in ("resting", "pending")]
 
     def order(self, oid):
@@ -240,16 +748,21 @@ class MFPTrading:
 
     def working_orders(self, acc):
         """Órdenes vivas de la cuenta (cualquier mercado)."""
-        res = self.data(self.get("/v1/orders", account_id=acc, status="working")) or []
-        return [o for o in res if o.get("status") not in ("filled", "cancelled", "canceled", "rejected", "expired")]
+        return [o for o in self._working(acc) if o.get("status") not in VIVAS]
 
     def wait_order(self, order, max_s=20):
-        """Una orden aceptada empieza en pending: se espera a filled / rejected."""
+        """Una orden aceptada empieza en pending: se espera a filled / rejected. Con el stream al día, se espera a
+        su evento sin consultar la API; si no llega en unos segundos, se pregunta como antes."""
         t0, i = time.time(), 0
+        if order.get("status") == "pending" and order.get("id") and self._st():
+            o = self.stream.esperar_orden(order["id"], min(8, max_s))
+            if o is not None:
+                return dict(order, **o)
         while order.get("status") == "pending" and time.time() - t0 < max_s:
-            time.sleep(min(0.4 * 2 ** i, 4))
+            time.sleep(min(0.6 * 2 ** i, 4))
             i += 1
-            order = self.order(order["id"])
+            o = self.stream.orden(order["id"]) if self.stream is not None else None
+            order = o if o is not None and o.get("status") in TERMINALES else self.order(order["id"])
         return order
 
 
@@ -367,6 +880,21 @@ class Ejecutor:
     def _esc(s):
         return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+    PRECIO_VIVO_S = 5
+
+    def _precio(self, market_id):
+        """Precio actual: el del flujo de mercado que ya recibe el bot si es de hace menos de 5 s (no gasta
+        lecturas de la clave); si no, la cotización de la API."""
+        try:
+            m = self.e.market
+            if m and m.get("market_id") == market_id:
+                px, t, kind = self.e.live_price()
+                if px and t and kind not in ("cierre", "candle") and time.time() * 1000 - t < self.PRECIO_VIVO_S * 1000:
+                    return float(px)
+        except Exception:
+            pass
+        return self.tr.mid(market_id)
+
     def _market(self, market_id):
         m = self.mkt_cache.get(market_id)
         if not m or time.time() - m[1] > 3600:
@@ -455,7 +983,7 @@ class Ejecutor:
         if m.get("trading_enabled") is False or m.get("reduce_only"):
             self._log("Señal {} ignorada: el mercado {} no admite posiciones nuevas.".format(S, mk["market_id"]), "warn", t)
             return
-        mid = tr.mid(mk["market_id"])
+        mid = self._precio(mk["market_id"])
         dist = (mid - sl) * side
         if dist <= 0:
             self._log("Señal {} ignorada: el precio ({:.6g}) ya está al otro lado del stop ({:.6g}).".format(
@@ -619,7 +1147,7 @@ class Ejecutor:
         side = 1 if rp.get("side") == "long" else -1
         acc, mid = self.acc, self.e.market["market_id"]
         # el stop nunca puede quedar al otro lado del precio
-        px = tr.mid(mid)
+        px = self._precio(mid)
         if (px - sl) * side <= 0:
             self._log("Stop nuevo {:.6g} ya superado por el precio ({:.6g}): se cierra a mercado.".format(sl, px), "warn", t)
             self._cerrar(rp, "stop del modelo ya superado", t=t)
@@ -676,7 +1204,7 @@ class Ejecutor:
     def _cerrar(self, rp, motivo, fraction=None, t=None):
         tr, p = self.tr, self.pos
         size = float(rp["size"])
-        body = {"type": "market", "expected_price": tr.mid(rp["market_id"])}
+        body = {"type": "market", "expected_price": self._precio(rp["market_id"])}
         if fraction:
             m = self._market(rp["market_id"])
             part = round_step(size * fraction, float(m["size_step"]), m.get("size_decimals"))

@@ -38,6 +38,13 @@
   function trCore(core, depth = 0) {
     const e = exact.get(core);
     if (e !== undefined) return e;
+    if (core.indexOf(" + ") > 0 && depth < 3) {   // estrategias combinadas: «Cruce de EMAs + RSI por niveles»
+      const seg = x => { const t = trCore(x, 3); if (t !== null || x.indexOf(" · ") < 0) return t;
+        const ss = x.split(" · "), tt = ss.map(y => trCore(y, 3));
+        return tt.some(z => z !== null) ? ss.map((y, i) => tt[i] !== null ? tt[i] : y).join(" · ") : null; };
+      const ps = core.split(" + "), ts = ps.map(seg);
+      if (ts.some(t => t !== null)) return ps.map((x, i) => ts[i] !== null ? ts[i] : x).join(" + ");
+    }
     if (!/[A-Za-zÁÉÍÓÚáéíóúñÑ]{2}/.test(core)) return null;
     const cands = (first.get(core.slice(0, 3).toLowerCase()) || []).concat(last.get(core.slice(-3).toLowerCase()) || [], misc);
     cands.sort((x, y) => y.lit - x.lit);   // primero la regla más específica (más texto fijo)
@@ -52,6 +59,10 @@
         vals[n] = t !== null ? g.replace(gt, t) : g; });
       if (!ok) continue;
       return p.out.replace(/\{(\d+)\}/g, (_, n) => vals[n] !== undefined ? vals[n] : "");
+    }
+    if (depth < 2 && core.indexOf(" · ") > 0) {   // varias piezas unidas con « · » (notas de varias estrategias)
+      const ss = core.split(" · "), tt = ss.map(y => trCore(y, depth));
+      if (tt.some(z => z !== null)) return ss.map((y, i) => tt[i] !== null ? tt[i] : y).join(" · ");
     }
     if (depth < 2) {
       // frases pegadas en un mismo texto: se traduce cada una por separado

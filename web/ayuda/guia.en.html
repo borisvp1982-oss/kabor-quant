@@ -1,0 +1,335 @@
+<!-- SPDX-License-Identifier: Apache-2.0 · Copyright 2026 Borislav Vladimirov Petrakiev -->
+<!-- KaBor Quant guide (panel Help), English. Loaded inside the panel: content only, no <html> or <body>. -->
+<section id="inicio">
+  <h2>What KaBor Quant is</h2>
+  <p>KaBor Quant is your <b>modular trading system</b> for MyFundedPerps (MFP). It runs on the Raspberry Pi around the clock: each <b>bot</b> watches one instrument, runs one or more <b>strategies</b> and trades <b>on paper</b> or in your MFP <b>sandbox accounts</b>. You control everything from this panel, and with the <b>SMT</b> connector Claude can read your bots, review your analysis and prepare plans that you confirm.</p>
+  <figure><img src="/ayuda/img/en/arquitectura.png" alt="Architecture: the panel, Claude and Telegram talk to the Raspberry Pi; strategies decide and execution sends orders to MyFundedPerps"><figcaption>How it fits together: strategies decide; the core handles risk, orders and alerts.</figcaption></figure>
+  <div class="ay-cajas">
+    <div><b>Bot</b><span>One instrument (BTC, XAU, NAS100…), a base timeframe and its risk limits.</span></div>
+    <div><b>Strategy</b><span>A <code>.py</code> file that decides when to enter and where the stop goes. A bot can run up to 5.</span></div>
+    <div><b>Manual plan</b><span>Your analysis turned into rules: the bot executes it when the conditions are met.</span></div>
+    <div><b>SMT</b><span>The connector with Claude: reads bots, candles and your drawings, and proposes plans. It never trades on its own.</span></div>
+  </div>
+  <p class="ay-nota"><b>Sandbox only.</b> KaBor rejects <code>fp_live_</code> keys and any server other than the MFP sandbox. Nothing it does is financial advice: backtest and paper results do not guarantee future results.</p>
+</section>
+
+<section id="primeros-pasos">
+  <h2>Getting started</h2>
+  <h3>Signing in</h3>
+  <p>Open the address shown by <code>./bot.sh panel</code> (for example <code>https://your-Raspberry-IP:8083</code>) and sign in with your user. «Keep me signed in» keeps the session for 30 days on that device; otherwise it closes after 12 hours of inactivity. In <b>Settings</b> you can turn on <b>two-step verification</b> with an authenticator app.</p>
+  <figure><img src="/ayuda/img/en/acceso.jpg" alt="Sign-in screen"><figcaption>Sign-in screen.</figcaption></figure>
+  <h3>The menu</h3>
+  <ul>
+    <li><b>Overview</b>: all bots at a glance.</li>
+    <li><b>Tools</b>: Statistics, Analysis, Journal, Plans, Payouts and expenses, Portfolio and Monitor.</li>
+    <li><b>Bots</b>: every bot, grouped in folders, with its result and status (green dot: running).</li>
+    <li><b>Settings</b> group: Accounts, Strategies, Global risk, News, Instruments and Alerts.</li>
+    <li><b>System</b>: Settings and this Help.</li>
+  </ul>
+  <p>At the top is the <b>price ticker</b> of your instruments (▲/▼ when a position is open). On desktop the menu can be collapsed; on the phone it opens with ☰. The panel can be installed as an app on your phone (Settings → Mobile app) if you connect with a valid certificate, for example through Tailscale.</p>
+  <h3>Overview</h3>
+  <p>At the top, today's, this week's and the total result in R, and the open trades. Below, one card per bot with its strategy, price, mini curve and status. At the bottom: the live feed, the Raspberry Pi, alerts, accounts, archived bots, the log and the <b>ZIP report</b> of all bots.</p>
+  <figure><img src="/ayuda/img/en/resumen.jpg" alt="Panel overview"><figcaption>Overview: totals and one card per bot.</figcaption></figure>
+  <p class="ay-nota"><b>R</b> is the unit used across the panel: 1 R is what you risk on a trade (from entry to stop). Making 2 R means making twice what you risked. If the bot has «Risk per trade ($)», you will also see dollars.</p>
+</section>
+
+<section id="bots">
+  <h2>Bots</h2>
+  <h3>Creating a bot</h3>
+  <p>Menu → <b>New bot</b>. Give it a name, pick strategy, symbol and timeframe, backtest it and press «Launch». «Start from the settings of» copies another bot's settings. From <b>Strategies</b>, «New bot with this one» opens it with that strategy already selected.</p>
+  <figure><img src="/ayuda/img/en/nuevo.jpg" alt="New bot"><figcaption>New bot: the same settings and the same test as a running bot.</figcaption></figure>
+  <h3>The bot panel</h3>
+  <p>Each bot has two tabs: <b>Dashboard</b> (monitoring) and <b>Settings</b>. On the dashboard you will see:</p>
+  <ul>
+    <li><b>Today and this week</b>, with the bar of its daily limits.</li>
+    <li><b>Price and strategy</b>: live chart with the strategy lines, the open trade and the «TradingView ↗» link.</li>
+    <li><b>Simulated trade</b> and, if it trades on an account, the <b>Accounts</b> card with the real position.</li>
+    <li><b>Manual management</b> of the open trade: stop to break-even, move stop or target, partial close (5–90 %) or close now. It applies to the model and to the account immediately.</li>
+    <li><b>Drift monitor</b>, <b>Performance by strategy</b> (if it combines strategies), statistics, trades by side, the trades table (tap one to see its chart) and the activity log.</li>
+  </ul>
+  <figure><img src="/ayuda/img/en/bot-panel.jpg" alt="Bot panel"><figcaption>Bot panel.</figcaption></figure>
+  <h3>Bot controls</h3>
+  <ul>
+    <li><b>Pause entries</b>: no new trades; the open one keeps its stop and target.</li>
+    <li><b>Archive</b>: stops working and is kept with its full history. It can be reactivated from the Overview.</li>
+    <li>Statuses: «Looking for signals», «Trade opened», «Loading history», «Paused», «Stopped by the guardian», «Strategy error».</li>
+  </ul>
+</section>
+
+<section id="configuracion">
+  <h2>Bot settings</h2>
+  <p>The configuration is split into <b>tabs</b>: the <b>Bot</b> tab holds what belongs to the bot (market, risk, limits, filters, execution) and there is <b>one tab per strategy</b> with its own settings. The number on each tab is its unsaved changes.</p>
+  <figure><img src="/ayuda/img/en/config-bot.jpg" alt="Configuration in tabs"><figcaption>«Bot» tab and, next to it, one tab per strategy.</figcaption></figure>
+  <ul>
+    <li>Changes are highlighted in the form and applied when you press <b>Save and apply</b>, without restarting the program. Each save is a numbered configuration you can load again («Saved configurations»).</li>
+    <li>Changing the strategy, symbol, timeframe or trend filter reloads the bot's history (and closes its trade if the market changes).</li>
+    <li>«Undo changes» goes back to what is saved; «Default values», to the strategy's defaults.</li>
+  </ul>
+  <h3>Bot settings reference</h3>
+  <p>All common settings, with their explanation and default value. They are generated by the program itself, so they are always up to date.</p>
+  <div data-ayuda="ajustes"></div>
+</section>
+
+<section id="probar">
+  <h2>Test, simulate and optimize</h2>
+  <h3>Backtest</h3>
+  <p>In the bot settings, the card on the right tests the form values <b>without saving them</b> (7, 14, 30, 90 days or the whole history) with real MFP candles, fees and the same rules as live. The running bot is not touched.</p>
+  <ul>
+    <li>Result: trades, win rate, total R, profit factor, drawdown, SQN, curve and trades by side.</li>
+    <li>The <b>trade list</b>: tap one to see it drawn with its stop, target and path.</li>
+    <li>In a bot with several strategies, the breakdown <b>by strategy</b> with its blocked signals.</li>
+    <li><b>Detailed breakdown</b>: a window with what each strategy did, when it signalled and what happened to each signal (see «Several strategies in one bot»).</li>
+    <li>«Tests this session» keeps the latest ones to compare.</li>
+  </ul>
+  <figure><img src="/ayuda/img/en/backtest.jpg" alt="Backtest result" class="ay-alta"><figcaption>Backtest with the breakdown by strategy.</figcaption></figure>
+  <h3>Prop firm simulator (Monte Carlo)</h3>
+  <p>Below the test: it shuffles the backtest days thousands of times and applies the rules of a challenge (daily loss, max loss, target, minimum days, time limit). It tells you the probability of passing, of breaking the account, the typical days and <b>which risk per trade suits you</b>. «Shuffle in 5-day blocks» is stricter and more realistic.</p>
+  <h3>Optimize settings (walk-forward)</h3>
+  <p>Tests combinations of one or two settings and checks with <b>walk-forward</b> whether what works holds on data it has not seen. Load the <b>robust zone</b> (gold box), not an isolated star. If the verdict is «overfitted», change nothing: the strategy does not improve by tweaking numbers.</p>
+  <p class="ay-nota">With fewer than 30 trades, a backtest says little. Always test over long and different periods.</p>
+</section>
+
+<section id="estrategias">
+  <h2>Strategies</h2>
+  <p>A strategy is a <code>.py</code> file in the <code>estrategias/</code> folder. In <b>Strategies</b> you see the installed ones and which bots use each, and you can download them, upload a new one or a new version (the bots using it reload it on their own) and remove them if no bot uses them. Replaced versions are kept in <code>estrategias/anteriores/</code>.</p>
+  <figure><img src="/ayuda/img/en/estrategias.jpg" alt="Strategies page"><figcaption>Installed strategies.</figcaption></figure>
+  <h3>Your installed strategies</h3>
+  <div data-ayuda="estrategias"></div>
+  <h3>Testing a file without installing it</h3>
+  <pre><code>./bot.sh probar estrategias/cruce_emas.py --simbolo BTC --tf 15m --dias 60
+./bot.sh probar estrategias/cruce_emas.py --simbolo XAU --tf 5m --dias 30 --ajuste ce_rr=1.5</code></pre>
+  <h3>Writing a strategy</h3>
+  <p>Only the <code>senales()</code> function is needed: it returns the side (1 long, −1 short) and the stop price. Target, break-even, trailing, limits and execution are handled by the core. The full explanation is in <code>ESTRATEGIAS.md</code> and a commented example in <code>estrategias/cruce_emas.py</code>. You can also ask me (Claude) to write one from your idea.</p>
+  <p class="ay-nota"><b>A strategy file is code that runs on the Raspberry Pi.</b> Only upload your own files or files you trust.</p>
+</section>
+
+<section id="combinadas">
+  <h2>Several strategies in one bot</h2>
+  <p>A bot can run <b>up to 4 strategies besides the main one</b>, on the same instrument. You choose them in the Bot tab → Market → «More strategies in this bot». Each added strategy has its own tab with its settings and timeframe.</p>
+  <figure><img src="/ayuda/img/en/config-combinar.jpg" alt="Choosing more strategies" class="ay-peq"><figcaption>More strategies in this bot.</figcaption></figure>
+  <h3>One trade at a time</h3>
+  <ul>
+    <li>All strategies watch at the same time. The <b>first valid signal</b> opens the trade and <b>blocks the rest</b> until it closes (TP, stop, that strategy's exit or manually). Opposite signals neither close nor open anything: they are counted as <b>blocked</b>.</li>
+    <li>The strategy that opened the trade <b>owns</b> it: its target, its break-even and its exit.</li>
+    <li>Risk, limits, trading hours, filters and execution belong to the bot (Bot tab).</li>
+  </ul>
+  <h3>Each strategy with its own timeframe and direction</h3>
+  <p>Set the bot to the <b>smallest timeframe</b> and give each strategy its own (equal or larger and a multiple): for example, a 5m bot with an ORB on 5m, a Keltner breakout on 30m and a Supertrend on 4h. The bot builds each strategy's candles from its own; each one sees only its closed candles, with its own ATR. Signals enter at the open of the bot's next candle, and the stop and target are checked on every bot candle.</p>
+  <figure><img src="/ayuda/img/en/config-estrategia.jpg" alt="Tab of an added strategy"><figcaption>Tab of an added strategy: its timeframe, direction and settings.</figcaption></figure>
+    <p><b>Direction:</b> each strategy has its own in its tab («both», «longs only» or «shorts only»), the main one included. If one works better only on shorts, leave it on shorts only without touching the others. Signals on the other side count as filtered by «direction». Settings saved before 9.3 keep what they had: the direction that belonged to the bot goes to all its strategies.</p>
+  <h3>Priority by score</h3>
+  <p>If several signal on the same candle, the one with the <b>best score</b> enters. The score is the <b>SQN</b> of each strategy's backtest on its own, on its timeframe, with the bot's settings and the last 90 days: mean R ÷ standard deviation × √trades (up to 100). As a guide: above 1.6 good, above 2.5 very good; below 0, it loses. With fewer than 10 trades it has no score and goes last. It is recalculated when you save the configuration, every day and with «Recalculate score».</p>
+  <h3>Performance by strategy</h3>
+  <p>On the bot dashboard: bars with each strategy's R live and in its backtest, each one's curve, and a card per strategy with its priority, score, trades, win rate, profit factor, drawdown, dollars and <b>blocked signals</b> (the opportunities missed because of the one-trade-at-a-time rule).</p>
+  <figure><img src="/ayuda/img/en/bot-rendimiento.jpg" alt="Performance by strategy"><figcaption>Performance by strategy.</figcaption></figure>
+  <h3>Detailed breakdown of a test</h3>
+  <p>After a backtest, the <b>Detailed breakdown</b> button opens a window with everything each strategy did in that test (also in a single-strategy bot):</p>
+  <ul>
+    <li><b>Comparison</b> of the strategies: timeframe, direction, trades, win rate, PF, R, average R, drawdown, SQN, signals, blocked and filtered; and the <b>curve</b> of each one.</li>
+    <li><b>When each strategy signals</b>: one row per strategy with every signal (▲ long, ▼ short) and its trades. Filled: enters; grey: blocked by another strategy’s trade; orange: filtered; red: daily limit. Tap or hover a mark to see what happened. Drag to move and scroll to zoom.</li>
+    <li><b>How they get in each other’s way</b>: which strategy blocked which, and how many times.</li>
+    <li>One card per strategy: <b>longs versus shorts</b>, what happened to its signals, who blocked it, which filters remove its signals, trades by hour and day of the week and exit reasons, with <b>ideas to try</b> (for example, shorts only if it wins on shorts and loses on longs).</li>
+  </ul>
+  <figure><img src="/ayuda/img/en/desglose.jpg" alt="Breakdown window"><figcaption>Breakdown: comparison and curves.</figcaption></figure>
+  <figure><img src="/ayuda/img/en/desglose-tiempo.jpg" alt="Signal timeline"><figcaption>When each strategy signals and what happened to each signal.</figcaption></figure>
+  <figure><img src="/ayuda/img/en/desglose-fichas.jpg" alt="Strategy cards"><figcaption>One card per strategy.</figcaption></figure>
+  <p>«Download data» saves the test to a JSON file for the laptop script.</p>
+  <h3>Analysing the strategies from your laptop</h3>
+  <p><code>herramientas/analizar_estrategias.py</code> asks the Raspberry Pi for many tests of the same bot and writes an HTML report with what is worth trying. It only needs Python 3 on the laptop (Windows, macOS or Linux), nothing else to install. Copy the file to the laptop and run it:</p>
+  <pre><code>python analizar_estrategias.py --pi https://YOUR-PANEL-ADDRESS --usuario YOUR_USER --bot 3
+python analizar_estrategias.py --pi https://... --usuario YOUR_USER --bot 3 --dias 180 --rapido
+python analizar_estrategias.py --archivo desglose_BTC_15m_2026-11-25.json</code></pre>
+  <ul>
+    <li>It asks for the password (and the two-step code, if you use it) when it runs; it doesn’t store it.</li>
+    <li>It tests the current settings, <b>each strategy alone</b>, <b>the bot without each one</b>, <b>each direction</b> of each strategy and <b>each priority order</b> (<code>--rapido</code> skips the orders). The tests run on the Raspberry Pi with its candles; the bots keep running.</li>
+    <li>The report compares the variants with the current one (Δ R), counts the signals each strategy blocked for another and <b>what they would have made</b> (from the test of that strategy alone), the signals against the open trade, the timeline of the last 14 days and signals by hour. Next to the report you get <code>senales.csv</code>, <code>operaciones.csv</code> and <code>variantes.csv</code> for Excel. The report and the files are in Spanish.</li>
+    <li>With the Raspberry Pi’s own certificate: copy <code>data/tls/cert.pem</code> to the laptop and add <code>--certificado cert.pem</code>, connect through Tailscale, or, only on your home network, use <code>--sin-verificar</code>.</li>
+    <li><code>--archivo</code> analyses a JSON from «Download data» without connecting (no variants).</li>
+  </ul>
+  <figure><img src="/ayuda/img/informe-portatil.jpg" alt="Laptop script report"><figcaption>Report from analizar_estrategias.py (in Spanish).</figcaption></figure>
+  <p class="ay-nota">Testing many variants and keeping the best one overfits. Only change something if it improves with plenty of trades and in <b>another period</b> too (for example, <code>--dias 90</code> and <code>--dias 180</code>).</p>
+  <p class="ay-nota">The «Manual plan» strategy always runs in its own bot: it cannot be combined with other strategies.</p>
+</section>
+
+<section id="planes">
+  <h2>Manual plans and the analysis chart</h2>
+  <p>A <b>plan</b> is your analysis turned into rules: instrument, side, entry condition, stop, optional TP1, target, invalidation and expiry. It is executed by a bot running the <b>«Manual plan»</b> strategy on the same instrument and timeframe. A new plan stays <b>pending</b> until you confirm it.</p>
+  <figure><img src="/ayuda/img/en/planes.jpg" alt="Plans page"><figcaption>Plans: how they work, the analysis chart and the list.</figcaption></figure>
+  <h3>Entry conditions</h3>
+  <ul>
+    <li><b>Limit order at</b> a price: it fills when the price touches it, without waiting for the close. On the account, KaBor watches the price live and enters at market when it is touched. It is withdrawn on its own if price reaches the target first, if the invalidation is met or if it expires.</li>
+    <li><b>A candle closes above/below</b> a level (with N closes in a row).</li>
+    <li><b>Price rises/falls and touches</b> a level.</li>
+  </ul>
+  <p><b>TP1:</b> closes a percentage and, if you want, moves the stop to break-even. <b>Size:</b> by default from the bot's risk (contracts = risk ÷ distance to the stop), or a fixed number of contracts. An active plan is cancelled with a waiting period of a few minutes, for safety.</p>
+  <h3>Analysis chart</h3>
+  <p>With real MFP candles. Tools:</p>
+  <ul>
+    <li><b>Move</b>: select and drag what you have drawn.</li>
+    <li><b>Level</b>: entry, stop, TP1, final TP, invalidation or free level.</li>
+    <li><b>Zone</b>: bullish or bearish FVG, order block, liquidity or free zone (dragging or tapping two corners; it can extend «until now»).</li>
+    <li><b>Trend line</b>: a line between two points.</li>
+    <li><b>▲ Long / ▼ Short</b>: the position tool, as in TradingView. Green box up to the target and red box down to the stop; drag each line, the box or its right edge. Labels show price, %, $ and R:R, with contracts from the bot's risk (or the risk and contracts you type in the list).</li>
+    <li><b>Mark FVGs</b>: marks the 6 open three-candle gaps closest to the price. The same button removes them.</li>
+    <li><b>Create plan from chart</b> (or «Create plan» on a position): fills «Manual plan» with your levels and a summary of your zones. You review it and create it as pending.</li>
+  </ul>
+  <figure><img src="/ayuda/img/en/planes-grafico.jpg" alt="Analysis chart with a position and FVGs" class="ay-alta"><figcaption>Long position and FVGs marked on the analysis chart.</figcaption></figure>
+  <figure><img src="/ayuda/img/en/planes-formulario.jpg" alt="Plan form filled from the chart"><figcaption>The plan, filled from the chart.</figcaption></figure>
+  <p>Drawings are saved on the Raspberry Pi per instrument; live plans show as dashed lines. On the phone you draw with your finger.</p>
+</section>
+
+<section id="smt">
+  <h2>SMT: Claude with your bots</h2>
+  <p>SMT is an MCP connector that lets Claude <b>read</b> your system and <b>propose plans</b>. Claude never confirms, trades or cancels an active plan: you do that in the panel.</p>
+  <h3>Connecting it</h3>
+  <ol>
+    <li>On the Raspberry Pi: <code>./bot.sh conector</code> gives you the connector's private address.</li>
+    <li>In Claude: Settings → Connectors → Add custom connector → paste the address.</li>
+    <li>If KaBor adds new tools, disconnect and reconnect, and open a new chat.</li>
+  </ol>
+  <h3>Tools</h3>
+  <table class="ay-tabla">
+    <tr><th>Tool</th><th>What it does</th></tr>
+    <tr><td><code>kabor_contexto</code></td><td>Instruments, «Manual plan» bots, live plans and the server time.</td></tr>
+    <tr><td><code>kabor_velas</code></td><td>Real closed candles of an instrument and timeframe.</td></tr>
+    <tr><td><code>kabor_dibujos</code></td><td>What you marked on the analysis chart: levels, zones (untouched, touched, filled), positions and trend lines.</td></tr>
+    <tr><td><code>kabor_crear_plan</code></td><td>Creates a <b>pending</b> plan (only if you approve it in the chat).</td></tr>
+    <tr><td><code>kabor_planes</code> / <code>kabor_cancelar_pendiente</code></td><td>Lists plans and cancels a pending one.</td></tr>
+    <tr><td><code>kabor_bots</code>, <code>kabor_operaciones</code>, <code>kabor_estadisticas</code></td><td>Status and results of the bots, to review them (read only).</td></tr>
+  </table>
+  <h3>Examples of what you can ask</h3>
+  <ul class="ay-prompts">
+    <li>«Review what I marked on BTC 15m and prepare the plan.»</li>
+    <li>«Look at this Nasdaq screenshot: I want to sell in the 1h FVG with the stop above the high. Does it match the real candles?»</li>
+    <li>«How are my bots doing this week? Separate my analysis from my execution.»</li>
+    <li>«Write me a KaBor strategy that buys the bounce on the 50 EMA when the 4h trend is up.»</li>
+  </ul>
+</section>
+
+<section id="analisis">
+  <h2>Analysis (TradingView)</h2>
+  <p>The full TradingView chart (indicators, drawings, several timeframes) of the <b>same market MFP uses</b>. KaBor picks the symbol by itself: Binance → <code>BINANCE:BTCUSDT.P</code>, Hyperliquid (Trade[XYZ]) → <code>HIP3XYZ:XYZ100USDC.P</code>. Next to the symbol it shows «SAME MARKET» or «APPROXIMATE» (forex and some indices do not exist as such on TradingView). If one does not load, type another in «TradingView symbols».</p>
+  <figure><img src="/ayuda/img/en/analisis-simbolos.jpg" alt="TradingView symbols" class="ay-peq"><figcaption>TradingView symbol of each instrument.</figcaption></figure>
+  <p>There may be small differences from the MFP price: the bots always trade on MFP candles. Claude cannot read what you draw on TradingView; that is what the Plans analysis chart is for.</p>
+</section>
+
+<section id="seguimiento">
+  <h2>Monitoring</h2>
+  <h3>Statistics</h3>
+  <p>The performance of all your bots together or of each one: R, win rate, profit factor, curve, drawdown, calendar, months, hours, days, duration, exit reasons and favourable and adverse excursion (MFE/MAE).</p>
+  <figure><img src="/ayuda/img/en/estadisticas.jpg" alt="Statistics"></figure>
+  <h3>Journal</h3>
+  <p>All trades by day. Tap one to write a <b>note</b>, add <b>tags</b> and mark whether it was <b>according to plan</b>. You can log trades you placed by hand. At the top you see what breaking your plan costs you.</p>
+  <figure><img src="/ayuda/img/en/diario.jpg" alt="Journal"></figure>
+  <h3>Drift monitor (Monitor)</h3>
+  <p>Compares each bot's real results with thousands of possible streaks from its backtest: «as in the backtest», «to watch», «drifting» or «few trades». It alerts on Telegram and can pause the bot when it starts drifting.</p>
+  <figure><img src="/ayuda/img/en/vigilante.jpg" alt="Drift monitor"></figure>
+  <h3>Portfolio</h3>
+  <p>Puts several bots together as if they were one account: combined drawdown, correlation, risk open at the same time and the prop firm simulator with all of them together.</p>
+  <figure><img src="/ayuda/img/en/cartera.jpg" alt="Portfolio"></figure>
+  <h3>Payouts and expenses</h3>
+  <p>Your payouts, expenses and refunds in euros (ECB rate when needed), with receipts, yearly and quarterly summaries, CSV and a printable report. Only in the panel; never through the connector. Back up <code>data/fiscal</code>.</p>
+  <figure><img src="/ayuda/img/en/fiscal.jpg" alt="Payouts and expenses"></figure>
+</section>
+
+<section id="cuentas">
+  <h2>Sandbox accounts and risk</h2>
+  <h3>Trading on the sandbox accounts</h3>
+  <ol>
+    <li>In MFP → Settings → API Keys, create a <b>Test (Sandbox)</b> key with <b>Read And Trade</b> access (it starts with <code>fp_test_</code>).</li>
+    <li>Panel → <b>Accounts</b> → «Add account»: name, key, «Find the accounts for this key», choose the account and turn on «Send orders».</li>
+    <li>In the bot → Bot tab → <b>Sandbox execution</b>: mode <code>sandbox</code>, its accounts and the risk per trade (start low).</li>
+  </ol>
+  <figure><img src="/ayuda/img/en/cuentas.jpg" alt="Accounts"></figure>
+  <p>Before each order it checks the account, its trading policy, the <b>daily loss</b> left after the stop, that the price has not already passed the stop, the cost, the minimum size, the notional and the leverage. Each order carries an idempotency key (it is never duplicated) and retries respect the API limits. Keys are only shown by their last 4 characters.</p>
+  <h3>Account stream and read limit</h3>
+  <p>MyFundedPerps limits reads (GET) to <b>30 per minute per key</b> in sandbox; placing, changing or closing orders doesn’t count. Since 9.4, KaBor opens one <b>account stream</b> per key: MFP pushes every change to orders, fills, positions and balance as it happens, so KaBor no longer checks the position on every candle or polls an order until it fills. An entry goes from about 12 reads to 1–3, and a close to none.</p>
+  <ul>
+    <li>Each account shows «Account stream» (connected or reconnecting) and «Reads per minute» (now, maximum in the last hour and in 24 hours).</li>
+    <li>KaBor stays at 24 reads per minute per key at most and leaves room for trading: the panel’s periodic read waits if the key is busy.</li>
+    <li>If the stream drops, it reconnects on its own and, meanwhile, KaBor asks the API as before.</li>
+    <li>If MFP warns that the key is over its limit, or throttles it with a 429, it goes to the log and you get a «problems» Telegram alert (at most one per hour); KaBor waits as long as MFP asks before reading again.</li>
+  </ul>
+  <h3>Global risk</h3>
+  <p>Limits above those of each bot: daily and weekly loss and profit of the whole set and trades open at the same time. When they are reached, entries stop on all bots.</p>
+  <figure><img src="/ayuda/img/en/riesgo.jpg" alt="Global risk"></figure>
+  <h3>News</h3>
+  <p>No entries around economic calendar news (Forex Factory): by currency and impact, with wider windows for the big ones (FOMC, NFP, CPI…). Open trades are not touched. It comes turned off.</p>
+  <figure><img src="/ayuda/img/en/noticias.jpg" alt="News"></figure>
+</section>
+
+<section id="sistema">
+  <h2>Instruments, alerts and settings</h2>
+  <h3>Instruments</h3>
+  <p>The MFP markets your bots use and their fees. Search and add more from the catalogue. If MFP moves a market (like the Nasdaq, which moved to <code>composite|XYZ100</code>), KaBor finds it by name, updates itself and lets you know.</p>
+  <figure><img src="/ayuda/img/en/instrumentos.jpg" alt="Instruments"></figure>
+  <h3>Telegram alerts</h3>
+  <ol>
+    <li>In Telegram, talk to <b>@BotFather</b>, type <code>/newbot</code> and copy the token.</li>
+    <li>Panel → <b>Alerts</b>: paste the token, «Check», send <code>/start</code> to your bot and «Detect my chat».</li>
+    <li>Choose what to be alerted about (signal, open, close, limits, problems, daily summary…) and send a test message.</li>
+  </ol>
+  <figure><img src="/ayuda/img/telegram.png" alt="Telegram alert with chart" class="ay-peq"><figcaption>Opening alert with its chart. Telegram messages are in Spanish for now.</figcaption></figure>
+  <p>Bots work with closed candles: the signal is sent when the candle that gives it closes. After a restart, alerts from recovered candles arrive marked «late».</p>
+  <h3>Settings</h3>
+  <p>Your password, two-step verification, open sessions, language (Spanish, English or French), the price ticker, themes and the phone app.</p>
+  <figure><img src="/ayuda/img/en/ajustes.jpg" alt="Settings"></figure>
+</section>
+
+<section id="mantenimiento">
+  <h2>Maintenance on the Raspberry Pi</h2>
+  <h3>Commands</h3>
+  <table class="ay-tabla">
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>./bot.sh panel</code></td><td>Panel address</td></tr>
+    <tr><td><code>./bot.sh estado</code> / <code>logs</code></td><td>Whether the service is running / live log (Ctrl+C to exit)</td></tr>
+    <tr><td><code>./bot.sh reiniciar</code> · <code>parar</code> · <code>arrancar</code></td><td>Restart, stop or start the service (all bots)</td></tr>
+    <tr><td><code>./bot.sh comprobar</code></td><td>Connection, each bot's candles, strategies and accounts (sends no orders)</td></tr>
+    <tr><td><code>./bot.sh probar FILE</code></td><td>Backtest of a strategy with real candles, without installing it</td></tr>
+    <tr><td><code>./bot.sh usuario</code> · <code>cerrar-sesiones</code> · <code>quitar-2fa USER</code></td><td>Users, sessions and two-step verification</td></tr>
+    <tr><td><code>./bot.sh configurar</code> · <code>certificado</code></td><td>Port, HTTPS and certificate (then <code>reiniciar</code>)</td></tr>
+    <tr><td><code>./bot.sh conector</code></td><td>Address of the SMT connector for Claude</td></tr>
+    <tr><td><code>./bot.sh informe</code></td><td>ZIP with the reports of all bots</td></tr>
+  </table>
+  <h3>Updating with a backup</h3>
+  <p>Leave the new version's zip in your home folder (<code>~</code>), not inside <code>~/kcbot2</code>:</p>
+  <pre><code>cd ~/kcbot2 &amp;&amp; ./bot.sh parar
+cd ~ &amp;&amp; tar czf kcbot2_copia_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+unzip -o ~/kabor_X.Y_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 &amp;&amp; ./bot.sh arrancar</code></pre>
+  <p>Then reload the panel with Ctrl+F5. To <b>go back</b>:</p>
+  <pre><code>cd ~/kcbot2 &amp;&amp; ./bot.sh parar
+cd ~ &amp;&amp; mv kcbot2 kcbot2_descartada
+tar xzf kcbot2_copia_YYYYMMDD_HHMM.tgz
+mv kcbot2_descartada/venv kcbot2/
+cd ~/kcbot2 &amp;&amp; ./bot.sh arrancar</code></pre>
+  <h3>Where everything is stored</h3>
+  <ul>
+    <li><code>estrategias/</code>: the strategy files.</li>
+    <li><code>data/bots.json</code> and <code>data/bots/&lt;n&gt;/</code>: each bot with its configuration, state, <code>operaciones.csv</code>, <code>ejecuciones.csv</code>, events, candles and reports.</li>
+    <li><code>data/cuentas.json</code> (keys), <code>data/usuarios.json</code>, <code>data/sesiones.json</code> and <code>data/tls/</code>: private, readable only by your user. <b>Do not share them.</b></li>
+    <li><code>data/dibujos.json</code>, <code>data/planes.json</code>, <code>data/diario.json</code>, <code>data/fiscal/</code>, <code>data/avisos.json</code>, <code>data/instrumentos.json</code>.</li>
+  </ul>
+</section>
+
+<section id="problemas">
+  <h2>Frequent problems</h2>
+  <dl class="ay-faq">
+    <dt>«MyFundedPerps read limit» alert</dt>
+    <dd>A key went over 30 reads per minute. Check in Accounts that the stream is connected; if not, look at <code>./bot.sh logs</code>. Use each key only in KaBor: another program with the same key adds reads to the same limit.</dd>
+    <dt>A bot stays in «Loading history»</dt>
+    <dd>Check <code>./bot.sh logs</code>. If it says the market no longer appears in the catalogue, MFP has moved it: since 9.1 KaBor looks for it on its own; if it cannot find it, check the instrument in Instruments. If it is a network error, wait: the bot retries on its own.</dd>
+    <dt>«Problems» alerts about DNS or network (Errno -3)</dt>
+    <dd>The Raspberry Pi briefly lost network or DNS. If it happens often, check the WiFi or set a fixed DNS on the router (1.1.1.1 or 8.8.8.8).</dd>
+    <dt>«Strategy error»</dt>
+    <dd>The log shows the line of the file that fails. The bot carries on with the next candle. Fix the file and upload it again in Strategies.</dd>
+    <dt>The browser warns that the connection is not private</dt>
+    <dd>It is the Raspberry Pi's own certificate: the connection is encrypted. Accept the warning once, or connect through Tailscale to get a valid certificate.</dd>
+    <dt>I can't combine two strategies</dt>
+    <dd>«Manual plan» cannot be combined. The others can (up to 4 besides the main one); their timeframe must be equal to or larger than the bot's and a multiple of it.</dd>
+    <dt>Claude doesn't see a new SMT tool</dt>
+    <dd>In Claude, disconnect and reconnect the connector and open a new chat.</dd>
+    <dt>Something appears in Spanish with the panel in English or French</dt>
+    <dd>That phrase is missing from the dictionary: send a screenshot and it will be added.</dd>
+  </dl>
+</section>

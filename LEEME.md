@@ -1,8 +1,313 @@
-# KaBor Quant 8.6 — papel y cuentas sandbox de MyFundedPerps
+# KaBor Quant 9.4.2 — papel y cuentas sandbox de MyFundedPerps
 
 Un solo programa ejecuta varios bots a la vez con datos de MyFundedPerps en tiempo real y un panel web central.
 Cada bot funciona **en papel** (como hasta la 4.0) o, si lo activas, **también en una o varias cuentas sandbox**:
 las mismas señales, el mismo stop y el mismo objetivo se convierten en órdenes reales en cada cuenta.
+
+## Numeración de las versiones
+
+Desde la 9.2.1: **X.Y** para cambios importantes (funciones nuevas, cambios en el núcleo) y **X.Y.Z** para
+cambios menores (pantallas, arreglos, textos).
+
+## Qué hay de nuevo en la 9.4.2: repaso del panel y de las traducciones
+
+He revisado todas las páginas del panel en español, inglés y francés, en ordenador y en móvil, con los temas Cristal
+(claro y oscuro) y Clásico.
+
+**Traducciones**
+* Las estrategias ya salen en inglés y francés: sus ajustes, sus descripciones y lo que explican en el panel del bot
+  («Esperando un cierre fuera del canal…»). Son 286 textos de las estrategias incluidas.
+* Los nombres de los bots con varias estrategias («Cruce de EMAs + RSI por niveles») se traducen en todas partes.
+* También se traducen:
+  * el tipo de cada evento en la actividad del bot y la lista de ajustes cambiados;
+  * el estado de las cuentas;
+  * una línea del Vigilante que mezclaba idiomas;
+  * algunos avisos y etiquetas que faltaban.
+* El registro del sistema (Ajustes) y los avisos de Telegram siguen en español.
+
+**Pantalla**
+* En el gráfico de precio del bot, las etiquetas del eje ya no se cortan con precios largos (BTC).
+* Las tablas de la Ayuda ya no se salen de la pantalla.
+* En el móvil, el selector «Partir de los valores por defecto» de Bot nuevo ya no se sale de la pantalla.
+* Los campos del gráfico de análisis (Planes) y los selectores de Análisis tienen el mismo estilo que el resto.
+* Con el envío de órdenes apagado, las cuentas muestran «SIN ENVÍO DE ÓRDENES» en vez de «SIN CONEXIÓN».
+* Corregidas dos faltas: «ampliaciónes» y «operaciónes».
+
+Se instala igual que la 9.4, con `kabor_9.4.2_raspberry.zip`.
+
+## Qué hay de nuevo en la 9.4.1
+
+* Arreglado: en Estadísticas, la barra de filtros (bot, largos/cortos, R/$) se montaba encima de las tarjetas.
+  Unos estilos del informe «Rendimiento por estrategia» de la 9.1 usaban los mismos nombres que esa barra y la
+  leyenda de la comparación. Ahora tienen nombres propios.
+* Se instala igual que la 9.4, con el zip `kabor_9.4.1_raspberry.zip`.
+
+## Qué hay de nuevo en la 9.4: stream de la cuenta y límite de lecturas de MyFundedPerps
+
+MyFundedPerps va a limitar las lecturas (GET a `/v1/*`) a **30 por minuto por clave en sandbox**. Hay 7 días de
+aviso (respuestas con `X-RateLimit-Warning`) y después las devolverá con un 429. Enviar, cambiar y cerrar órdenes
+no cuenta. KaBor gastaba poco en reposo, pero cada apertura o cierre real hacía 8–14 lecturas en pocos segundos.
+Con dos bots actuando a la vez en la misma cuenta se pasaba del límite.
+
+* **Stream de la cuenta** (`/v1/sandbox/stream`), uno por clave. MFP envía al momento cada cambio de órdenes,
+  llenados, posiciones y saldo. KaBor ya no consulta la posición en cada vela, ni la orden hasta que se llena, ni
+  las órdenes de salida.
+  * Una entrada pasa de ~12 lecturas a 1–3: la trading policy se guarda 10 minutos y el precio sale del flujo de
+    mercado.
+  * Un cierre o una venta parcial, a ninguna.
+  * Si el stream se corta, se reconecta solo (reanudando donde iba) y, mientras tanto, se usa la API como antes.
+* **Límite propio por clave:** como mucho 24 lecturas por minuto. La lectura periódica del panel se queda en 14
+  para dejar sitio a lo de operar. Si MFP frena con un 429, KaBor espera el `Retry-After` completo (60 s) antes
+  de volver a leer.
+* **Avisos:** cada `X-RateLimit-Warning` o 429 de MFP queda en el registro, y llega un aviso de «problemas» por
+  Telegram (como mucho uno por hora y clave).
+* **En Cuentas**, cada cuenta muestra el estado del stream y las lecturas por minuto: ahora, máximo de la última
+  hora y de 24 h.
+* Las cuentas en papel no cambian. Los bots, las estrategias y los ajustes, tampoco.
+
+### Instalar la 9.4
+
+Deja el zip en tu carpeta personal (`~`), no dentro de `~/kcbot2`. Primero, la copia de seguridad:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && tar czf kcbot2_copia_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+unzip -o ~/kabor_9.4_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+Recarga el panel con Ctrl+F5 y mira en **Cuentas** que «Stream de la cuenta» diga «conectado». Para volver atrás:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && mv kcbot2 kcbot2_descartada
+tar xzf kcbot2_copia_AAAAMMDD_HHMM.tgz
+mv kcbot2_descartada/venv kcbot2/
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+## Qué hay de nuevo en la 9.3: dirección por estrategia, desglose detallado y análisis desde el portátil
+
+* **Dirección de cada estrategia.** «Dirección» (ambos, solo largos, solo cortos) ya no es del bot: cada estrategia
+  tiene la suya en su pestaña, en el grupo «Temporalidad y dirección», también la principal. Si una funciona mejor
+  solo en ventas, la dejas solo en cortos sin tocar a las demás. Vale en directo, en el backtest y en la puntuación.
+  Las configuraciones guardadas conservan lo que tenían: la dirección que era del bot pasa a todas sus estrategias.
+* **Desglose detallado.** Al probar en el histórico, el botón «Desglose detallado» abre una ventana flotante con:
+  * la comparación de las estrategias y la curva de cada una;
+  * la línea de tiempo de cada estrategia, con cada señal (▲/▼) y lo que pasó con ella: entra, bloqueada por la
+    operación de otra, filtrada o límite del día;
+  * quién bloquea a quién;
+  * una ficha por estrategia con largos frente a cortos, horas, días, motivos de salida e ideas para probar.
+
+  «Descargar datos» guarda la prueba en JSON.
+* **`herramientas/analizar_estrategias.py`, para el portátil.** Pide a la Raspberry muchas pruebas del mismo bot y
+  escribe un informe HTML con CSV para Excel. Prueba:
+  * cada estrategia sola;
+  * el bot sin cada una;
+  * cada dirección de cada estrategia;
+  * cada orden de prioridad.
+
+  El informe incluye las señales que cada estrategia bloqueó a otra y lo que habrían dado, las señales contrarias a
+  la operación abierta, la línea de tiempo y las señales por hora. Solo necesita Python 3, sin instalar nada:
+
+  ```
+  python analizar_estrategias.py --pi https://DIRECCIÓN-DEL-PANEL --usuario TU_USUARIO --bot 3 --dias 90
+  ```
+
+  La contraseña (y el código de dos pasos) se piden al ejecutarlo y no se guardan. Con el certificado propio de la
+  Raspberry: `--certificado cert.pem` (copia `data/tls/cert.pem`), Tailscale o, solo en casa, `--sin-verificar`.
+  `--rapido` se salta los órdenes de prioridad; `--archivo desglose_….json` analiza lo descargado del panel sin
+  conectar. Las pruebas se hacen en la Raspberry y los bots siguen funcionando.
+* La Ayuda (español, inglés y francés) explica todo esto con capturas.
+
+### Instalar la 9.3
+
+Deja el zip en tu carpeta personal (`~`), no dentro de `~/kcbot2`. Primero, la copia de seguridad:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && tar czf kcbot2_copia_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+unzip -o ~/kabor_9.3_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+Recarga el panel con Ctrl+F5. Para volver atrás:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && mv kcbot2 kcbot2_descartada
+tar xzf kcbot2_copia_AAAAMMDD_HHMM.tgz
+mv kcbot2_descartada/venv kcbot2/
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+Para el portátil, copia `~/kcbot2/herramientas/analizar_estrategias.py` (por ejemplo con
+`scp usuario@raspberry:kcbot2/herramientas/analizar_estrategias.py .`).
+
+## Qué hay de nuevo en la 9.2.2: la Ayuda en tu idioma
+
+* La guía del menú **Ayuda** está en español, inglés y francés, y se abre en el idioma del panel (Ajustes → Idioma). Si cambias de idioma, la guía cambia con él.
+* Las capturas de la guía coinciden con el idioma: cada idioma tiene las suyas (`web/ayuda/img/en/`, `web/ayuda/img/fr/`), también el esquema del sistema.
+* La referencia de ajustes y la lista de estrategias de la guía salen traducidas.
+* Los avisos de Telegram siguen en español.
+
+### Instalar la 9.2.2
+
+Deja el zip en tu carpeta personal (`~`), no dentro de `~/kcbot2`. Primero, la copia de seguridad:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && tar czf kcbot2_copia_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+unzip -o ~/kabor_9.2.2_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+Recarga el panel con Ctrl+F5. Para volver atrás:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && mv kcbot2 kcbot2_descartada
+tar xzf kcbot2_copia_AAAAMMDD_HHMM.tgz
+mv kcbot2_descartada/venv kcbot2/
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+## Qué hay de nuevo en la 9.2.1: configuración en pestañas y menú Ayuda
+
+- **Configuración en pestañas.** Dentro de la configuración del bot, la pestaña **Bot** tiene lo que es del bot
+  (mercado, riesgo, límites, filtros, ejecución) y hay una pestaña por cada estrategia con sus ajustes propios y su
+  temporalidad. El número de cada pestaña son sus cambios sin guardar.
+- **Menú Ayuda** (Sistema → Ayuda): la guía completa del sistema con capturas, índice, buscador y opción de imprimir
+  o guardar en PDF. La referencia de ajustes y la lista de estrategias salen del propio programa, así que siempre
+  están al día. Los archivos están en `web/ayuda/`.
+
+### Actualizar a la 9.2.1 con copia de seguridad
+
+Incluye todo lo de la 9.2, que cambia el núcleo, así que antes haz una copia de todo. Deja `kabor_9.2.1_raspberry.zip` en tu carpeta personal (`~`),
+no dentro de `~/kcbot2`: se descomprime directamente en el programa.
+
+**1. Copia de seguridad** (con el programa parado):
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && tar czf kcbot2_copia_antes_9.2.1_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+ls -lh ~/kcbot2_copia_antes_9.2.1_*.tgz
+```
+
+**2. Instalar y arrancar:**
+
+```
+unzip -o ~/kabor_9.2.1_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 && ./bot.sh arrancar
+./bot.sh logs        # Ctrl+C para salir; en Telegram debe llegar «Programa en marcha (v9.2.1)»
+```
+
+Recarga el panel con Ctrl+F5.
+
+**3. Volver a la versión anterior** (solo si algo va mal):
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && mv kcbot2 kcbot2_9.2.1_descartada
+tar xzf kcbot2_copia_antes_9.2.1_AAAAMMDD_HHMM.tgz      # el nombre de tu copia (ls ~/kcbot2_copia_*)
+mv kcbot2_9.2.1_descartada/venv kcbot2/
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+## Qué hay de nuevo en la 9.2: cada estrategia con su temporalidad y sus ajustes
+
+- **Temporalidad propia por estrategia.** En un bot con varias estrategias, cada una elige sus velas: «Temporalidad
+  de la estrategia principal» (Mercado) y «Temporalidad» en el grupo de cada estrategia añadida. Tiene que ser igual
+  o mayor que la del bot y múltiplo de ella, así que **pon el bot en la temporalidad más pequeña** (p. ej. bot de 5m
+  con un ORB en 5m, una Ruptura de Keltner en 30m y un Supertrend en 4h). El bot construye las velas de cada
+  estrategia con las suyas (las de 4h y 1d, en horas UTC como Binance y TradingView); cada estrategia ve solo sus velas
+  cerradas, con su ATR, su vela anterior y su contador, así que las estrategias no hay que tocarlas.
+- Las señales entran en la apertura de la siguiente vela del bot (una señal de 4h no espera 4 horas). El stop, el
+  objetivo, el break-even y el trailing se vigilan en cada vela del bot; la salida propia de una estrategia (p. ej.
+  cruce contrario) se mira al cierre de sus velas. Sigue habiendo una sola operación a la vez.
+- **Ajustes propios aunque se llamen igual.** Los de cada estrategia añadida llevan su id delante por dentro
+  (`supertrend__ema_on`), así que se pueden combinar estrategias con ajustes del mismo nombre y cada una conserva
+  sus valores. Lo guardado con la 9.1 se conserva.
+- La puntuación prueba cada estrategia en su temporalidad; el informe por estrategia, el desglose del backtest y los
+  avisos de Telegram dicen la temporalidad de cada una («🧩 Ruptura de Keltner (30m)»).
+- Si MyFundedPerps cambia un mercado de sitio en su catálogo (el Nasdaq pasó a `composite|XYZ100`), KaBor lo busca
+  por su nombre, se actualiza solo y lo avisa.
+
+## Qué hay de nuevo en la 9.1: varias estrategias en un bot
+
+### Actualizar a la 9.1 con copia de seguridad
+
+Cambia el núcleo (`nucleo.py`) y el formato de algunos datos (columna `estrategia` en `operaciones.csv`,
+puntuaciones en `data/bots.json`), así que antes de instalar haz una copia de todo. Deja `kabor_9.1_raspberry.zip`
+en tu carpeta personal (`~`), no dentro de `~/kcbot2`: se descomprime directamente en el programa.
+
+**1. Copia de seguridad** (con el programa parado, para que los datos queden coherentes):
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && tar czf kcbot2_copia_antes_9.1_$(date +%Y%m%d_%H%M).tgz --exclude=venv kcbot2
+ls -lh ~/kcbot2_copia_antes_9.1_*.tgz      # comprueba que existe y que no pesa 0
+```
+
+Mientras está parado no entran operaciones nuevas. Las posiciones abiertas en las cuentas sandbox siguen con su
+stop y su objetivo en MyFundedPerps.
+
+**2. Instalar y arrancar:**
+
+```
+unzip -o ~/kabor_9.1_raspberry.zip -d ~/kcbot2
+cd ~/kcbot2 && ./bot.sh arrancar
+./bot.sh logs        # Ctrl+C para salir; en Telegram debe llegar «Programa en marcha (v9.1)»
+```
+
+Recarga el panel con Ctrl+F5.
+
+**3. Volver a la versión anterior** (solo si algo va mal). Restaura el programa y los datos tal como estaban al
+hacer la copia; lo que haya pasado después con la 9.1 queda guardado en `~/kcbot2_9.1_descartada`:
+
+```
+cd ~/kcbot2 && ./bot.sh parar
+cd ~ && mv kcbot2 kcbot2_9.1_descartada
+tar xzf kcbot2_copia_antes_9.1_AAAAMMDD_HHMM.tgz      # el nombre de tu copia (ls ~/kcbot2_copia_*)
+mv kcbot2_9.1_descartada/venv kcbot2/                  # la copia no incluye el entorno de Python
+cd ~/kcbot2 && ./bot.sh arrancar
+```
+
+- **Varias estrategias en un bot** (Configuración → Mercado → «Más estrategias en este bot», hasta 4 más). El bot
+  sigue en un solo instrumento y con **una operación a la vez**: la primera señal válida abre y las demás quedan
+  bloqueadas hasta que esa operación se cierra (TP, stop, salida de la estrategia que la abrió, o a mano); las
+  señales contrarias no cierran ni abren nada. Cada estrategia gestiona la salida de sus operaciones con sus ajustes,
+  que salen en el formulario en un grupo con su nombre. El riesgo, los límites, el horario y los filtros son del bot.
+- **Prioridad automática por puntuación**: si varias dan señal en la misma vela, manda la de mejor puntuación. La
+  puntuación es el SQN (media de R / desviación × √operaciones, hasta 100) del backtest de cada estrategia sola en
+  los últimos 90 días con los ajustes del bot; menos de 10 operaciones = sin puntuación (va la última). Se calcula
+  sola al guardar la configuración y cada día, o con «Recalcular puntuación». Se guarda en `data/bots.json`.
+- **Rendimiento por estrategia** (Panel del bot): barras de R en directo y en el backtest, curva de cada estrategia,
+  y una ficha por estrategia con su prioridad, puntuación, operaciones, acierto, PF, drawdown, $ y señales bloqueadas.
+  El backtest de un bot combinado también da el desglose por estrategia. Los avisos de Telegram dicen qué estrategia
+  dio la señal. `operaciones.csv` tiene una columna nueva, `estrategia` (las antiguas se completan solas).
+- El «Plan manual» de SMT sigue en su propio bot: no se combina.
+
+## Qué hay de nuevo en la 9.0: análisis dibujado en el gráfico y TradingView
+
+- **Gráfico de análisis** (Planes): velas reales de MFP con herramientas de dibujo. **Nivel** (entrada, stop, TP1,
+  TP final, invalidación o nivel libre), **Zona** (FVG alcista o bajista, order block, liquidez o zona libre) y
+  **Tendencia**. Se dibuja con el ratón o con el dedo (arrastrando o tocando dos puntos), se mueve arrastrando y
+  cada objeto se edita en la lista de debajo (precios exactos, nota, «hasta ahora»). Se guarda en `data/dibujos.json`.
+- **▲ Largo / ▼ Corto** (como la herramienta de posición de TradingView): tocas la entrada y aparece la caja verde
+  (beneficio) y roja (riesgo). Arrastras la entrada, el stop, el TP y el TP1, o la caja entera; el borde derecho
+  cambia el ancho. Las etiquetas dicen precio, %, $ y R:R, con los contratos calculados con el riesgo del bot «Plan
+  manual» (o con el riesgo o los contratos que escribas en la lista). «Crear plan» rellena el formulario con ella.
+- **Marcar FVG**: busca los huecos de tres velas que siguen abiertos y marca los 6 más cercanos al precio (línea
+  discontinua). El mismo botón los quita.
+- **Crear plan desde el gráfico**: rellena «Plan a mano» con tus niveles (lado, orden límite en la entrada, stop,
+  TP1, TP e invalidación) y un resumen de tus zonas. Lo revisas y lo creas como pendiente.
+- Los planes pendientes y activos del instrumento se ven en el gráfico en línea discontinua.
+- **SMT**: herramienta nueva `kabor_dibujos`. Claude lee tus niveles y zonas, con el estado de cada zona (sin tocar,
+  tocada, rellenada) y el R:R de tus niveles, y prepara el plan a partir de ellos. Sigue sin poder confirmarlo.
+- **Análisis** (menú): gráfico de TradingView del mismo mercado que usa MFP (`BINANCE:XXXUSDT.P`,
+  `HIP3XYZ:XYZ100USDC.P`), con el símbolo elegido solo y editable en la misma página.
+- Gráficos con TradingView Lightweight Charts (Apache 2.0, incluida en `web/vendor/`).
 
 ## Qué hay de nuevo en la 8.9: temporalidades 2h, 4h, diaria y semanal
 
