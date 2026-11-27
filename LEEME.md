@@ -1,4 +1,4 @@
-# KaBor Quant 9.4.3 — papel y cuentas sandbox de MyFundedPerps
+# KaBor Quant 9.4.4 — papel y cuentas sandbox de MyFundedPerps
 
 Un solo programa ejecuta varios bots a la vez con datos de MyFundedPerps en tiempo real y un panel web central.
 Cada bot funciona **en papel** (como hasta la 4.0) o, si lo activas, **también en una o varias cuentas sandbox**:
@@ -8,6 +8,21 @@ las mismas señales, el mismo stop y el mismo objetivo se convierten en órdenes
 
 Desde la 9.2.1: **X.Y** para cambios importantes (funciones nuevas, cambios en el núcleo) y **X.Y.Z** para
 cambios menores (pantallas, arreglos, textos).
+
+## Qué hay de nuevo en la 9.4.4: planes y cambio de nombre del símbolo
+
+* **Arreglo.** Si cambias el símbolo de un bot «Plan manual» (por ejemplo, de NAS100 a XYZ100, que es el mismo
+  Nasdaq en MFP), sus planes viejos dejaban de encontrar su operación: en Planes y en SMT salían «disparados» pero sin
+  R ni motivo. Ahora el símbolo se compara por instrumento (los mismos alias que usa KaBor para buscar el mercado),
+  así que vuelven a mostrar su resultado. Lo mismo vale para:
+  * los planes activos guardados con el nombre anterior: el bot los sigue vigilando;
+  * la vista previa del tamaño y el riesgo de un plan;
+  * `kabor_dibujos` de SMT: si pides NAS100 y los dibujos están en XYZ100, te da los de XYZ100.
+* Si aun así no hay coincidencia, vale la operación del único bot «Plan manual» de esa temporalidad que entró en
+  la misma vela del plan.
+* 5 pruebas nuevas en `tests/test_planes.py` (27 en total).
+
+Se instala igual que la 9.4, con `kabor_9.4.4_raspberry.zip`.
 
 ## Qué hay de nuevo en la 9.4.3: anotaciones de SMT y pruebas automáticas
 
@@ -30,7 +45,7 @@ cambios menores (pantallas, arreglos, textos).
   Son 22 pruebas que tardan unos segundos. Las del stream necesitan `pip install websockets`; sin él, se saltan.
 * Ambas cosas las pedía el índice de confianza de MCP de M8ven, que analizó el repositorio público.
 
-Se instala igual que la 9.4, con `kabor_9.4.3_raspberry.zip`.
+Se instaló igual que la 9.4, con `kabor_9.4.3_raspberry.zip`.
 
 ## Qué hay de nuevo en la 9.4.2: repaso del panel y de las traducciones
 

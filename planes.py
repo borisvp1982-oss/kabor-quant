@@ -48,6 +48,13 @@ ESTRATEGIA_ID = "plan_manual"
 
 STORE = None          # lo crea kcbot.py al arrancar; en backtests y simulaciones queda en None
 DIBUJOS = None        # análisis dibujado en el gráfico de Planes (niveles, zonas, tendencias)
+EQUIVALENTES = {}     # nombre → otros nombres del mismo instrumento (kcbot.ALIASES; p. ej. NAS100 y XYZ100)
+
+
+def mismo_simbolo(a, b):
+    """¿Son el mismo instrumento? Un plan guardado como NAS100 sigue siendo del bot que ahora opera XYZ100."""
+    a, b = str(a or "").upper(), str(b or "").upper()
+    return a == b or b in EQUIVALENTES.get(a, ())
 
 
 def ahora():
@@ -101,7 +108,7 @@ def tamano_info(hub, p):
         return out
     for b in hub.bots.values():
         P = b.P
-        if P.get("estrategia") != ESTRATEGIA_ID or P.get("symbol") != p["simbolo"] or \
+        if P.get("estrategia") != ESTRATEGIA_ID or not mismo_simbolo(P.get("symbol"), p["simbolo"]) or \
                 P.get("timeframe") != p["temporalidad"] or b.meta.get("archived"):
             continue
         cuenta = bool(b.ex.activo()) if hasattr(b.ex, "activo") else False
@@ -392,8 +399,8 @@ class Planes:
 
     def para(self, simbolo, tf):
         with self.lock:
-            return [dict(p) for p in self.planes if p["estado"] == "activo" and p["simbolo"] == simbolo
-                    and p["temporalidad"] == tf]
+            return [dict(p) for p in self.planes if p["estado"] == "activo" and p["temporalidad"] == tf
+                    and mismo_simbolo(p["simbolo"], simbolo)]
 
     # ---------- cambios ----------
     def crear(self, plan, origen):
@@ -700,6 +707,10 @@ class ConectorMCP:
             return {"instrumentos_con_dibujos": {k: len(v.get("objetos", [])) for k, v in DIBUJOS.d.items()},
                     "siguiente_paso": "Llama a kabor_dibujos con uno de esos símbolos."}
         objs = DIBUJOS.de(sim)
+        if not objs:                # p. ej. NAS100 sin dibujos: los de XYZ100, que es el mismo instrumento
+            otro = next((k for k in DIBUJOS.d if k != sim and mismo_simbolo(k, sim) and DIBUJOS.de(k)), None)
+            if otro:
+                sim, objs = otro, DIBUJOS.de(otro)
         if not objs:
             return {"simbolo": sim, "objetos": [], "aviso": "No hay nada dibujado en {}.".format(sim)}
         hora = lambda t: time.strftime("%Y-%m-%d %H:%M", time.gmtime(t / 1000)) if t else None
@@ -774,22 +785,30 @@ class ConectorMCP:
         return not f or f in b.name.lower() or f == str(b.P.get("symbol", "")).lower() or f == str(b.id)
 
     def _resultado_plan(self, p):
-        """R de la operación de un plan disparado (se busca en los bots «Plan manual» de su símbolo y temporalidad)."""
+        """R de la operación de un plan disparado (se busca en los bots «Plan manual» de su símbolo y temporalidad).
+
+        El símbolo se compara por instrumento (NAS100 = XYZ100): si cambias el símbolo del bot, sus planes viejos
+        siguen encontrando su operación. Si aun así no aparece, vale la operación de cualquier bot «Plan manual» de
+        esa temporalidad que se abrió en esa misma vela, siempre que sea una sola."""
         te = p.get("t_entrada")
         if not te:
             return {}
+        propios, otros = [], []
         for b in self.hub.bots.values():
-            if b.P.get("estrategia") != ESTRATEGIA_ID or b.P.get("symbol") != p["simbolo"] or \
-                    b.P.get("timeframe") != p["temporalidad"]:
+            if b.P.get("estrategia") != ESTRATEGIA_ID or b.P.get("timeframe") != p["temporalidad"]:
                 continue
             with b.lock:
                 x = next((dict(y) for y in b.trades if y.get("t_open") == te), None)
                 abierta = bool(b.st and b.st.pos and b.st.pos.get("t_open") == te)
+            if x or abierta:
+                (propios if mismo_simbolo(b.P.get("symbol"), p["simbolo"]) else otros).append((x, abierta))
+        encontrados = propios or (otros if len(otros) == 1 else [])
+        for x, abierta in encontrados:
             if x:
                 return {"resultado": {"r": round(x["r"], 2), "salida": x.get("exit"), "motivo": x.get("why"),
                                       "cierre": self._hora(x.get("t_close"))}}
-            if abierta:
-                return {"resultado": {"abierta": True}}
+        if any(a for _, a in encontrados):
+            return {"resultado": {"abierta": True}}
         return {}
 
     def _bots(self, archivados):

@@ -8,6 +8,7 @@ Comprueban las piezas de KaBor que más importan, sin conectarse a MyFundedPerps
 | `test_lecturas.py` | El límite de lecturas por clave, la prioridad de lo de operar, el 429 con `Retry-After`, el aviso `X-RateLimit-Warning` y que solo se acepta el sandbox. |
 | `test_stream_cuenta.py` | El stream de la cuenta contra un sandbox simulado: entrada, venta parcial y cierre sin lecturas REST; corte, lectura por la API y reanudación. Necesita `websockets` (`pip install websockets`); sin él, se salta. |
 | `test_mcp.py` | El conector SMT: protocolo, herramientas con sus anotaciones (solo lectura, destructiva…) y token. |
+| `test_planes.py` | Que un plan guardado con un nombre del símbolo (NAS100) encuentra su operación y sigue vigilado en el bot que ahora usa otro nombre del mismo instrumento (XYZ100), sin mezclarse con otros símbolos ni temporalidades. |
 | `test_traducciones.py` | Los diccionarios de inglés y francés: JSON válido, sin textos vacíos, con los mismos huecos `{0}` y las mismas claves. |
 
 Para ejecutarlas:

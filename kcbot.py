@@ -71,7 +71,7 @@ import fiscal as FI  # noqa: E402
 import temas as TM  # noqa: E402
 
 APP = "KaBor Quant"
-VERSION = "9.4.3"
+VERSION = "9.4.4"
 WEB_DIR = os.path.join(HERE, "web")
 ESTATICOS = {"/favicon.svg": ("favicon.svg", "image/svg+xml"), "/icono-180.png": ("icono-180.png", "image/png"),
              "/icono-512.png": ("icono-512.png", "image/png"), "/icono-192.png": ("icono-192.png", "image/png"),
@@ -4125,6 +4125,7 @@ def run(cfg, log):
             threading.Thread(target=lambda: _silencio(hub.avisos.send_now, texto), daemon=True).start()
     PL.STORE = PL.Planes(os.path.join(cfg.data_dir, "planes.json"), cfg.plan_espera, aviso_plan)
     PL.DIBUJOS = PL.Dibujos(os.path.join(cfg.data_dir, "dibujos.json"))
+    PL.EQUIVALENTES = {n: set(g) for g in ALIASES.values() for n in g}
     if cfg.mcp_token:
         log("Conector MCP para Claude activo en /mcp/<token> (solo crea planes pendientes)")
     if not cfg.login:
