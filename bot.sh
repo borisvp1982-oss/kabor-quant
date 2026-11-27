@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Borislav Vladimirov Petrakiev
-# KaBor Quant. Uso: ./bot.sh [estado|panel|logs|arrancar|parar|reiniciar|configurar|usuario|certificado|cerrar-sesiones|quitar-2fa USUARIO|importar RUTA|importar-bot CARPETA|comprobar|probar ARCHIVO [opciones]|bots|contexto N|analizar N|informe|conector|desinstalar]
+# KaBor Quant. Uso: ./bot.sh [estado|panel|logs|arrancar|parar|reiniciar|configurar|usuario|certificado|cerrar-sesiones|quitar-2fa USUARIO|importar RUTA|importar-bot CARPETA|comprobar|probar ARCHIVO [opciones]|bots|contexto N|analizar N|informe|pruebas|conector|desinstalar]
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PY="$DIR/venv/bin/python"
 SVC="$(basename "$DIR")"; SVC="${SVC//[^a-zA-Z0-9_-]/-}"
@@ -39,6 +39,8 @@ case "${1:-}" in
                D="$(cfg FP_DATA_DIR)"; D="${D:-data}"; [[ "$D" = /* ]] || D="$DIR/$D"; shift
                "$PY" "$DIR/contexto.py" analizar --datos "$D" "$@" ;;
   informe)     "$PY" "$DIR/kcbot.py" --config "$DIR/config.env" --informe ;;
+  pruebas)     # pruebas automáticas (motor, varias estrategias, lecturas, stream simulado, MCP, traducciones)
+               cd "$DIR" && "$PY" -m unittest discover -s tests -v ;;
   conector)    T=$(cfg FP_MCP_TOKEN)
                if [ -z "$T" ]; then T=$("$PY" -c "import secrets; print(secrets.token_urlsafe(32))")
                  echo "FP_MCP_TOKEN=$T" >> "$DIR/config.env"; echo "Token creado. Aplica con: ./bot.sh reiniciar"; fi
@@ -47,5 +49,5 @@ case "${1:-}" in
                echo "Para cambiarlo, borra la línea FP_MCP_TOKEN de config.env y repite." ;;
   desinstalar) sudo systemctl disable --now "$SVC"; sudo rm -f "/etc/systemd/system/$SVC.service"; sudo systemctl daemon-reload
                echo "Servicio $SVC eliminado. La carpeta y los datos se conservan." ;;
-  *) echo "Uso: ./bot.sh [estado|panel|logs|arrancar|parar|reiniciar|configurar|usuario|certificado|cerrar-sesiones|quitar-2fa USUARIO|importar RUTA|importar-bot CARPETA|comprobar|probar ARCHIVO [--simbolo BTC --tf 5m --dias 30 --ajuste clave=valor --exportar]|bots|contexto N [--dias 365]|analizar N|ARCHIVO.csv|informe|conector|desinstalar]" ;;
+  *) echo "Uso: ./bot.sh [estado|panel|logs|arrancar|parar|reiniciar|configurar|usuario|certificado|cerrar-sesiones|quitar-2fa USUARIO|importar RUTA|importar-bot CARPETA|comprobar|probar ARCHIVO [--simbolo BTC --tf 5m --dias 30 --ajuste clave=valor --exportar]|bots|contexto N [--dias 365]|analizar N|ARCHIVO.csv|informe|pruebas|conector|desinstalar]" ;;
 esac

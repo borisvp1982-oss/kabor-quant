@@ -71,7 +71,7 @@ import fiscal as FI  # noqa: E402
 import temas as TM  # noqa: E402
 
 APP = "KaBor Quant"
-VERSION = "9.4.2"
+VERSION = "9.4.3"
 WEB_DIR = os.path.join(HERE, "web")
 ESTATICOS = {"/favicon.svg": ("favicon.svg", "image/svg+xml"), "/icono-180.png": ("icono-180.png", "image/png"),
              "/icono-512.png": ("icono-512.png", "image/png"), "/icono-192.png": ("icono-192.png", "image/png"),

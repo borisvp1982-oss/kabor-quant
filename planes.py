@@ -498,9 +498,27 @@ INSTRUCCIONES = (
     "El plan queda PENDIENTE: el usuario lo confirma en el panel. Tú no puedes confirmar, operar ni cancelar planes activos.")
 
 
+# Anotaciones MCP de cada herramienta (desde la 9.4.3): título, si solo lee, si borra algo, si repetirla da lo
+# mismo y si sale de KaBor. Ninguna opera: crear un plan lo deja PENDIENTE y cancelar solo vale con los pendientes.
+ANOTACIONES = {
+    "kabor_contexto": ("Contexto de KaBor", True, False, True),
+    "kabor_velas": ("Velas reales de MFP", True, False, True),
+    "kabor_dibujos": ("Dibujos del gráfico de análisis", True, False, True),
+    "kabor_planes": ("Lista de planes", True, False, True),
+    "kabor_bots": ("Estado de los bots", True, False, True),
+    "kabor_operaciones": ("Operaciones cerradas", True, False, True),
+    "kabor_estadisticas": ("Estadísticas de los bots", True, False, True),
+    "kabor_crear_plan": ("Crear un plan pendiente", False, False, False),
+    "kabor_cancelar_pendiente": ("Cancelar un plan pendiente", False, True, True),
+}
+
+
 def _tool(name, desc, props, req):
-    return {"name": name, "description": desc,
-            "inputSchema": {"type": "object", "properties": props, "required": req, "additionalProperties": False}}
+    titulo, solo_lee, borra, idempotente = ANOTACIONES[name]
+    return {"name": name, "title": titulo, "description": desc,
+            "inputSchema": {"type": "object", "properties": props, "required": req, "additionalProperties": False},
+            "annotations": {"title": titulo, "readOnlyHint": solo_lee, "destructiveHint": borra,
+                            "idempotentHint": idempotente, "openWorldHint": False}}
 
 
 _COND = {"type": "object", "properties": {

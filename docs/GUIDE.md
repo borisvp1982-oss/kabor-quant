@@ -521,6 +521,13 @@ Then «Create plan from chart» fills the plan form. Claude can read the same dr
 
 5.  Later, Claude reviews results with `kabor_estadisticas`, keeping the quality of the analysis separate from the quality of the execution.
 
+Every tool declares MCP **annotations**: a title and `readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint`.
+
+- Seven tools only read.
+- `kabor_crear_plan` writes a *pending* plan.
+- `kabor_cancelar_pendiente` cancels one.
+- None of them leaves KaBor or touches an account.
+
 ## Risk and safety controls
 
 KaBor is built to protect a funded account before it protects a trade: every order passes five layers of checks, and the trader can lock an account in one tap.
@@ -577,6 +584,15 @@ KaBor Quant is public on GitHub and runs daily in sandbox on the MFP API and str
 | English and French Telegram alerts and system log | The panel and the help are already translated |
 | Optional integration with the MFP MCP server and CLI | Account actions from Claude alongside SMT |
 | Live keys (`fp_live_`) | Only after the strategies prove robust on enough sandbox trades |
+
+**Tests.** `./bot.sh pruebas` runs 22 automatic tests in a few seconds, standard library only (`tests/`). None of them connects to MFP. They cover:
+
+- the engine and backtester;
+- several strategies per bot: one trade at a time, owner-managed exits, per-strategy direction and timeframe;
+- the read limiter and 429 handling;
+- the account stream against a local simulated sandbox;
+- the MCP connector and its annotations;
+- the translation dictionaries.
 
 **License.** Copyright 2026 Borislav Vladimirov Petrakiev. KaBor Quant is released under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0): anyone may use, modify and redistribute it, commercially too, as long as they keep the `NOTICE` file and the copyright notices and mark their changes. The "KaBor Quant" name and logo are not licensed for other products, so forks must use their own.
 

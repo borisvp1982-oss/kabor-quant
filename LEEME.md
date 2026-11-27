@@ -1,4 +1,4 @@
-# KaBor Quant 9.4.2 — papel y cuentas sandbox de MyFundedPerps
+# KaBor Quant 9.4.3 — papel y cuentas sandbox de MyFundedPerps
 
 Un solo programa ejecuta varios bots a la vez con datos de MyFundedPerps en tiempo real y un panel web central.
 Cada bot funciona **en papel** (como hasta la 4.0) o, si lo activas, **también en una o varias cuentas sandbox**:
@@ -8,6 +8,29 @@ las mismas señales, el mismo stop y el mismo objetivo se convierten en órdenes
 
 Desde la 9.2.1: **X.Y** para cambios importantes (funciones nuevas, cambios en el núcleo) y **X.Y.Z** para
 cambios menores (pantallas, arreglos, textos).
+
+## Qué hay de nuevo en la 9.4.3: anotaciones de SMT y pruebas automáticas
+
+* **Anotaciones MCP.** Cada herramienta de SMT dice ahora qué es: título, si solo lee (`readOnlyHint`), si puede
+  borrar algo (`destructiveHint`), si repetirla da lo mismo (`idempotentHint`) y si sale de KaBor (`openWorldHint`).
+  * Solo leen: `kabor_contexto`, `kabor_velas`, `kabor_dibujos`, `kabor_planes`, `kabor_bots`,
+    `kabor_operaciones` y `kabor_estadisticas`.
+  * `kabor_crear_plan` crea un plan pendiente sin operar.
+  * `kabor_cancelar_pendiente` cancela uno.
+
+  Claude lo tiene en cuenta (por ejemplo, para pedir confirmación antes de escribir). Para verlo, desconecta y
+  vuelve a conectar el conector en Claude.
+* **Pruebas automáticas** en la carpeta `tests/`: `./bot.sh pruebas`. Comprueban, sin conectarse a MFP:
+  * el motor y el backtest;
+  * varias estrategias por bot (una operación a la vez, dueña de cada operación, dirección y temporalidad propias);
+  * el límite de lecturas, el 429 y el aviso de MFP;
+  * el stream de la cuenta contra un sandbox simulado;
+  * el conector MCP y los diccionarios de traducción.
+
+  Son 22 pruebas que tardan unos segundos. Las del stream necesitan `pip install websockets`; sin él, se saltan.
+* Ambas cosas las pedía el índice de confianza de MCP de M8ven, que analizó el repositorio público.
+
+Se instala igual que la 9.4, con `kabor_9.4.3_raspberry.zip`.
 
 ## Qué hay de nuevo en la 9.4.2: repaso del panel y de las traducciones
 
